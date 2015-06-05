@@ -1,0 +1,28 @@
+
+#xorg-dev and libglu1-mesa-dev 
+
+Program dependencies:
+cmake
+make
+g++ (or clang++ if you are super awesome)
+
+Library dependencies:
+
+libGL
+libGLU
+libGLEW
+libfftw3
+libpthread
+libXi 
+libXxf86vm
+libXrandr
+libX11
+
+I know that's a lot so just type:
+
+sudo apt-get install xorg-dev
+sudo apt-get install libglu1-mesa-dev 
+sudo apt-get install libglew-dev
+sudo apt-get install libfftw3-dev
+make
+
