@@ -3,9 +3,6 @@
 #include <vector>
 
 #include <glm/glm.hpp>
-
-#include "functionlib.h"
-
 #include "datavals.h"
 
 #define MAX_PP_STACK_SIZE 64
@@ -50,6 +47,7 @@ class Equation{
  public:
   Equation();
   void set_equation(DataVals * dvs, equation_desc desc);
+
   float get_value();
   void get_bulk_value(float * v);
   glm::vec4 get_color();

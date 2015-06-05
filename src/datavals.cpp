@@ -102,45 +102,20 @@ float evaluate_tokenized_equation_or_die(PPStack<PPToken> * token_stack){
 
 void DataVals::apply_bulk_func(PPStack<PPToken> * token_stack, float * vals){
   PPStack<float> eval_stack;
-
   pthread_rwlock_wrlock(&rwlock_ );
   for (int j = 0; j < buffer_size_; j++){
     eval_stack.size = 0;
+    //does the pp calculation
     for (int i = token_stack->size-1; i >= 0; i--){
       token_stack->items[i].func(&eval_stack, 
-				 token_stack->items[i].val_addr == NULL ? &(token_stack->items[i].val) : token_stack->items[i].val_addr, 
-				 ((ring_indices_[token_stack->items[i].dv_index] + j)%buffer_size_) + 1 );
+				 token_stack->items[i].val_addr == NULL ? &(token_stack->items[i].val) : token_stack->items[i].val_addr, //value to plug in
+				 ((ring_indices_[token_stack->items[i].dv_index] + j)%buffer_size_) + 1 );//offset
     }
+    //stores the value
     vals[j] = eval_stack.items[0];
   }
   pthread_rwlock_unlock(&rwlock_);
 }
-
-/**
-void DataVals::apply_bulk_func( fl_func fun, int n_args, int * indices, float * vals){
-  assert(n_args <= FUNC_LIB_MAX_ARGS);
-  float * actual_inputs[FUNC_LIB_MAX_ARGS];
-
-  pthread_rwlock_wrlock(&rwlock_ );
-    //sets the pointers to the part of the ring
-  for (int j=0; j < buffer_size_; j++){
-    for (int i=0; i < n_args; i++){
-      int d_ind = indices[i];
-      //massive pointer arithmetic since ring_buffers_ is a pointer
-      if (is_buffered_[d_ind])
-	actual_inputs[i] = ring_buffers_ + buffer_size_full_ * d_ind + ((ring_indices_[d_ind] + j)%buffer_size_) + 1; 
-      else
-	actual_inputs[i] = ring_buffers_ + buffer_size_full_ * d_ind;
-    } 
-    vals[j] = (*fun)(actual_inputs);
-  }
-  pthread_rwlock_unlock(&rwlock_);
-}
-**/
-
-
-
-
 
 
 void DataVals::toggle_pause(){

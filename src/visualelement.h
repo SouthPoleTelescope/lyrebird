@@ -8,7 +8,6 @@
 
 #include "simplerender.h"
 #include "datavals.h"
-#include "functionlib.h"
 #include "equation.h"
 
 struct vis_elem_repr{

@@ -43,7 +43,6 @@ DataVals * global_data_vals = NULL;
 bool global_mouse_is_handled = false;
 
 
-
 void TW_CALL toggleDataValsPause(void * d){
   if (global_data_vals != NULL){
     global_data_vals->toggle_pause();
@@ -53,8 +52,6 @@ void TW_CALL toggleDataValsPause(void * d){
 void TW_CALL requestSamplesCallback(void * dsPointer){
   ((DataStreamer*) dsPointer)->update_values(-1);
 }
-
-
 
 static void error_callback(int error, const char* description){
   fputs(description, stderr);
@@ -90,18 +87,12 @@ inline void TwEventMousePosGLFW3(GLFWwindow* window, double xpos, double ypos){
     TwMouseButton( TW_MOUSE_RELEASED, TW_MOUSE_LEFT);
     global_mouse_is_handled = false;
   }
-  
-  
-
 }
 
 inline void TwEventMouseWheelGLFW3(GLFWwindow* window, double xoffset, double yoffset){TwEventMouseWheelGLFW(yoffset);}
-
 inline void TwEventKeyGLFW3(GLFWwindow* window, int key, int scancode, int action, int mods){
-
   if (action == GLFW_REPEAT) action = GLFW_PRESS;
   TwEventKeyGLFW(key, action);
-
 }
 
 inline void TwEventCharGLFW3(GLFWwindow* window, int codepoint){TwEventCharGLFW(codepoint, GLFW_PRESS);}
@@ -176,7 +167,7 @@ int main(int argc, char * args[])
 
 
 
-  //initialize all the data values
+  //initialize all the data values which are circular buffers we dump floats into
   DCOUT("loading data vals", DEBUG_0);
   int num_data_vals = 0;
   for (int i = 0; i < ds_paths.size(); i++) num_data_vals += ds_paths[i].size();
@@ -201,7 +192,7 @@ int main(int argc, char * args[])
 
   global_data_vals = &data_vals;
 
-  //create all the data streamers
+  //create all the data streamers which write to the data vals
   DCOUT("spawning streamers"<<endl, DEBUG_0);
   vector<DataStreamer*> data_streamers;
   for (int i = 0; i < ds_files.size(); i++){
@@ -210,7 +201,6 @@ int main(int argc, char * args[])
     if (ds_tmp == NULL) print_and_exit(ds_types[i]+"data streamer type not recognized");
     data_streamers.push_back(ds_tmp);
   }
-
 
   //spawn the data streamer threads
   for (int i=0; i < data_streamers.size(); i++){
@@ -263,7 +253,6 @@ int main(int argc, char * args[])
   glfwSetScrollCallback(window, TwEventMouseWheelGLFW3);
   glfwSetKeyCallback(window, (GLFWkeyfun)TwEventKeyGLFW3);
   glfwSetCharCallback(window, (GLFWcharfun)TwEventCharGLFW3);
-
  
   glClearColor( 0.2,0.2,0.2,1.0);
 
@@ -337,14 +326,10 @@ int main(int argc, char * args[])
   Plotter p = Plotter(dv_buffer_size);
   PlotBundler plotBundler( max_num_plotted, dv_buffer_size, &visual_elements);
 
-
-
-
   //adds the search bar
   TwBar * main_bar = TwNewBar("Main");
   TwDefine(" GLOBAL contained=true ");
   TwDefine("'Main' alpha=220 position='0 0' size='200 300'");
-
 
 
   //make the global equations
@@ -358,14 +343,13 @@ int main(int argc, char * args[])
   }
 
   
-  //add the data source portions
-
-
-
   int numDSs = data_streamers.size();
   vector<int> ds_index_variables(numDSs, 0);
   vector<int> ds_index_variables_prev_state(numDSs, 0);
-  
+
+
+
+  ///Initialize a menu
 
   char prev_search_str[64] = ""; // sizeof(search_str) is 64
   char search_str[64] = ""; // sizeof(search_str) is 64
@@ -506,15 +490,15 @@ int main(int argc, char * args[])
 	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS){
 	  camera.zoom(1*deltaTime);
 	}
-	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){
-	  for (int i=0; i < numDSs; i++){
+	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){ //scroll forward in history if we have that type of data streamer
+	  for (int i=0; i < numDSs; i++){ 
 	    if (data_streamers[i]->get_request_type() == DSRT_REQUEST_HISTORY){
 	      ds_index_variables[i] += 1;
 	      if (ds_index_variables[i]  > data_streamers[i]->get_num_elements()) ds_index_variables[i] = data_streamers[i]->get_num_elements();
 	    }
 	  }
 	}
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS){
+	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS){//scroll back in history if we have that type of data streamer
 	  for (int i=0; i < numDSs; i++){
 	    if (data_streamers[i]->get_request_type() == DSRT_REQUEST_HISTORY){
 	      ds_index_variables[i] -= 1;

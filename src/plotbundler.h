@@ -40,9 +40,7 @@ class PlotBundler{
   int * last_updated;
   int * previousVEInds;
 
-  fftw_complex * fft_out;
-
-  
+  fftw_complex * fft_out;  
 
   int num_plots;  
   int max_num_plots_;
@@ -52,10 +50,6 @@ class PlotBundler{
 
   float plot_min, plot_max;
   float psd_min, psd_max;
-
-
-  //ffts_plan_t *ffts_init_1d(size_t N, int sign);
-  //ffts_plan_t * fft_plan;
 
   fftw_plan fft_plan;
 };

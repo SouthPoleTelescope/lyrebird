@@ -4,8 +4,6 @@
 #include <pthread.h>
 #include <unordered_map>
 
-#include "functionlib.h"
-
 
 template <class T> struct PPStack;
 struct PPToken;
@@ -24,7 +22,11 @@ class DataVals {
 
   //returns null if not found
   float * get_addr(int index); 
+
+  //update index with val
   void update_val(int index, float val);
+  
+  //return a buffer of values for data val at index
   std::vector<float> get_buffer_vals(int index);  
 
 

@@ -53,7 +53,6 @@ PlotBundler::~PlotBundler(){
   fftw_free(psd_tmp_buffer);
   fftw_free(fft_out);
   fftw_destroy_plan(fft_plan);
-
 }
 
 
@@ -61,6 +60,7 @@ int PlotBundler::get_num_plots(){
   return num_plots;
 }
 
+// pis = plot indices,  cis = color indices
 void PlotBundler::update_plots(std::list<int> & pis, std::list<glm::vec3> & cis){
   auto it1 = pis.begin();
   auto it2 = cis.begin();
@@ -87,12 +87,6 @@ void PlotBundler::update_plots(std::list<int> & pis, std::list<glm::vec3> & cis)
     if (plot_vals[i] < plot_min ) plot_min = plot_vals[i];
     if (plot_vals[i] > plot_max ) plot_max = plot_vals[i];
   }
-  //cout<< "found min " << plot_min << " found max" << plot_max << endl;
-
-
-  //for (int i=0; i < num_plots; i++)
-  //for (int j=0; j<buffer_size_; j++) plot_vals[i * buffer_size_ + j] = psd_hann_buffer[j] * plot_vals[i * buffer_size_ + j];
-  
 
 
   for (int i=0; i < num_plots; i++){
@@ -106,19 +100,15 @@ void PlotBundler::update_plots(std::list<int> & pis, std::list<glm::vec3> & cis)
 	psd_vals[i*psd_buffer_size + j] = sqrt( fft_out[j][0]*fft_out[j][0] + fft_out[j][1]*fft_out[j][1]);
       }
 
-
+      //zeros the lowest bins because fuck it
       for (int j=0; j < 3; j++)
       	psd_vals[i*psd_buffer_size+j] = 0;
-
-
 
       last_updated[i] = 0;
     }else{
       last_updated[i]++;
     }
   }
-
-
 
 
   psd_min = 0;
