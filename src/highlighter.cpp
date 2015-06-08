@@ -9,8 +9,6 @@
 using namespace std;
 using namespace glm;
 
-
-
 int Highlighter::get_clicked_elem(glm::vec2 click_point){
   int is_set = 0;
   int elem_id = -1;
@@ -123,7 +121,7 @@ void Highlighter::parse_click(glm::vec2 pos, int mod_key){
 
 
 void Highlighter::run_search(){
-
+  
 }
 
 
@@ -150,10 +148,8 @@ void Highlighter::fill_info_bar(){
     (*vis_elems_)[el].get_all_info(n_labels, labels,
 			       n_str_tags, tags, tag_vals,
 			       n_equations,  eq_labels, eq_vals);
-    
     //TW_TYPE_FLOAT
     //TW_TYPE_STDSTRING
-
 
     string group_label = string(" group=") + (*(labels[0])) + string( " ");
     //cout<<"group label:"<<group_label.c_str() <<endl;

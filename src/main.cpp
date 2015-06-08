@@ -354,7 +354,7 @@ int main(int argc, char * args[])
   char prev_search_str[64] = ""; // sizeof(search_str) is 64
   char search_str[64] = ""; // sizeof(search_str) is 64
   TwAddVarRW(main_bar, "Search:", TW_TYPE_CSSTRING(sizeof(search_str)-1), search_str, ""); // must pass search_str (not &search_str)
-
+  
   bool found_streaming_streamer = false;
   for (int i=0; i < data_streamers.size(); i++){
     if (data_streamers[i]->get_request_type() == DSRT_STREAMING || data_streamers[i]->get_request_type() == DSRT_CALLBACK ){
@@ -393,131 +393,135 @@ int main(int argc, char * args[])
   //make the menu bar
   //data sources
   //
-  while (!glfwWindowShouldClose(window))
-    {
-      otherTime = glfwGetTime();
-
-      glClear(GL_COLOR_BUFFER_BIT);
-      glClear(GL_DEPTH_BUFFER_BIT);
-
-      for (int i = 0; i<numDSs; i++){
-	if ( ds_index_variables[i] != ds_index_variables_prev_state[i]){
-	  data_streamers[i]->request_values(ds_index_variables[i]);
-	}
+  while (!glfwWindowShouldClose(window)) {
+    otherTime = glfwGetTime();
+    
+    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    
+    for (int i = 0; i<numDSs; i++){
+      if ( ds_index_variables[i] != ds_index_variables_prev_state[i]){
+	data_streamers[i]->request_values(ds_index_variables[i]);
       }
-
-      for (int i = 0; i<numDSs; i++){
-	ds_index_variables_prev_state[i] = ds_index_variables[i];
-      }
-
-      for (int i=0; i < visual_elements.size(); i++) visual_elements[i].update_color();
-      sren.draw_ren_states(camera.get_view_mat());
-
-      //handles the plotting
-      list<int> pis = highlight.get_plot_inds();
-      list<glm::vec3> cis = highlight.get_plot_colors();
-      if (pis.size() > 0){
-	plotBundler.update_plots(pis, cis);
-	int num_plots = plotBundler.get_num_plots();
-
-	p.prepare_plotting(glm::vec2(.7, -.7), glm::vec2(.3,.3));
-	p.plotBG(glm::vec4(0.0,0.0,0.0,0.9));
-	for (int i=num_plots-1; i >= 0; i--){
-	  //cout<<"plotting regular"<<endl;
+    }
+    
+    for (int i = 0; i<numDSs; i++){
+      ds_index_variables_prev_state[i] = ds_index_variables[i];
+    }
+    
+    for (int i=0; i < visual_elements.size(); i++) visual_elements[i].update_color();
+    sren.draw_ren_states(camera.get_view_mat());
+    
+    //handles the plotting
+    list<int> pis = highlight.get_plot_inds();
+    list<glm::vec3> cis = highlight.get_plot_colors();
+    if (pis.size() > 0){
+      plotBundler.update_plots(pis, cis);
+      int num_plots = plotBundler.get_num_plots();
+      
+      p.prepare_plotting(glm::vec2(.7, -.7), glm::vec2(.3,.3));
+      p.plotBG(glm::vec4(0.0,0.0,0.0,0.9));
+      for (int i=num_plots-1; i >= 0; i--){
+	//cout<<"plotting regular"<<endl;
 	  glm::vec3 plotColor;
 	  float minp,maxp;
 	  float * plotVals = plotBundler.get_plot(i, plotColor);
 	  plotBundler.get_plot_min_max(minp, maxp);
 	  p.plot(plotVals, dv_buffer_size, minp, maxp, glm::vec4(plotColor,1), 0);
-	}
-	p.plotFG(glm::vec4(1.0,1.0,1.0,1.0)); 
-
-
-	p.prepare_plotting(glm::vec2(.7, -.1), glm::vec2(.3,.3));
-	p.plotBG(glm::vec4(0.0,0.0,0.0,0.9));
-	for (int i=num_plots-1; i >= 0; i--){
-	  glm::vec3 plotColor;
-	  float minp,maxp;
-	  float * plotVals = plotBundler.get_psd(i, plotColor);
-	  plotBundler.get_psd_min_max(minp, maxp);
-	  p.plot(plotVals, dv_buffer_size/2+1, minp, maxp, glm::vec4(plotColor,1), 1);
-	}
-	p.plotFG(glm::vec4(1.0,1.0,1.0,1.0)); 
-	p.cleanup_plotting();
       }
-
-      highlight.update_info_bar();
-
-      //updates the main_bar
-      for (int i=0; i < globEquations.size(); i++) globEquations[i].get_value();
-
-
-      TwRefreshBar(main_bar);
-      TwDraw();
-      //cout<<"should draw"<<endl;
-      //cout<<"other time "<<1.0/(glfwGetTime()-otherTime)<<endl;
-      glfwSwapBuffers(window);
-      glfwPollEvents();
-
-      currentTime = glfwGetTime();
-      double deltaTime = currentTime-lastTime;
-      lastTime = currentTime;
-
-      if (!global_mouse_is_handled){
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ||
-	    glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS 
-	    ){
-	  camera.move_up(deltaTime*2);
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS ||
-	    glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS
-	    ){
-	  camera.move_down(deltaTime*2);
-	}
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS ||
-	    glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS	    
-	    ){
-	  camera.move_left(deltaTime*2);
-	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ||
-	    glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS 
-	    ){
-	  camera.move_right(deltaTime*2);
-	}
-	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS){
-	  camera.zoom(-1*deltaTime);
-	}
-	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS){
-	  camera.zoom(1*deltaTime);
-	}
-	if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){ //scroll forward in history if we have that type of data streamer
-	  for (int i=0; i < numDSs; i++){ 
-	    if (data_streamers[i]->get_request_type() == DSRT_REQUEST_HISTORY){
-	      ds_index_variables[i] += 1;
-	      if (ds_index_variables[i]  > data_streamers[i]->get_num_elements()) ds_index_variables[i] = data_streamers[i]->get_num_elements();
-	    }
-	  }
-	}
-	if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS){//scroll back in history if we have that type of data streamer
-	  for (int i=0; i < numDSs; i++){
-	    if (data_streamers[i]->get_request_type() == DSRT_REQUEST_HISTORY){
-	      ds_index_variables[i] -= 1;
-	      if (ds_index_variables[i]  < 0) ds_index_variables[i] = 0;
-	    }
-	  }
-	}
+      p.plotFG(glm::vec4(1.0,1.0,1.0,1.0)); 
+      
+      
+      p.prepare_plotting(glm::vec2(.7, -.1), glm::vec2(.3,.3));
+      p.plotBG(glm::vec4(0.0,0.0,0.0,0.9));
+      for (int i=num_plots-1; i >= 0; i--){
+	glm::vec3 plotColor;
+	float minp,maxp;
+	float * plotVals = plotBundler.get_psd(i, plotColor);
+	plotBundler.get_psd_min_max(minp, maxp);
+	p.plot(plotVals, dv_buffer_size/2+1, minp, maxp, glm::vec4(plotColor,1), 1);
       }
-      //cout<< "FPS: "<<1/deltaTime<<endl;
+      p.plotFG(glm::vec4(1.0,1.0,1.0,1.0)); 
+      p.cleanup_plotting();
     }
+    
+    highlight.update_info_bar();
+    
+    //updates the main_bar
+    for (int i=0; i < globEquations.size(); i++) globEquations[i].get_value();
+    
+    
+    TwRefreshBar(main_bar);
+    TwDraw();
+    //cout<<"should draw"<<endl;
+    //cout<<"other time "<<1.0/(glfwGetTime()-otherTime)<<endl;
+    glfwSwapBuffers(window);
+    glfwPollEvents();
+    
+    currentTime = glfwGetTime();
+    double deltaTime = currentTime-lastTime;
+    lastTime = currentTime;
+    
+    if (!global_mouse_is_handled){
+      if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ||
+	  glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS 
+	  ){
+	camera.move_up(deltaTime*2);
+      }
+      if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS ||
+	  glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS
+	  ){
+	camera.move_down(deltaTime*2);
+      }
+      if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS ||
+	  glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS	    
+	  ){
+	camera.move_left(deltaTime*2);
+      }
+      if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ||
+	  glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS 
+	  ){
+	camera.move_right(deltaTime*2);
+      }
+      if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS){
+	camera.zoom(-1*deltaTime);
+      }
+      if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS){
+	camera.zoom(1*deltaTime);
+      }
+      if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){ //scroll forward in history if we have that type of data streamer
+	for (int i=0; i < numDSs; i++){ 
+	  if (data_streamers[i]->get_request_type() == DSRT_REQUEST_HISTORY){
+	    ds_index_variables[i] += 1;
+	    if (ds_index_variables[i]  > data_streamers[i]->get_num_elements()) ds_index_variables[i] = data_streamers[i]->get_num_elements();
+	  }
+	}
+      }
+      if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS){//scroll back in history if we have that type of data streamer
+	for (int i=0; i < numDSs; i++){
+	  if (data_streamers[i]->get_request_type() == DSRT_REQUEST_HISTORY){
+	    ds_index_variables[i] -= 1;
+	    if (ds_index_variables[i]  < 0) ds_index_variables[i] = 0;
+	  }
+	}
+      }
+    }
+
+
+    //handle searching
+
+
+
+
+    //cout<< "FPS: "<<1/deltaTime<<endl;
+  }
   
   cout<<"Destorying window"<<endl;
   
   glfwDestroyWindow(window);
   glfwTerminate();
   
-  //kill all the data streamers
-  
-  cout<<"tell the m to kill themselves"<<endl;
+  cout<<"tell them to kill themselves"<<endl;
   for (int i=0; i < data_streamers.size(); i++){
     data_streamers[i]->die_gracefully();
   }
@@ -526,6 +530,5 @@ int main(int argc, char * args[])
     data_streamers[i]->bury_body();
     delete data_streamers[i];    
   }
-  
   exit(EXIT_SUCCESS);
 }
