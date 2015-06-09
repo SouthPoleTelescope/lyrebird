@@ -23,11 +23,24 @@ class CameraControl{
   glm::mat4 get_view_mat();
   glm::mat4 get_view_mat_inverse();
 
+
+  void register_move_on(double x_pos, double y_pos);
+  void register_mouse_move(double x_pos, double y_pos);
+  void register_move_off(double x_pos, double y_pos);
+  bool is_mouse_moving();
+  glm::vec2 get_mouse_move_trans( double x_pos, double y_pos);
+  void do_mouse_zoom(double x_pos, double y_pos, double zoom_amount);
+
+
  private:
   //glm::mat4 view_mat;
   float width_,height_;  
   glm::vec2 center_;
   glm::vec2 half_span_;
   float aspect_ratio_;
+
+  bool mouse_moving_;
+  glm::vec2 model_space_center_;
+  glm::vec2 original_model_space_center_;
 
 };

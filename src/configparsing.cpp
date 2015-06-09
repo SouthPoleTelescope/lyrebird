@@ -26,6 +26,7 @@ equation_desc parse_equation_desc(Json::Value & eqjson){
 void parse_config_file(string in_file, 
 		       vector< vector<string> > & data_source_paths, 
 		       vector< vector<string> > & data_source_ids, 
+		       vector< vector<bool> > & data_source_buffered, 
 		       vector< string > & data_source_files,
 		       vector< string > & data_source_types,
 		       vector< string > & data_source_sampling_type,
@@ -144,6 +145,7 @@ void parse_config_file(string in_file,
   vector<string> ds_paths(n_data_streams);
   vector<string> ds_types(n_data_streams);
   vector<string> ds_sampling(n_data_streams);
+  vector<bool> ds_buffered(n_data_streams);
 
   for (int i=0; i < n_data_streams; i++){
     Json::Value v = data_stream_v[i];
@@ -152,19 +154,21 @@ void parse_config_file(string in_file,
     if (! v.isMember("path")) print_and_exit("path not found in data stream\n");
     if (! v.isMember("streamer_type")) print_and_exit("streamer_type not found in data stream\n");
     if (! v.isMember("sampling_type")) print_and_exit("sampling_type not found in data stream\n");
-
+    if (! v.isMember("is_buffered")) print_and_exit("is_buffered not found in data stream\n");
 
     ds_files[i] = v["file"].asString();
     ds_ids[i] = v["id"].asString();
     ds_paths[i] = v["path"].asString();
     ds_types[i] = v["streamer_type"].asString();
     ds_sampling[i] = v["sampling_type"].asString();
+    ds_buffered[i] = v["is_buffered"].asBool();
   }
 
   //coallate them appropriately
   data_source_files = get_unique_strings(ds_files, n_data_streams);
   data_source_paths = vector< vector< string> > (data_source_files.size());
   data_source_ids = vector< vector< string> > (data_source_files.size());
+  data_source_buffered = vector< vector< bool> > (data_source_files.size());
 
   data_source_types = vector < string> (data_source_files.size());
   data_source_sampling_type = vector < string> (data_source_files.size());
@@ -175,8 +179,10 @@ void parse_config_file(string in_file,
       if (ds_files[j] == data_source_files[i]){
 	data_source_paths[i].push_back(ds_paths[j]);
 	data_source_ids[i].push_back(ds_ids[j]);
+	data_source_buffered[i].push_back(ds_buffered[j]);
 	data_source_types[i] = ds_types[j];
 	data_source_sampling_type[i] = ds_sampling[j];
+	
       }
     }
   }

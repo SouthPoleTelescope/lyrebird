@@ -10,6 +10,7 @@ void parse_config_file(std::string in_file,
 
 		       std::vector< std::vector<std::string> > & data_source_paths, 
 		       std::vector< std::vector<std::string> > & data_source_ids, 
+		       std::vector< std::vector<bool> > & data_source_buffered, 
 		       std::vector< std::string > & data_source_files,
 		       std::vector< std::string > & data_source_types,
 		       std::vector< std::string > & data_source_sampling_type,

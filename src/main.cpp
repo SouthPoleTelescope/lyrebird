@@ -49,7 +49,7 @@ Highlighter * global_highlighter = NULL;
 TwBar * global_info_bar = NULL;
 DataVals * global_data_vals = NULL;
 bool global_mouse_is_handled = false;
-
+double global_wheel_pos = 0;
 
 void TW_CALL toggleDataValsPause(void * d){
   if (global_data_vals != NULL){
@@ -82,12 +82,38 @@ inline void TwEventMouseButtonGLFW3(GLFWwindow* window, int button, int action, 
       pos.y = ypos;
       pos2 = global_camera->con_screen_space_to_model_space(pos);
       global_highlighter->parse_click(pos2, modPressed);
-    }
+    } else if (button == GLFW_MOUSE_BUTTON_2){
+      double xpos, ypos;
+      glfwGetCursorPos ( window, &xpos,&ypos);
+      if (action == GLFW_PRESS){
+	global_camera->register_move_on(xpos, ypos );
+      }else if (action == GLFW_RELEASE){
+	global_camera->register_move_off(xpos, ypos);
+      }
+    } 
   }
 }
 
+void EventScrollWheel(GLFWwindow * window, double x_offset, double y_offset){
+  printf("got scroll %lf %lf\n", x_offset, y_offset);
+
+  global_wheel_pos+=y_offset;
+  if (TwMouseWheel(global_wheel_pos)) return;
+
+
+  double xpos,ypos;
+  glfwGetCursorPos ( window, &xpos, &ypos );
+  global_camera->do_mouse_zoom( xpos,ypos, y_offset * -.1);
+}
+
+
 inline void TwEventMousePosGLFW3(GLFWwindow* window, double xpos, double ypos){
-  
+  if (global_camera && global_camera->is_mouse_moving()){
+    global_camera->register_mouse_move(xpos, ypos);
+    return;
+  }
+
+
   if (TwMouseMotion(int(xpos), int(ypos))){
     global_mouse_is_handled = true;
   }else{
@@ -138,6 +164,7 @@ int main(int argc, char * args[])
   //init config file variables
   vector< vector<string> > ds_paths;
   vector< vector<string> > ds_ids;
+  vector< vector<bool> > ds_buffered;
   vector<string>  ds_files;
   vector<string>  ds_types;
   vector<string>  ds_sampling_types;
@@ -157,13 +184,12 @@ int main(int argc, char * args[])
   vector<string> modifiable_data_val_tags;
   vector<float> modifiable_data_vals;
 
-
   vector<equation_desc> glob_eq_descs;
 
   DCOUT("parsing config files", DEBUG_0);
   //parse the config file
   parse_config_file(args[1],
-		    ds_paths, ds_ids, ds_files, ds_types, ds_sampling_types, ds_tags,
+		    ds_paths, ds_ids, ds_buffered, ds_files, ds_types, ds_sampling_types, ds_tags,
 		    modifiable_data_val_tags, modifiable_data_vals,
 
 		    constant_ids, constant_vals,
@@ -185,7 +211,7 @@ int main(int argc, char * args[])
   DataVals data_vals(num_data_vals + 1, dv_buffer_size);
   for (int i = 0; i < ds_ids.size(); i++){
     for (int j = 0; j < ds_ids[i].size(); j++){
-      data_vals.add_data_val( ds_ids[i][j], 0.0, 1  );
+      data_vals.add_data_val( ds_ids[i][j], 0.0, ds_buffered[i][j]  );
     }
   }
   for (int i=0; i < constant_ids.size(); i++){
@@ -233,7 +259,7 @@ int main(int argc, char * args[])
 
   
 
-  window = glfwCreateWindow(width, height, "Simple example", NULL, NULL);
+  window = glfwCreateWindow(width, height, "Lyrebird", NULL, NULL);
   if (!window)
     {
       glfwTerminate();
@@ -261,7 +287,9 @@ int main(int argc, char * args[])
   glfwSetScrollCallback(window, TwEventMouseWheelGLFW3);
   glfwSetKeyCallback(window, (GLFWkeyfun)TwEventKeyGLFW3);
   glfwSetCharCallback(window, (GLFWcharfun)TwEventCharGLFW3);
- 
+  glfwSetScrollCallback(window, (GLFWscrollfun) EventScrollWheel);
+
+
   glClearColor( 0.2,0.2,0.2,1.0);
 
   DCOUT("creating simple renderer", DEBUG_0);

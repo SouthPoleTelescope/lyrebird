@@ -42,7 +42,7 @@ def add_mod_data_val(config_dic, tag, val):
 
 
 
-def addDataSource(config_dic, ds_file, ds_path, ds_id, streamer_type, sampling_type):
+def addDataSource(config_dic, ds_file, ds_path, ds_id, streamer_type, sampling_type, is_buffered):
     '''
     ds_id: is the label in the data source
     '''
@@ -52,7 +52,8 @@ def addDataSource(config_dic, ds_file, ds_path, ds_id, streamer_type, sampling_t
                                        'file': ds_file,
                                        'path': ds_path,
                                        'streamer_type':streamer_type,
-                                       'sampling_type':sampling_type
+                                       'sampling_type':sampling_type,
+                                       'is_buffered': bool(is_buffered)
                                    })
 
 def addConstVals(config_dic, constant_vals):
@@ -130,7 +131,7 @@ if __name__ == '__main__':
 
     color_maps = ['red_cmap','green_cmap','blue_cmap','white_cmap']
 
-    addDataSource(config_dic, "test_ds_file_2", "test_ds_2_global", "test_global_id", "test_streamer", "streaming")
+    addDataSource(config_dic, "test_ds_file_2", "test_ds_2_global", "test_global_id", "test_streamer", "streaming", False)
     addGlobalEquation(config_dic, getEquation("a test_global_id", ["test_global_id"], "cmap_red", "Global Eq Label"));
 
     nis = 50
@@ -154,10 +155,10 @@ if __name__ == '__main__':
 
                     extra_pos = 0.2
 
-                    addDataSource(config_dic, "test_ds_file", "test_ds_path_%d"%(ds_id_num), "test_%d"%ds_id_num, "test_streamer", "streaming")
+                    addDataSource(config_dic, "test_ds_file", "test_ds_path_%d"%(ds_id_num), "test_%d"%ds_id_num, "test_streamer", "streaming", True)
                     #{"equation":'cos(x)^2', 'eq_vars':['test_%d'%ds_id_num]}, color_map=cmap,
                     addVisElem(config_dic, 
-                               x_cen=i*(1+extra_pos) + p, y_cen=j*(1+extra_pos) + p, 
+                               x_cen=i*(1+extra_pos) + p, y_cen=j*(1+extra_pos), 
                                x_scale=sf, y_scale=scale_factor, 
                                rotation=1.5707963267948966*p, layer = 1-f,
                                svg_path=svg_folder + 'cross.svg', 
