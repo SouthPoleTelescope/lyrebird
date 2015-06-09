@@ -68,19 +68,7 @@ bool file_exists(std::string path){
   }   
 }
 
-int is_glob_match( const std::string & pattern, const std::string & str){
-  return !fnmatch(pattern.c_str(), str.c_str(), 0);
+int is_glob_match( const char * pattern, const std::string & str){
+  return !fnmatch(pattern, str.c_str(), 0);
 }
-
-void return_string_matches(const std::string & pattern, 
-			   const std::vector<std::string> strings,
-			   std::list<std::string> output_matches ){
-  output_matches.clear();
-  for (int i=0; i < strings.size(); i++){
-    if (is_glob_match(pattern, strings[i])) output_matches.push_back(strings[i]);
-  }
-}
-
-
-
 

@@ -55,6 +55,8 @@ class Equation{
   float * get_value_address();
 
  private:
+  const Equation& operator=( const Equation& );
+
   bool is_set;
   //fl_func eq_func;
   //float * eq_inputs[FUNC_LIB_MAX_ARGS];  

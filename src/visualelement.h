@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <unordered_map>
+#include <memory>
 
 #include <AntTweakBar.h>
 #include <glm/glm.hpp>
@@ -62,22 +63,28 @@ class VisElem{
   
   void update_all_equations();
 
-  glm::mat4 get_ms_transform();
+  glm::mat4 get_ms_transform();//ms = model space
   std::string get_geo_id();
 
   int get_layer();
   Equation & get_current_equation();
+
   void animate_highlight(float tstep);
 
   void set_eq_ind(int ind);
 
-  void updateAIPointers();
-  void get_all_info( int & n_labels, std::string **  &labels,
-		   int & n_str_tags, std::string **  & tags, std::string ** & tag_vals,
-		   int & n_equations, std::string ** & eq_labels, float ** & eq_vals);
 
+  void get_all_info(std::vector<std::string> &labels, std::vector<std::string> & tags,
+		    std::vector<std::string> & tag_vals,
+		    std::vector<std::string> & eq_labels,std::vector<float*> & eq_addrs
+		    );
+
+  bool string_matches_labels(const char * pattern);
 
  private:
+  //VisElem( const VisElem& );
+  const VisElem& operator=( const VisElem& );
+
   int has_eq;
   int sr_index;
   int highlight_index;
@@ -87,26 +94,15 @@ class VisElem{
   float hXScale, hYScale, hTDelt;
   std::vector<Equation> equations;
 
-
   int eq_ind;
 
-  //labelled_data labels
-  //labelled_data_vs
-  //group
-  //labels
   std::string group;
   std::vector< std::string > labels;
-  std::vector< std::string > l_data_labels;
+
+  std::vector< std::string > l_data_labels; //labelled data things
   std::vector< std::string > l_data_vals;
-
-
-  //pointers for get_all_info
-  std::vector<std::string*> ai_labels;
-
-  std::vector<std::string*> ai_tags;
-  std::vector<std::string*> ai_tag_vals;
   
-  std::vector<std::string*> ai_eq_labels;
-  std::vector<float*> ai_eq_vals;
-
 };
+
+
+typedef std::shared_ptr<VisElem> VisElemPtr;

@@ -6,7 +6,7 @@
 using namespace std;
 
 
-PlotBundler::PlotBundler(int max_num_plots, int buffer_size,  std::vector<VisElem> * vis_elems){
+PlotBundler::PlotBundler(int max_num_plots, int buffer_size,  std::vector<VisElemPtr> * vis_elems){
   max_num_plots_ = max_num_plots;
   buffer_size_ = buffer_size;
   vis_elems_ = vis_elems;
@@ -69,7 +69,7 @@ void PlotBundler::update_plots(std::list<int> & pis, std::list<glm::vec3> & cis)
   for(; it1 != pis.end() && it2 != cis.end(); ++it1, ++it2){
     color_vals[num_plots] = *it2;
     //cout<< "Plot "<< num_plots<< " r" << (*it2).r<<"g"<<(*it2).g<<"b"<<(*it2).b<<endl;
-    (*vis_elems_)[*it1].get_current_equation().get_bulk_value(&(plot_vals[num_plots * buffer_size_]));
+    (*vis_elems_)[*it1]->get_current_equation().get_bulk_value(&(plot_vals[num_plots * buffer_size_]));
 
     //check to see if the highlighted elements have changed
     if (previousVEInds[num_plots] != *it1){

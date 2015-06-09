@@ -126,6 +126,6 @@ int DataVals::get_buffer_size(){
   return buffer_size_;
 }
 
-int DataVals::is_bufferered(int index){
+int DataVals::is_buffered(int index){
   return is_buffered_[index];
 }

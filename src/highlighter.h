@@ -16,9 +16,11 @@
    All of the shapes are taken to be in model space not in View Space.  
  **/
 
+
+
 class Highlighter{
  public:
-  Highlighter(TwBar * info_bar, std::vector<VisElem> * vis_elems);
+  Highlighter(TwBar * info_bar, std::vector<VisElemPtr> * vis_elems);
   
   //code for handling shape geometry
   int get_clicked_elem(glm::vec2 click_point);
@@ -31,7 +33,7 @@ class Highlighter{
   
   //code for parsing inputs
   void parse_click(glm::vec2 pos, int mod_key);
-  void run_search();
+  void run_search(const char * search_str);
   void clear_hls();
   void add_hl(int index);
   void update_info_bar();
@@ -46,23 +48,22 @@ class Highlighter{
   //used for shape geometry
   glm::vec2 min_AABB_;
   glm::vec2 max_AABB_;
-  std::vector<Polygon> geo_polys;
-  std::vector<int> geo_ids;
-  std::vector<int> geo_layer;
+  std::vector<Polygon> geo_polys_;
+  std::vector<int> geo_ids_;
+  std::vector<int> geo_layer_;
 
-  std::map< std::string, std::vector< Polygon > >  shape_polys;
+  std::map< std::string, std::vector< Polygon > >  shape_polys_;
   
-  std::list<int> hl_inds;
-  std::list<glm::vec3> hl_colors;
-  std::vector<VisElem> * vis_elems_;
+  std::list<int> hl_inds_;
+  std::list<glm::vec3> hl_colors_;
+
+  std::vector<uint32_t> atb_colors_;
+  std::vector<VisElemPtr> * vis_elems_;
   
   TwBar * info_bar_;
   int info_bar_index;
-  
-  //from searcher
-  std::vector<int> find_elems(std::string s);
-  std::vector<std::string> search_strs;
-  std::vector<int> search_ids;
+  int info_bar_is_visible_;
+  const int num_info_bar_elems_;
 
 };
 

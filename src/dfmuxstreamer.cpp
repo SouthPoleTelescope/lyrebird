@@ -1,5 +1,4 @@
 #include "dfmuxstreamer.h"
-
 #include <unordered_set>
 
 #include <iostream>
@@ -123,7 +122,6 @@ DfmuxStreamer::DfmuxStreamer( std::string file,
 			      std::vector< std::string> ids,
 			      DataVals * dv, int us_update_time
 			      ) : DataStreamer(file, paths, ids, dv, us_update_time, DSRT_CALLBACK){
-
 }
 
 

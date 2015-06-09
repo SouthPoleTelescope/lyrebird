@@ -440,7 +440,10 @@ void SimpleRen::delete_buffer(int ind)
   glDeleteVertexArrays(1, &(gi.vertex_arrayID));
 }
 
-
+void SimpleRen::clean_out_buffers(){
+  for (size_t i=0; i < geo_info.size(); i++)
+    delete_buffer(i);
+}
 
 
 

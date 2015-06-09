@@ -438,7 +438,6 @@ Equation::Equation(){
 void Equation::set_equation(DataVals * dvs, equation_desc desc){
   is_set=true;
   data_vals = dvs;
-  //printf("tokenizing equation %s\n", desc.eq.c_str());
   tokenize_equation_or_die(desc.eq.c_str(), &ppp_stack, data_vals);
   cmap =  get_color_map(desc.cmap_id);
   label = desc.label;

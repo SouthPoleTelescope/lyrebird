@@ -30,6 +30,6 @@ void print_string_vec( std::vector < std::string > v);
 bool sloppy_eq(float x, float y, float eps=0.0005);
 void write_string_to_file( std::string file_path, std::string output_string );
 bool file_exists(std::string path);
-
+int is_glob_match( const char * pattern, const std::string & str);
 
 

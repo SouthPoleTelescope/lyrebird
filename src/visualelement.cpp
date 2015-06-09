@@ -69,34 +69,8 @@ VisElem::VisElem(SimpleRen * simple_ren,
 
   //DCOUT("set drawn", DEBUG_0);
   set_drawn();
-  //DCOUT("update color", DEBUG_0);
   update_color();
-  //DCOUT("update ai pointers", DEBUG_0);
-  updateAIPointers();
-  //DCOUT("Done Loading VisElem", DEBUG_0);
 }
-
-void VisElem::updateAIPointers(){
-  //set all the info pointers
-  ai_labels = vector<string*>( labels.size());
-  ai_tags = vector<string*>( l_data_labels.size());
-  ai_tag_vals = vector<string*>( l_data_vals.size());
-  ai_eq_labels = vector<string*>( equations.size());
-  ai_eq_vals = vector<float*>( equations.size());
-
-  for (int i=0; i < labels.size(); i++){
-    ai_labels[i] = &(labels[i]);
-  }
-  for (int i=0; i < l_data_labels.size(); i++){
-    ai_tags[i] = &(l_data_labels[i]);
-    ai_tag_vals[i] = &(l_data_vals[i]);
-  }
-  for (int i=0; i < equations.size(); i++){
-    ai_eq_labels[i] = &(equations[i].label);
-    ai_eq_vals[i] = &(equations[i].cached_value);
-  }
-}
-
 
 void VisElem::set_eq_ind(int ind){
   eq_ind = ind;
@@ -161,21 +135,31 @@ void VisElem::update_all_equations(){
 
 
 
-void VisElem::get_all_info( int & n_labels, string **  & labels,
-			  int & n_str_tags, string ** & tags, string **  & tag_vals,
-			  int & n_equations, string ** & eq_labels, float ** & eq_vals
-			  ){
-  n_labels = ai_labels.size();
-  labels = &(ai_labels[0]);
-  
-  n_str_tags = ai_tags.size();
-  tags = &(ai_tags[0]);
-  tag_vals = &(ai_tag_vals[0]);
-  
-  n_equations = ai_eq_labels.size();
-  eq_labels = &(ai_eq_labels[0]);
-  eq_vals = &(ai_eq_vals[0]);
+bool VisElem::string_matches_labels(const char * pattern){
+  for (size_t i=0; i < labels.size(); i++){
+    if (is_glob_match(pattern, labels[i])) return true;
+  }
+  return false;
+}
 
+
+
+void VisElem::get_all_info(std::vector<string> & ai_labels, std::vector<string> & ai_tags,
+			   std::vector<string> & ai_tag_vals,
+			   std::vector<string> & ai_eq_labels,  std::vector<float*> & ai_eq_addrs
+			  ){
+  assert(labels.size() > 0);
+  ai_labels = std::vector<string>(labels);
+  assert(ai_labels.size() > 0);
+  ai_tags = std::vector<string>(l_data_labels);
+  ai_tag_vals = std::vector<string>(l_data_vals);
+
+  ai_eq_labels = std::vector<string>(equations.size(), "");
+  ai_eq_addrs = std::vector<float*>(equations.size(), NULL);
+  for (size_t i=0; i < equations.size(); i++){
+    ai_eq_labels[i] = equations[i].get_label();
+    ai_eq_addrs[i] = equations[i].get_value_address();
+  }
 }
 
 

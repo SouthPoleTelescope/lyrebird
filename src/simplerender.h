@@ -72,7 +72,6 @@ class SimpleRen{
   void set_color(int ind, glm::vec4 new_color);
   void set_scale(int ind, float xscale, float yscale);
   void precalc_ren();
-  void free_ren_precalc();
 
 
 
@@ -80,6 +79,7 @@ class SimpleRen{
   int bind_buffer(int ind);
   void unbind_buffer();
   void delete_buffer(int ind);
+  void clean_out_buffers();
 
 
 

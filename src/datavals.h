@@ -28,19 +28,14 @@ class DataVals {
   
   //return a buffer of values for data val at index
   std::vector<float> get_buffer_vals(int index);  
-
-
-
+  
   void apply_bulk_func(PPStack<PPToken> * pp_stack, float * vals);  
-
-
+  
   void toggle_pause();
-
+  
   int get_buffer_size();
-  int is_bufferered(int index);
-
-
-
+  int is_buffered(int index);
+  
  private:
   DataVals(const DataVals&); //prevent copy construction      
   DataVals& operator=(const DataVals&); //prevent assignment

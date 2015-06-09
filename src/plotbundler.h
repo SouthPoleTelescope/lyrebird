@@ -11,7 +11,7 @@
 
 class PlotBundler{
  public:
-  PlotBundler(int max_num_plots, int buffer_size,  std::vector<VisElem> * vis_elems);
+  PlotBundler(int max_num_plots, int buffer_size,  std::vector<VisElemPtr> * vis_elems);
   ~PlotBundler();
   
   int get_num_plots();  
@@ -28,7 +28,7 @@ class PlotBundler{
  private:
   PlotBundler(const PlotBundler&); //prevent copy construction      
   PlotBundler& operator=(const PlotBundler&); //prevent assignment
-  std::vector<VisElem> * vis_elems_;
+  std::vector<VisElemPtr> * vis_elems_;
   
   float * plot_vals;
   float * psd_vals;

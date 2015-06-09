@@ -11,7 +11,7 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
+#include <string.h>
 
 #include "plotter.h"
 #include "plotbundler.h"
@@ -26,18 +26,26 @@
 #include "equation.h"
 #include "simplerender.h"
 
-
-
 #include <list>
+#include <memory>
 
+
+#define SEARCH_STR_LEN 64
 #define MIN_INT -10000
 
 using namespace std;
 
 
+/**
+   General Notes:
+   -Visual elements are all referenced by the index in a vector, so an integer
+   
+ **/
+
+
+
 CameraControl * global_camera   = NULL;
 Highlighter * global_highlighter = NULL;
-vector<VisElem> * global_visual_elements = NULL;
 TwBar * global_info_bar = NULL;
 DataVals * global_data_vals = NULL;
 bool global_mouse_is_handled = false;
@@ -60,7 +68,7 @@ static void error_callback(int error, const char* description){
 
 inline void TwEventMouseButtonGLFW3(GLFWwindow* window, int button, int action, int mods){
   if (TwEventMouseButtonGLFW(button, action)) return;
-  if (global_highlighter != NULL && global_camera != NULL &&  global_visual_elements != NULL){
+  if (global_highlighter != NULL && global_camera != NULL){
     if (button == GLFW_MOUSE_BUTTON_1 && action == GLFW_PRESS ){ 
       
       int modPressed =  ( ( glfwGetKey(window, GLFW_KEY_LEFT_SHIFT ) == GLFW_PRESS) ||
@@ -268,11 +276,10 @@ int main(int argc, char * args[])
 
 
   DCOUT("loading visual elements", DEBUG_0);
-  vector<VisElem> visual_elements;  
+  std::vector<VisElemPtr> visual_elements;  
   for (int i=0; i<vis_elems.size(); i++){
-    visual_elements.push_back(VisElem(&sren,  &data_vals, vis_elems[i]));
+    visual_elements.emplace_back(new VisElem(&sren,  &data_vals, vis_elems[i]));
   }
-  global_visual_elements = &visual_elements;
 
   cout<<"done loading geometry"<<endl;
 
@@ -297,9 +304,7 @@ int main(int argc, char * args[])
   double currentTime = glfwGetTime ();
   double lastTime = currentTime;
   double otherTime;
-
-
-
+  
   //load the click geometry
   DCOUT("loading click geometry", DEBUG_0);
   Highlighter highlight(info_bar, &visual_elements);
@@ -309,10 +314,10 @@ int main(int argc, char * args[])
   cout<<"loading defined geometry"<<endl;
 
   for (int i=0; i < visual_elements.size(); i++){
-    highlight.add_defined_shape( visual_elements[i].get_geo_id(), 
-			      visual_elements[i].get_ms_transform(), 
+    highlight.add_defined_shape( visual_elements[i]->get_geo_id(), 
+			      visual_elements[i]->get_ms_transform(), 
 			      i,
-			      visual_elements[i].get_layer()
+			      visual_elements[i]->get_layer()
 			      );
   }
   global_highlighter = &highlight;
@@ -351,9 +356,9 @@ int main(int argc, char * args[])
 
   ///Initialize a menu
 
-  char prev_search_str[64] = ""; // sizeof(search_str) is 64
-  char search_str[64] = ""; // sizeof(search_str) is 64
-  TwAddVarRW(main_bar, "Search:", TW_TYPE_CSSTRING(sizeof(search_str)-1), search_str, ""); // must pass search_str (not &search_str)
+  char prev_search_str[SEARCH_STR_LEN] = ""; // sizeof(search_str) is 64
+  char search_str[SEARCH_STR_LEN] = ""; // sizeof(search_str) is 64
+  TwAddVarRW(main_bar, "Search:", TW_TYPE_CSSTRING(sizeof(search_str)), search_str, NULL); // must pass search_str (not &search_str)
   
   bool found_streaming_streamer = false;
   for (int i=0; i < data_streamers.size(); i++){
@@ -409,14 +414,14 @@ int main(int argc, char * args[])
       ds_index_variables_prev_state[i] = ds_index_variables[i];
     }
     
-    for (int i=0; i < visual_elements.size(); i++) visual_elements[i].update_color();
+    for (int i=0; i < visual_elements.size(); i++) visual_elements[i]->update_color();
     sren.draw_ren_states(camera.get_view_mat());
     
     //handles the plotting
-    list<int> pis = highlight.get_plot_inds();
-    list<glm::vec3> cis = highlight.get_plot_colors();
-    if (pis.size() > 0){
-      plotBundler.update_plots(pis, cis);
+    list<int> plot_inds = highlight.get_plot_inds();
+    list<glm::vec3> color_inds = highlight.get_plot_colors();
+    if (plot_inds.size() > 0){
+      plotBundler.update_plots(plot_inds, color_inds);
       int num_plots = plotBundler.get_num_plots();
       
       p.prepare_plotting(glm::vec2(.7, -.7), glm::vec2(.3,.3));
@@ -506,13 +511,11 @@ int main(int argc, char * args[])
 	}
       }
     }
-
-
     //handle searching
-
-
-
-
+    if (strcmp( search_str, prev_search_str)){
+      highlight.run_search(search_str);
+    }    
+    strncpy ( prev_search_str, search_str, SEARCH_STR_LEN );      
     //cout<< "FPS: "<<1/deltaTime<<endl;
   }
   
@@ -530,5 +533,8 @@ int main(int argc, char * args[])
     data_streamers[i]->bury_body();
     delete data_streamers[i];    
   }
+  
+  //clean out the graphics card memory
+  sren.clean_out_buffers();
   exit(EXIT_SUCCESS);
 }
