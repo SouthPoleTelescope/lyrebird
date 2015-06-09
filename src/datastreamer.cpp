@@ -63,6 +63,10 @@ DataStreamer::DataStreamer(std::string file,
   s_paths = paths;
   s_path_inds = vector< int >(ids.size());
   for (int i = 0; i < ids.size(); i++) s_path_inds[i] = dv->get_ind(ids[i]);
+  for (int i = 0; i < ids.size(); i++) assert(s_path_inds[i]!=-1);
+  
+
+
 
   should_live = false;
   sleep_time = us_update_time;

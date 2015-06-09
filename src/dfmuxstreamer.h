@@ -20,13 +20,12 @@ public:
 	      );
   ~HkStreamer(){}
 
-protected:
   void initialize();
   void update_values(int v);
   void uninitialize();
 
 private:
-  std::vector <int> p_ip_addrs;
+  std::vector <std::string> p_hostnames;
   std::vector <int> p_module;
   std::vector <int> p_channel;
   std::vector < std::string > p_var_name;

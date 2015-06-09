@@ -8,6 +8,7 @@
 #include <vector>
 #include <netdb.h>
 #include <string.h>
+#include <assert.h>
 
 template <class T>
 T split_string(std::string s, std::string delim){
@@ -39,7 +40,7 @@ void parse_channel_path(std::string path,
   if (ss.size() > 2)
     channel_out = atoi(ss[2].c_str());
   if (ss.size() > 3)
-    channel_out = atoi(ss[2].c_str());
+    is_i = atoi(ss[3].c_str());
 }
 
 void parse_hk_streamer_path(std::string path, 
@@ -77,7 +78,7 @@ HkStreamer::HkStreamer( std::string file,
   :DataStreamer(file, paths, ids, dv, us_update_time, DSRT_REQUEST){}
 
 void HkStreamer::initialize(){
-  p_ip_addrs = std::vector<int>( s_paths.size());
+  p_hostnames = std::vector<std::string>( s_paths.size());
   p_module = std::vector<int>( s_paths.size());
   p_channel = std::vector<int>( s_paths.size());
   p_var_name = std::vector<std::string>( s_paths.size());
@@ -90,11 +91,10 @@ void HkStreamer::initialize(){
     parse_hk_streamer_path( s_paths[i], 
 			    p_var_type[i],
 			    p_var_name[i],
-			    hostname,
+			    p_hostnames[i],
 			    p_module[i],
 			    p_channel[i]);
-    hns.insert( hostname );
-    p_ip_addrs[i] = get_ip_addr(hostname.c_str());
+    hns.insert( p_hostnames[i] );
   }  
   std::vector<std::string> tv( hns.begin(), hns.end());
   hk_module = new HousekeepingModule(tv, 30000);
@@ -102,11 +102,11 @@ void HkStreamer::initialize(){
 
 
 void HkStreamer::update_values(int v){
-  std::map< int, HkBoardInfo > b_map;
+  assert(hk_module);
+  std::map< std::string, HkBoardInfo > b_map;
   hk_module->get_housekeeping_structs(b_map);
-  //actually get values
-  for (int i=0; i < p_ip_addrs.size(); i++){
-    float val = b_map[p_ip_addrs[i]].get_member_value(p_var_name[i], p_var_type[i], 
+  for (int i=0; i < p_hostnames.size(); i++){
+    float val = b_map[p_hostnames[i]].get_member_value(p_var_name[i], p_var_type[i], 
 						      p_module[i], p_channel[i]);
     data_vals->update_val(s_path_inds[i], val );
   }

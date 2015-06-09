@@ -45,7 +45,6 @@ glm::vec4 blue_cmap(float val){
   return glm::vec4(0,0,val,1.0);
 }
 
-
 glm::vec4 rainbow_cmap(float val){
   val = val > 1.0 ? 1.0 : val;
   val = val < 0.0 ? 0.0 : val;

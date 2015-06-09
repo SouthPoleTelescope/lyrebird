@@ -11,17 +11,22 @@ LDFLAGS= -Wl,-rpath=/home/nlharr/spt_code/spt3g_software/build/skunkworks/ /home
 LDFLAGS+= -L../contrib/AntTweakBar/lib/ -L/usr/local/lib/ -L/home/nlharr/spt_code/spt3g_software/build/skunkworks/ -lglfw3 -lGL -lGLU -lX11 -lXi -lpthread -lXxf86vm -lXrandr -lAntTweakBar -Wl,-rpath=../contrib/AntTweakBar/lib/ -lGLEW -ffast-math -lpthread -lfftw3 -lhdf5 -lhdf5_hl -lXinerama -lXcursor
 
 
-SOURCES=main.cpp geometryutils.cpp genericutils.cpp shader.cpp nanosvg.cpp simplerender.cpp configparsing.cpp datastreamer.cpp datavals.cpp teststreamer.cpp jsoncpp.cpp visualelement.cpp cameracontrol.cpp polygon.cpp highlighter.cpp equation.cpp plotter.cpp plotbundler.cpp hdfstreamer.cpp dfmuxstreamer.cpp
+SOURCES=geometryutils.cpp genericutils.cpp shader.cpp nanosvg.cpp simplerender.cpp configparsing.cpp datastreamer.cpp datavals.cpp teststreamer.cpp jsoncpp.cpp visualelement.cpp cameracontrol.cpp polygon.cpp highlighter.cpp equation.cpp plotter.cpp plotbundler.cpp hdfstreamer.cpp dfmuxstreamer.cpp
 
 
 OBJECTS=$(SOURCES:.cpp=.o)
 HEADERS=$(SOURCES:.cpp=.h)
 EXECUTABLE=lyrebird
 
-all: $(SOURCES) $(EXECUTABLE)
+all: $(SOURCES) $(EXECUTABLE) hktest
 
-$(EXECUTABLE): $(OBJECTS)
-	$(CC) $(OBJECTS) -o $@ $(LDFLAGS)
+$(EXECUTABLE): $(OBJECTS) main.o
+	$(CC) main.o $(OBJECTS) -o $@ $(LDFLAGS)
+
+
+hktest: $(OBJECTS) test_dfmuxstreamer.o
+	$(CC) test_dfmuxstreamer.o $(OBJECTS) -o $@ $(LDFLAGS)
+
 
 .cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
@@ -30,6 +35,7 @@ clean:
 	rm -f *.o
 	rm -f *~
 	rm -f lyrebird
+	rm -f hktest
 	rm -f rm \#*
 
 
