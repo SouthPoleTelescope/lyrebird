@@ -14,5 +14,5 @@ http://anttweakbar.sourceforge.net/doc
 
 
 
-This code has been modified to to get GLFW 3 working with AntTweakBar
+This code has been modified from the original release to to get GLFW 3 working with AntTweakBar
 

@@ -100,7 +100,6 @@ void EventScrollWheel(GLFWwindow * window, double x_offset, double y_offset){
   global_wheel_pos+=y_offset;
   if (TwMouseWheel(global_wheel_pos)) return;
 
-
   double xpos,ypos;
   glfwGetCursorPos ( window, &xpos, &ypos );
   global_camera->do_mouse_zoom( xpos,ypos, y_offset * -.1);

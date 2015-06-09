@@ -128,7 +128,7 @@ DfmuxStreamer::DfmuxStreamer( std::string file,
 
 float get_sample_from_dfmux_frame(G3FramePtr frame, 
 				  int board, int module, int channel, int is_i){
-  return 1.0f;
+  return 0;
 }
 
 
