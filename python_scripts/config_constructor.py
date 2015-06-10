@@ -32,39 +32,24 @@ def addGeneralSettings(config_dic, win_x_size, win_y_size, sub_sampling, max_fra
                                        'sub_sampling': sub_sampling,
                                        'max_framerate': max_framerate,
                                        'max_num_plotted': max_num_plotted,
-                                  }
     
-def add_mod_data_val(config_dic, tag, val):
-    if ('modifiable_dvs' not in config_dic):
-        config_dic['modifiable_dvs'] = []
-    config_dic['modifiable_dvs'].append({'tag':tag,'val':val})
+                              }    
+def addDataVal(config_dic, dv_id, init_val, is_buffered):
+    if not 'data_vals' in config_dic:
+        config_dic['data_vals'] = []
+    config_dic['data_vals'].append( (str(dv_id), float(init_val), bool(is_buffered)))
 
 
-
-
-def addDataSource(config_dic, ds_file, ds_path, ds_id, streamer_type, sampling_type, is_buffered):
-    '''
-    ds_id: is the label in the data source
-    '''
-    if not 'data_streams' in config_dic:
-        config_dic['data_streams'] = []
-    config_dic['data_streams'].append({'id': ds_id,
-                                       'file': ds_file,
-                                       'path': ds_path,
-                                       'streamer_type':streamer_type,
-                                       'sampling_type':sampling_type,
-                                       'is_buffered': bool(is_buffered)
-                                   })
-
-def addConstVals(config_dic, constant_vals):
-    if not 'constant_values' in config_dic:
-        config_dic['constant_values'] = {}
-    config_dic['constant_values'].update(constant_vals)
-
+def addDataSource(config_dic, tag, ds_type, desc, update_time=0):
+    if not 'data_sources' in config_dic:
+        config_dic['data_sources'] = []
+    config_dic['data_sources'].append( {'tag':tag,
+                                        'ds_type':ds_type,
+                                        'update_time':update_time,
+                                        'desc':desc})
 
 def getEquation(eq_func, eq_color_map, eq_label):
     return {"function":eq_func,"cmap": eq_color_map, "label": eq_label}
-
 
 def addGlobalEquation(config_dic, equation):
     if not 'equations' in config_dic:
@@ -76,11 +61,9 @@ def addVisElem(config_dic,
                x_cen, y_cen, x_scale, y_scale, rotation, 
                svg_path, highlight_path,
                layer, labels,
-               constant_vals, equations, 
+               equations, 
                labelled_data, group
            ):
-    addConstVals(config_dic, constant_vals)
-
     if not 'visual_elements' in config_dic:
         config_dic['visual_elements'] = []
 
@@ -127,12 +110,11 @@ if __name__ == '__main__':
 
     scale_factor = 0.01
 
-    constant_vals = {"const_val_0": 1, "const_val_1": 2 }
-    addConstVals(config_dic, constant_vals)
-
     color_maps = ['red_cmap','green_cmap','blue_cmap','white_cmap']
+    
+    #addDataSource(config_dic, "test_ds_file_2", "test_ds_2_global", "test_global_id", "test_streamer", "streaming", False)
 
-    addDataSource(config_dic, "test_ds_file_2", "test_ds_2_global", "test_global_id", "test_streamer", "streaming", False)
+    addDataVal(config_dic, "test_global_id", 42, False)
     addGlobalEquation(config_dic, getEquation("a test_global_id",  "cmap_red", "Global Eq Label"));
 
     nis = 50
@@ -143,6 +125,7 @@ if __name__ == '__main__':
 
     svg_folder = os.path.abspath('../svgs')+'/'
 
+    test_ds_lst = []
     for p in range(npol):
         for f in range(nfre):
             for i in range(nis):
@@ -156,8 +139,8 @@ if __name__ == '__main__':
 
                     extra_pos = 0.2
 
-                    addDataSource(config_dic, "test_ds_file", "test_ds_path_%d"%(ds_id_num), "test_%d"%ds_id_num, "test_streamer", "streaming", True)
-                    #{"equation":'cos(x)^2', 'eq_vars':['test_%d'%ds_id_num]}, color_map=cmap,
+                    addDataVal(config_dic, "test_%d"%ds_id_num, 0, True)
+                    test_ds_lst.append("test_%d"%ds_id_num)
 
                     addGlobalEquation(config_dic, getEquation('c test_%d'%ds_id_num, cmap, "dummyEqLabel_test_%d"%ds_id_num))
                     addGlobalEquation(config_dic, getEquation('test_%d'%ds_id_num, cmap, "dummyLinearEq_test_%d"%ds_id_num))
@@ -173,10 +156,9 @@ if __name__ == '__main__':
                                labels=['test_label_%d'%ds_id_num, 'test_sec_label_%d'%ds_id_num],
                                group = 'Detector_type_%d'%f,
                                equations = ["dummyEqLabel_test_%d"%ds_id_num, "dummyLinearEq_test_%d"%ds_id_num  ],
-                               labelled_data={}, 
-                               constant_vals={}                               
+                               labelled_data={}
                     )
-
+    addDataSource(config_dic, "test_streamer", "test_streamer", test_ds_lst, 1000)
     storeConfigFile(config_dic, "test_config_file.json")
 
     

@@ -95,8 +95,6 @@ inline void TwEventMouseButtonGLFW3(GLFWwindow* window, int button, int action, 
 }
 
 void EventScrollWheel(GLFWwindow * window, double x_offset, double y_offset){
-  printf("got scroll %lf %lf\n", x_offset, y_offset);
-
   global_wheel_pos+=y_offset;
   if (TwMouseWheel(global_wheel_pos)) return;
 
@@ -147,7 +145,7 @@ int main(int argc, char * args[])
 {
 
 
-  int dv_buffer_size = 512;
+  int dv_buffer_size = 2048;
 
   if (argc != 2){
     cout<<"Config file needs to be supplied and only that."<<endl;
@@ -183,57 +181,46 @@ int main(int argc, char * args[])
   vector<string> modifiable_data_val_tags;
   vector<float> modifiable_data_vals;
 
-  vector<equation_desc> eq_descs;
+
+  std::vector<datastreamer_desc> datastream_descs;
+  std::vector<dataval_desc> dataval_descs;
+  std::vector<equation_desc> eq_descs;
 
   DCOUT("parsing config files", DEBUG_0);
   //parse the config file
   parse_config_file(args[1],
-		    ds_paths, ds_ids, ds_buffered, ds_files, ds_types, ds_sampling_types, ds_tags,
-		    modifiable_data_val_tags, modifiable_data_vals,
-
-		    constant_ids, constant_vals,
+		    dataval_descs,
+		    datastream_descs,
 		    eq_descs,
 		    vis_elems, svg_paths, svg_ids,
 		    win_x_size, win_y_size, sub_sampling, 
 		    num_layers, max_framerate, max_num_plotted
 		    );
 
-
-
   //initialize all the data values which are circular buffers we dump floats into
   DCOUT("loading data vals", DEBUG_0);
-  int num_data_vals = 0;
-  for (int i = 0; i < ds_paths.size(); i++) num_data_vals += ds_paths[i].size();
-  num_data_vals += constant_vals.size();
-  num_data_vals += modifiable_data_vals.size();
-
-  DataVals data_vals(num_data_vals + 1, dv_buffer_size);
-  for (int i = 0; i < ds_ids.size(); i++){
-    for (int j = 0; j < ds_ids[i].size(); j++){
-      data_vals.add_data_val( ds_ids[i][j], 0.0, ds_buffered[i][j]  );
-    }
+  DataVals data_vals(dataval_descs.size() + 1, dv_buffer_size);
+  for (int i=0; i < dataval_descs.size(); i++){
+    data_vals.add_data_val(dataval_descs[i].id,
+			   dataval_descs[i].init_val, 
+			   dataval_descs[i].is_buffered);
   }
-  for (int i=0; i < constant_ids.size(); i++){
-    data_vals.add_data_val( constant_ids[i], constant_vals[i], 0  );    
-  }
-  for (int i=0; i < modifiable_data_vals.size(); i++){
-    data_vals.add_data_val( modifiable_data_val_tags[i], modifiable_data_vals[i], 0  );    
-  }
-
-
-
-
   global_data_vals = &data_vals;
 
   //create all the data streamers which write to the data vals
   DCOUT("spawning streamers"<<endl, DEBUG_0);
   vector<DataStreamer*> data_streamers;
-  for (int i = 0; i < ds_files.size(); i++){
+
+
+  for (int i = 0; i < datastream_descs.size(); i++){
     DataStreamer * ds_tmp = NULL;
-    ds_tmp = build_data_streamer( ds_types[i], ds_files[i], ds_paths[i], ds_ids[i], &data_vals,  10000 );
+    ds_tmp = build_data_streamer(datastream_descs[i], &data_vals);
     if (ds_tmp == NULL) print_and_exit(ds_types[i]+"data streamer type not recognized");
     data_streamers.push_back(ds_tmp);
   }
+
+
+
 
   //spawn the data streamer threads
   for (int i=0; i < data_streamers.size(); i++){
@@ -418,14 +405,14 @@ int main(int argc, char * args[])
     }
   }
 
-
+  /**
   TwAddSeparator(main_bar, "modifiable", NULL);
-
   for (int i=0; i < modifiable_data_vals.size(); i++){
     float * dv_addr = data_vals.get_addr(data_vals.get_ind( modifiable_data_val_tags[i] ));
     TwAddVarRW(main_bar, modifiable_data_val_tags[i].c_str(), TW_TYPE_FLOAT, dv_addr, "");
     //data_vals.add_data_val( modifiable_data_val_tags[i], modifiable_data_vals[i], 0  );    
   }
+  **/
   //TwDefine("'Search' alpha=220 position='0 0' size='220 50' valueswidth=200 resizable=false movable=false fontresizable=false");
   //make the menu bar
   //data sources

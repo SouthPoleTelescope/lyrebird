@@ -5,10 +5,8 @@
 
 class TestStreamer :public DataStreamer{
  public:
- TestStreamer( std::string file, 
-	       std::vector< std::string > paths,  
-	       std::vector< std::string> ids,
-	       DataVals * dv, int us_update_time
+  TestStreamer(Json::Value streamer_json_desc,
+	       std::string tag, DataVals * dv, int us_update_time
 	       );
  ~TestStreamer(){}
  int get_num_elements();
@@ -16,9 +14,9 @@ class TestStreamer :public DataStreamer{
  void initialize();
  void update_values(int v);
  void uninitialize();
-
+ 
  private:
   double val;
- 
+  std::vector<int> s_path_inds;
 };
 

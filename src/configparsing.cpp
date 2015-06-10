@@ -1,6 +1,7 @@
 #include "configparsing.h"
 
 #include <iostream>
+#include <stdio.h>
 #include <string>
 #include <vector>
 
@@ -20,29 +21,32 @@ equation_desc parse_equation_desc(Json::Value & eqjson){
   return desc;
 }
 
+dataval_desc parse_dataval_desc(Json::Value & dvjson){
+  //printf("parse_dataval_desc\n");
+  dataval_desc dvdesc;
+  dvdesc.id = dvjson[0].asString();
+  dvdesc.init_val = dvjson[1].asFloat();
+  dvdesc.is_buffered = dvjson[2].asBool();
+  return dvdesc;
+}
 
+datastreamer_desc parse_datastreamer_desc(Json::Value & dsjson){
+  //printf("parse_datastramer_desc\n");
+  datastreamer_desc dd;
+  dd.tag = dsjson["tag"].asString();
+  dd.tp = dsjson["ds_type"].asString();
+  dd.streamer_json_desc = dsjson["desc"];
+  dd.us_update_time = dsjson["update_time"].asInt();
+  return dd;
+}
 
 void parse_config_file(string in_file, 
-		       vector< vector<string> > & data_source_paths, 
-		       vector< vector<string> > & data_source_ids, 
-		       vector< vector<bool> > & data_source_buffered, 
-		       vector< string > & data_source_files,
-		       vector< string > & data_source_types,
-		       vector< string > & data_source_sampling_type,
-		       vector< string > & data_source_tags,
-		       std::vector< std::string > & modifiable_data_val_tags,
-		       std::vector< float > & modifiable_data_vals,
-		       vector< string > & const_data_ids,
-		       vector< float > & const_data_vals,
-
-
-
+		       vector<dataval_desc> & dataval_descs,
+		       vector<datastreamer_desc> & datastream_descs,
 		       vector<equation_desc> & equation_descs,
-
 		       vector<vis_elem_repr> & vis_elems,
 		       vector<string> & svg_paths,
 		       vector<string> & svg_ids,
-
 		       int & win_x_size,
 		       int & win_y_size,
 		       int & sub_sampling,
@@ -113,7 +117,8 @@ void parse_config_file(string in_file,
       }
     }      
   }
-
+  
+  /**
   if (root.isMember("modifiable_dvs")){
     Json::Value mod_dvs = root["modifiable_dvs"]; 
     for (int i=0; i < mod_dvs.size(); i++){
@@ -123,84 +128,22 @@ void parse_config_file(string in_file,
       modifiable_data_vals.push_back(mod_dvs[i]["val"].asFloat());
     }
   }
-
+  **/
 
   ////////////////////////////////
   //First parse the data streams
   ////////////////////////////////
-  
-  if (! root.isMember("data_streams")){
-    print_and_exit("data_streams not found in config file\n");
-  }
-  data_stream_v = root["data_streams"];
-  if ( data_stream_v.size() == 0){
-    print_and_exit("data_streams is empty\n");
-  }
-
-  int n_data_streams = data_stream_v.size();
-  vector<string> ds_files(n_data_streams);
-  vector<string> ds_ids(n_data_streams) ;
-  vector<string> ds_paths(n_data_streams);
-  vector<string> ds_types(n_data_streams);
-  vector<string> ds_sampling(n_data_streams);
-  vector<bool> ds_buffered(n_data_streams);
-
-  for (int i=0; i < n_data_streams; i++){
-    Json::Value v = data_stream_v[i];
-    if (! v.isMember("id")) print_and_exit("id not found in data stream\n");
-    if (! v.isMember("file")) print_and_exit("file not found in data stream\n");
-    if (! v.isMember("path")) print_and_exit("path not found in data stream\n");
-    if (! v.isMember("streamer_type")) print_and_exit("streamer_type not found in data stream\n");
-    if (! v.isMember("sampling_type")) print_and_exit("sampling_type not found in data stream\n");
-    if (! v.isMember("is_buffered")) print_and_exit("is_buffered not found in data stream\n");
-
-    ds_files[i] = v["file"].asString();
-    ds_ids[i] = v["id"].asString();
-    ds_paths[i] = v["path"].asString();
-    ds_types[i] = v["streamer_type"].asString();
-    ds_sampling[i] = v["sampling_type"].asString();
-    ds_buffered[i] = v["is_buffered"].asBool();
-  }
-
-  //coallate them appropriately
-  data_source_files = get_unique_strings(ds_files, n_data_streams);
-  data_source_paths = vector< vector< string> > (data_source_files.size());
-  data_source_ids = vector< vector< string> > (data_source_files.size());
-  data_source_buffered = vector< vector< bool> > (data_source_files.size());
-
-  data_source_types = vector < string> (data_source_files.size());
-  data_source_sampling_type = vector < string> (data_source_files.size());
-
-  for (int i=0; i < data_source_files.size(); i++){
-    string fn = data_source_files[i];
-    for (int j = 0; j < n_data_streams; j++){
-      if (ds_files[j] == data_source_files[i]){
-	data_source_paths[i].push_back(ds_paths[j]);
-	data_source_ids[i].push_back(ds_ids[j]);
-	data_source_buffered[i].push_back(ds_buffered[j]);
-	data_source_types[i] = ds_types[j];
-	data_source_sampling_type[i] = ds_sampling[j];
-	
-      }
+  if (root.isMember("data_vals")){
+    for (int i=0; i < root["data_vals"].size(); i++){ 
+      dataval_descs.push_back(parse_dataval_desc(root["data_vals"][i]));
     }
+  } else{
+    print_and_exit("data_vals not found");
   }
 
-  /////////////////////////////
-  //Parse the constant values//
-  // all values are floats   //
-  /////////////////////////////
-
-  //constant values = {"id":value}
-  if ( root.isMember("constant_values")){
-    Json::Value v =  root["constant_values"];
-    vector<string> member_names = v.getMemberNames();
-    for (int i = 0; i < member_names.size(); i++){
-      const_data_ids.push_back(member_names[i]);
-
-      if (! v[member_names[i]].isNumeric()){
-	print_and_exit( "Constant value "+member_names[i]+" is not a float, sorry this is the only type right now ");
-      }
-      const_data_vals.push_back(v[member_names[i]].asFloat());
+  if (root.isMember("data_sources")){
+    for (int i=0; i < root["data_sources"].size(); i++){ 
+      datastream_descs.push_back(parse_datastreamer_desc(root["data_sources"][i]));
     }
   }
   

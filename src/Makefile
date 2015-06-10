@@ -8,10 +8,10 @@ CFLAGS=-c -Wall -I../contrib/AntTweakBar/include/ -std=c++11 -I. -O3 -I/usr/loca
 
 LDFLAGS= -Wl,-rpath=/home/nlharr/spt_code/spt3g_software/build/skunkworks/ /home/nlharr/spt_code/spt3g_software/build/skunkworks/core.so /home/nlharr/spt_code/spt3g_software/build/skunkworks/hk.so /home/nlharr/spt_code/spt3g_software/build/skunkworks/dfmux.so
 
-LDFLAGS+= -L../contrib/AntTweakBar/lib/ -L/usr/local/lib/ -L/home/nlharr/spt_code/spt3g_software/build/skunkworks/ -lglfw3 -lGL -lGLU -lX11 -lXi -lpthread -lXxf86vm -lXrandr -lAntTweakBar -Wl,-rpath=../contrib/AntTweakBar/lib/ -lGLEW -ffast-math -lpthread -lfftw3 -lhdf5 -lhdf5_hl -lXinerama -lXcursor
+LDFLAGS+= -L../contrib/AntTweakBar/lib/ -L/usr/local/lib/ -L/home/nlharr/spt_code/spt3g_software/build/skunkworks/ -lglfw3 -lGL -lGLU -lX11 -lXi -lpthread -lXxf86vm -lXrandr -lAntTweakBar -Wl,-rpath=../contrib/AntTweakBar/lib/ -lGLEW -ffast-math -lpthread -lfftw3 -lXinerama -lXcursor
 
 
-SOURCES=geometryutils.cpp genericutils.cpp shader.cpp nanosvg.cpp simplerender.cpp configparsing.cpp datastreamer.cpp datavals.cpp teststreamer.cpp jsoncpp.cpp visualelement.cpp cameracontrol.cpp polygon.cpp highlighter.cpp equation.cpp plotter.cpp plotbundler.cpp hdfstreamer.cpp equationmap.cpp
+SOURCES=geometryutils.cpp genericutils.cpp shader.cpp nanosvg.cpp simplerender.cpp configparsing.cpp datastreamer.cpp datavals.cpp teststreamer.cpp jsoncpp.cpp visualelement.cpp cameracontrol.cpp polygon.cpp highlighter.cpp equation.cpp plotter.cpp plotbundler.cpp equationmap.cpp
 
 
 OBJECTS=$(SOURCES:.cpp=.o)

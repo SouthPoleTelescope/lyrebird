@@ -36,8 +36,11 @@ DataVals::~DataVals(){
 }
 
 int DataVals::get_ind(std::string id){
-  if (id_mapping_.find(id) == id_mapping_.end())
+  if (id_mapping_.find(id) == id_mapping_.end()){
+    printf("ID %s not found\n", id.c_str());
+    print_and_exit("Bleargh");
     return -1;
+      }
   else
     return id_mapping_[id];
 }

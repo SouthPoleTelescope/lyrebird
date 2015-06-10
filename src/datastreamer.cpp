@@ -5,12 +5,7 @@
 #include <iostream>
 
 #include "teststreamer.h"
-#include "hdfstreamer.h"
-#include "dfmuxstreamer.h"
-
-
 #include "genericutils.h"
-
 
 using namespace std;
 
@@ -30,49 +25,28 @@ void *data_streamer_thread_func( void * ds){
   return NULL;
 }
 
-DataStreamer * build_data_streamer(std::string tp,
-				   std::string file, 
-				   std::vector< std::string > paths,  
-				   std::vector< std::string> ids,
-				   DataVals * dv, int us_update_time
-				   ){
-  if (tp == "test_streamer") return new TestStreamer( file, paths, ids, dv, us_update_time);
-  else if (tp == "hdf_history") return new HdfStreamer( file, paths, ids, dv, us_update_time);
+DataStreamer * build_data_streamer(datastreamer_desc dd , DataVals * dvs    ){
+  if (dd.tp == "test_streamer") return new TestStreamer( dd.streamer_json_desc, dd.tag, dvs, dd.us_update_time);
+  //else if (tp == "hdf_history") return new HdfStreamer( file, paths, ids, dv, us_update_time);
   //else if (tp == "hk_request")  return new HkStreamer( file, paths, ids, dv, us_update_time);
   //else if (tp == "dfmux_streamer")return new DfmuxStreamer( file, paths, ids, dv, us_update_time);
   else{
-    cout<<"Requested streamer type " << tp << endl;
+    cout<<"Requested streamer type " << dd.tp << endl;
     print_and_exit("I don't know what this is");
     return NULL;
   }
-
-
-
 }
 
-
-
-DataStreamer::DataStreamer(std::string file, 
-			   std::vector< std::string > paths,  
-			   std::vector< std::string> ids,
+DataStreamer::DataStreamer(std::string tag, 
 			   DataVals * dv, int us_update_time,
-			   int data_source_request_type
-			   ){
-
-  s_file = file;
-  s_paths = paths;
-  s_path_inds = vector< int >(ids.size());
-  for (int i = 0; i < ids.size(); i++) s_path_inds[i] = dv->get_ind(ids[i]);
-  for (int i = 0; i < ids.size(); i++) assert(s_path_inds[i]!=-1);
+			   int data_source_request_type  ){
+  s_tag = tag;
   
-
-
-
   should_live = false;
   sleep_time = us_update_time;
-
+  
   data_vals = dv;
-
+  
   ds_req_type = data_source_request_type;
   request_index = -1;
 }
@@ -173,7 +147,7 @@ int DataStreamer::get_request_type(){
 }
 
 std::string DataStreamer::get_tag(){
-  return s_file;
+  return s_tag;
 }
 
 

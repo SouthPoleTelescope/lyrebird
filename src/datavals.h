@@ -5,6 +5,12 @@
 #include <unordered_map>
 
 
+struct dataval_desc{
+  std::string id;
+  float init_val;
+  bool is_buffered;
+};
+
 
 
 
