@@ -101,7 +101,6 @@ glm::vec2 CameraControl::get_mouse_move_trans( double x_pos, double y_pos){
 }
 
 void CameraControl::register_move_on(double x_pos, double y_pos){
-  printf("move on\n");
   mouse_moving_ = true;
   glm::vec2 mouse_in(x_pos,y_pos);
   glm::mat4 trans = get_view_mat_inverse();
@@ -112,7 +111,6 @@ void CameraControl::register_move_on(double x_pos, double y_pos){
 
 
 void CameraControl::register_mouse_move(double x_pos, double y_pos){
-  printf("mouse move\n");
   assert(mouse_moving_);
   glm::vec2 mouse_in(x_pos,y_pos);
   glm::mat4 trans = get_view_mat_inverse();
@@ -124,7 +122,6 @@ void CameraControl::register_mouse_move(double x_pos, double y_pos){
 }
 
 void CameraControl::register_move_off(double x_pos, double y_pos){
-  printf("move off\n");
   mouse_moving_ = false;
 }
 

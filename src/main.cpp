@@ -29,7 +29,6 @@
 #include <list>
 #include <memory>
 
-
 #define SEARCH_STR_LEN 64
 #define MIN_INT -10000
 
@@ -41,8 +40,6 @@ using namespace std;
    -Visual elements are all referenced by the index in a vector, so an integer
    
  **/
-
-
 
 CameraControl * global_camera   = NULL;
 Highlighter * global_highlighter = NULL;
@@ -159,15 +156,6 @@ int main(int argc, char * args[])
   cout<<"Using config file: "<<args[1]<<endl;
   
   //init config file variables
-  vector< vector<string> > ds_paths;
-  vector< vector<string> > ds_ids;
-  vector< vector<bool> > ds_buffered;
-  vector<string>  ds_files;
-  vector<string>  ds_types;
-  vector<string>  ds_sampling_types;
-  vector<string>  ds_tags;
-  vector<string>  constant_ids;
-  vector<float>  constant_vals;
   int win_x_size;
   int win_y_size;
   int sub_sampling;
@@ -178,9 +166,10 @@ int main(int argc, char * args[])
   vector<string> svg_paths;
   vector<string> svg_ids;
 
-  vector<string> modifiable_data_val_tags;
-  vector<float> modifiable_data_vals;
 
+  std::vector<std::string> displayed_global_equations;
+  std::vector<std::string> modifiable_data_vals;
+  //std::vector<std::string> displayed_global_equations;
 
   std::vector<datastreamer_desc> datastream_descs;
   std::vector<dataval_desc> dataval_descs;
@@ -193,6 +182,7 @@ int main(int argc, char * args[])
 		    datastream_descs,
 		    eq_descs,
 		    vis_elems, svg_paths, svg_ids,
+		    displayed_global_equations, modifiable_data_vals,
 		    win_x_size, win_y_size, sub_sampling, 
 		    num_layers, max_framerate, max_num_plotted
 		    );
@@ -215,13 +205,11 @@ int main(int argc, char * args[])
   for (int i = 0; i < datastream_descs.size(); i++){
     DataStreamer * ds_tmp = NULL;
     ds_tmp = build_data_streamer(datastream_descs[i], &data_vals);
-    if (ds_tmp == NULL) print_and_exit(ds_types[i]+"data streamer type not recognized");
+    if (ds_tmp == NULL) print_and_exit("data streamer type not recognized");
     data_streamers.push_back(ds_tmp);
   }
-
-
-
-
+  
+  
   //spawn the data streamer threads
   for (int i=0; i < data_streamers.size(); i++){
     data_streamers[i]->start_recording();
@@ -356,16 +344,12 @@ int main(int argc, char * args[])
 
 
   //make the global equations
-  /**
-  vector<Equation> globEquations = vector<Equation>(glob_eq_descs.size());
-  for (int i=0; i < glob_eq_descs.size(); i++){
-    globEquations[i].set_equation( &data_vals, glob_eq_descs[i]);
+  for (int i=0; i < displayed_global_equations.size(); i++){
+    Equation & eq = equation_map.get_eq(equation_map.get_eq_index( displayed_global_equations[i] ));
+    printf("\n\n\nadding %s\n\n\n", eq.get_label().c_str());
+    TwAddVarRO(main_bar, eq.get_label().c_str(),
+	       TW_TYPE_FLOAT, eq.get_value_address(), " group='Global Params' ") ;
   }
-  for (int i=0; i < globEquations.size(); i++){
-    TwAddVarRO(main_bar, globEquations[i].get_label().c_str(), TW_TYPE_FLOAT, 
-	       globEquations[i].get_value_address(), " group='Global Params' ") ;
-  }
-  **/
   
   int numDSs = data_streamers.size();
   vector<int> ds_index_variables(numDSs, 0);
@@ -405,18 +389,14 @@ int main(int argc, char * args[])
     }
   }
 
-  /**
+
   TwAddSeparator(main_bar, "modifiable", NULL);
   for (int i=0; i < modifiable_data_vals.size(); i++){
-    float * dv_addr = data_vals.get_addr(data_vals.get_ind( modifiable_data_val_tags[i] ));
-    TwAddVarRW(main_bar, modifiable_data_val_tags[i].c_str(), TW_TYPE_FLOAT, dv_addr, "");
-    //data_vals.add_data_val( modifiable_data_val_tags[i], modifiable_data_vals[i], 0  );    
+    float * dv_addr = data_vals.get_addr(data_vals.get_ind( modifiable_data_vals[i] ));
+    TwAddVarRW(main_bar, modifiable_data_vals[i].c_str(), TW_TYPE_FLOAT, dv_addr, "");
   }
-  **/
-  //TwDefine("'Search' alpha=220 position='0 0' size='220 50' valueswidth=200 resizable=false movable=false fontresizable=false");
-  //make the menu bar
-  //data sources
-  //
+
+
   while (!glfwWindowShouldClose(window)) {
     otherTime = glfwGetTime();
     

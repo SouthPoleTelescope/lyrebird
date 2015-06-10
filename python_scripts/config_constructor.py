@@ -122,7 +122,6 @@ if __name__ == '__main__':
     npol = 2
     nfre = 3
 
-
     svg_folder = os.path.abspath('../svgs')+'/'
 
     test_ds_lst = []
@@ -158,6 +157,9 @@ if __name__ == '__main__':
                                equations = ["dummyEqLabel_test_%d"%ds_id_num, "dummyLinearEq_test_%d"%ds_id_num  ],
                                labelled_data={}
                     )
+    config_dic["displayed_global_equations"] = ["dummyEqLabel_test_0", "dummyEqLabel_test_6"]
+    config_dic["modifiable_data_vals"] = ["test_global_id"]
+
     addDataSource(config_dic, "test_streamer", "test_streamer", test_ds_lst, 1000)
     storeConfigFile(config_dic, "test_config_file.json")
 

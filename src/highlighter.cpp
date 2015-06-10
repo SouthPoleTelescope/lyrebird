@@ -129,7 +129,7 @@ void Highlighter::run_search(const char * search_str){
 }
 
 void Highlighter::fill_info_bar(){
-  printf("fill info bar\n");
+  
   if (hl_inds_.size() < num_info_bar_elems_ && hl_inds_.size() > 0){
     TwRemoveAllVars(info_bar_);
     TwRefreshBar(info_bar_);

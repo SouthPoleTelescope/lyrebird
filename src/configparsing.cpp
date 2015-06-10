@@ -47,6 +47,10 @@ void parse_config_file(string in_file,
 		       vector<vis_elem_repr> & vis_elems,
 		       vector<string> & svg_paths,
 		       vector<string> & svg_ids,
+
+		       std::vector<std::string> & displayed_global_equations,
+		       std::vector<std::string> & modifiable_data_vals,
+
 		       int & win_x_size,
 		       int & win_y_size,
 		       int & sub_sampling,
@@ -153,6 +157,17 @@ void parse_config_file(string in_file,
       equation_descs.push_back(parse_equation_desc( root["equations"][i]));
     }
   }
+
+  if (root.isMember("displayed_global_equations")){
+    for (int i=0; i < root["displayed_global_equations"].size(); i++)
+      displayed_global_equations.push_back(root["displayed_global_equations"][i].asString());
+  }
+
+  if (root.isMember("modifiable_data_vals")){
+    for (int i=0; i < root["modifiable_data_vals"].size(); i++)
+      modifiable_data_vals.push_back(root["modifiable_data_vals"][i].asString());
+  }
+
 
 
     ///////////////////////////////////
