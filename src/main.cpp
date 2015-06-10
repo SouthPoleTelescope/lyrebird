@@ -183,7 +183,7 @@ int main(int argc, char * args[])
   vector<string> modifiable_data_val_tags;
   vector<float> modifiable_data_vals;
 
-  vector<equation_desc> glob_eq_descs;
+  vector<equation_desc> eq_descs;
 
   DCOUT("parsing config files", DEBUG_0);
   //parse the config file
@@ -192,7 +192,7 @@ int main(int argc, char * args[])
 		    modifiable_data_val_tags, modifiable_data_vals,
 
 		    constant_ids, constant_vals,
-		    glob_eq_descs,
+		    eq_descs,
 		    vis_elems, svg_paths, svg_ids,
 		    win_x_size, win_y_size, sub_sampling, 
 		    num_layers, max_framerate, max_num_plotted
@@ -299,13 +299,17 @@ int main(int argc, char * args[])
   for (int i=0; i < svg_paths.size(); i++){
    sren.load_svg_file(svg_ids[i], svg_paths[i]);
   }
-
-
-
+  
+  DCOUT("loading equation descs", DEBUG_0);
+  EquationMap equation_map(eq_descs.size()+1, &data_vals);
+  for (int i=0; i < eq_descs.size(); i++){
+    equation_map.add_equation(eq_descs[i]);
+  }
+  
   DCOUT("loading visual elements", DEBUG_0);
   std::vector<VisElemPtr> visual_elements;  
   for (int i=0; i<vis_elems.size(); i++){
-    visual_elements.emplace_back(new VisElem(&sren,  &data_vals, vis_elems[i]));
+    visual_elements.emplace_back(new VisElem(&sren,  &equation_map, vis_elems[i]));
   }
 
   cout<<"done loading geometry"<<endl;
@@ -365,6 +369,7 @@ int main(int argc, char * args[])
 
 
   //make the global equations
+  /**
   vector<Equation> globEquations = vector<Equation>(glob_eq_descs.size());
   for (int i=0; i < glob_eq_descs.size(); i++){
     globEquations[i].set_equation( &data_vals, glob_eq_descs[i]);
@@ -373,7 +378,7 @@ int main(int argc, char * args[])
     TwAddVarRO(main_bar, globEquations[i].get_label().c_str(), TW_TYPE_FLOAT, 
 	       globEquations[i].get_value_address(), " group='Global Params' ") ;
   }
-
+  **/
   
   int numDSs = data_streamers.size();
   vector<int> ds_index_variables(numDSs, 0);
@@ -480,7 +485,7 @@ int main(int argc, char * args[])
     highlight.update_info_bar();
     
     //updates the main_bar
-    for (int i=0; i < globEquations.size(); i++) globEquations[i].get_value();
+    //for (int i=0; i < globEquations.size(); i++) globEquations[i].get_value();
     
     
     TwRefreshBar(main_bar);

@@ -17,7 +17,6 @@ equation_desc parse_equation_desc(Json::Value & eqjson){
   desc.eq =   eqjson["function"].asString();
   desc.cmap_id = eqjson["cmap"].asString();
   desc.label = eqjson["label"].asString();
-  for (int i=0; i < eqjson["eq_vars"].size(); i++)desc.eq_vars.push_back( eqjson["eq_vars"][i].asString());
   return desc;
 }
 
@@ -31,15 +30,14 @@ void parse_config_file(string in_file,
 		       vector< string > & data_source_types,
 		       vector< string > & data_source_sampling_type,
 		       vector< string > & data_source_tags,
-
 		       std::vector< std::string > & modifiable_data_val_tags,
 		       std::vector< float > & modifiable_data_vals,
-
-
 		       vector< string > & const_data_ids,
 		       vector< float > & const_data_vals,
 
-		       vector<equation_desc> & global_equation_descs,
+
+
+		       vector<equation_desc> & equation_descs,
 
 		       vector<vis_elem_repr> & vis_elems,
 		       vector<string> & svg_paths,
@@ -206,13 +204,12 @@ void parse_config_file(string in_file,
     }
   }
   
-  //parse the global equations
-  if ( root.isMember("global_equations")){
-    for (int i=0; i < root["global_equations"].size(); i++){
-      global_equation_descs.push_back(parse_equation_desc( root["global_equations"][i]));
+  //parse the equations
+  if ( root.isMember("equations")){
+    for (int i=0; i < root["equations"].size(); i++){
+      equation_descs.push_back(parse_equation_desc( root["equations"][i]));
     }
   }
-
 
 
     ///////////////////////////////////
@@ -232,8 +229,6 @@ void parse_config_file(string in_file,
   
   vector<string> full_svg_paths;
   vector<string> full_svg_ids;
-
-
   for (int i=0; i < n_vis_elems; i++){
     Json::Value v = visElemsJSON[i];
     if (!v.isMember("x_center")  ) print_and_exit("x_center not found  in visual_element\n");
@@ -309,10 +304,13 @@ void parse_config_file(string in_file,
     ////////////////////////
     //Parse the equations //
     ////////////////////////
+
+
     Json::Value eqv =  v["equations"];
     for (int j=0; j < eqv.size(); j++){
-      vis_elems[i].equations.push_back( parse_equation_desc(eqv[j]) );
+      vis_elems[i].equations.push_back( eqv[j].asString() );
     }
+
   }  
   //filter the svg ids and paths to be unique so we don't spend forever loading them
   for (int i=0; i < full_svg_ids.size(); i++){

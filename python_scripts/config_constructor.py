@@ -62,14 +62,14 @@ def addConstVals(config_dic, constant_vals):
     config_dic['constant_values'].update(constant_vals)
 
 
-def getEquation(eq_func, eq_vars, eq_color_map, eq_label):
-    return {"function":eq_func, "eq_vars":eq_vars, "cmap": eq_color_map, "label": eq_label}
+def getEquation(eq_func, eq_color_map, eq_label):
+    return {"function":eq_func,"cmap": eq_color_map, "label": eq_label}
 
 
 def addGlobalEquation(config_dic, equation):
-    if not 'global_equations' in config_dic:
-        config_dic['global_equations'] = []
-    config_dic['global_equations'].append(equation)
+    if not 'equations' in config_dic:
+        config_dic['equations'] = []
+    config_dic['equations'].append(equation)
 
 
 def addVisElem(config_dic, 
@@ -133,7 +133,7 @@ if __name__ == '__main__':
     color_maps = ['red_cmap','green_cmap','blue_cmap','white_cmap']
 
     addDataSource(config_dic, "test_ds_file_2", "test_ds_2_global", "test_global_id", "test_streamer", "streaming", False)
-    addGlobalEquation(config_dic, getEquation("a test_global_id", ["test_global_id"], "cmap_red", "Global Eq Label"));
+    addGlobalEquation(config_dic, getEquation("a test_global_id",  "cmap_red", "Global Eq Label"));
 
     nis = 50
     njs = 50
@@ -158,6 +158,10 @@ if __name__ == '__main__':
 
                     addDataSource(config_dic, "test_ds_file", "test_ds_path_%d"%(ds_id_num), "test_%d"%ds_id_num, "test_streamer", "streaming", True)
                     #{"equation":'cos(x)^2', 'eq_vars':['test_%d'%ds_id_num]}, color_map=cmap,
+
+                    addGlobalEquation(config_dic, getEquation('c test_%d'%ds_id_num, cmap, "dummyEqLabel_test_%d"%ds_id_num))
+                    addGlobalEquation(config_dic, getEquation('test_%d'%ds_id_num, cmap, "dummyLinearEq_test_%d"%ds_id_num))
+
                     addVisElem(config_dic, 
                                x_cen=i*(1+extra_pos) + p, y_cen=j*(1+extra_pos), 
                                x_scale=sf, y_scale=scale_factor, 
@@ -168,9 +172,7 @@ if __name__ == '__main__':
 
                                labels=['test_label_%d'%ds_id_num, 'test_sec_label_%d'%ds_id_num],
                                group = 'Detector_type_%d'%f,
-                               equations = [getEquation('c test_%d'%ds_id_num, ['test_%d'%ds_id_num], cmap, "dummyEqLabel"),
-                                            getEquation('a test_%d'%ds_id_num, ['test_%d'%ds_id_num], cmap, "dummyLinearEq"),
-                                             ],
+                               equations = ["dummyEqLabel_test_%d"%ds_id_num, "dummyLinearEq_test_%d"%ds_id_num  ],
                                labelled_data={}, 
                                constant_vals={}                               
                     )

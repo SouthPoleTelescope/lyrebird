@@ -10,6 +10,7 @@
 #include "simplerender.h"
 #include "datavals.h"
 #include "equation.h"
+#include "equationmap.h"
 
 struct vis_elem_repr{
   float x_center;
@@ -27,7 +28,7 @@ struct vis_elem_repr{
 
   std::vector<std::string> labels;
 
-  std::vector< equation_desc > equations;
+  std::vector< std::string > equations;
   std::string group;
 
   std::vector< std::string > labelled_data;
@@ -48,10 +49,8 @@ class VisElem{
    **/
 
  public:
-  VisElem(SimpleRen * simple_ren, 
-	  DataVals * dvs,
-	  vis_elem_repr v
-	  );
+  VisElem(SimpleRen * simple_ren, EquationMap * eqs,
+	  vis_elem_repr v );
   
   void set_drawn();
   void set_not_drawn();
@@ -92,7 +91,11 @@ class VisElem{
   std::string geo_id;
   SimpleRen * s_ren;
   float hXScale, hYScale, hTDelt;
-  std::vector<Equation> equations;
+
+  
+  std::vector<int> equation_inds_;
+  EquationMap * equation_map_;
+
 
   int eq_ind;
 

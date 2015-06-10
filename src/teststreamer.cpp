@@ -10,7 +10,6 @@ TestStreamer::TestStreamer(
 			   std::vector< std::string> ids,
 			   DataVals * dv, int us_update_time
 			   ):DataStreamer(file, paths, ids, dv, us_update_time, DSRT_STREAMING){
-
   val = 0;
 }
 

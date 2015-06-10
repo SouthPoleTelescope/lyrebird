@@ -38,8 +38,8 @@ DataStreamer * build_data_streamer(std::string tp,
 				   ){
   if (tp == "test_streamer") return new TestStreamer( file, paths, ids, dv, us_update_time);
   else if (tp == "hdf_history") return new HdfStreamer( file, paths, ids, dv, us_update_time);
-  else if (tp == "hk_request")  return new HkStreamer( file, paths, ids, dv, us_update_time);
-  else if (tp == "dfmux_streamer")return new DfmuxStreamer( file, paths, ids, dv, us_update_time);
+  //else if (tp == "hk_request")  return new HkStreamer( file, paths, ids, dv, us_update_time);
+  //else if (tp == "dfmux_streamer")return new DfmuxStreamer( file, paths, ids, dv, us_update_time);
   else{
     cout<<"Requested streamer type " << tp << endl;
     print_and_exit("I don't know what this is");

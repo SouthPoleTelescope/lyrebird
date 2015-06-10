@@ -30,7 +30,6 @@ struct PPToken{
 // equation class defs
 struct equation_desc{
   std::string eq;
-  std::vector<std::string> eq_vars;
   std::string cmap_id;
   std::string label;
 };
@@ -47,13 +46,11 @@ class Equation{
  public:
   Equation();
   void set_equation(DataVals * dvs, equation_desc desc);
-
   float get_value();
   void get_bulk_value(float * v);
   glm::vec4 get_color();
   std::string get_label();
   float * get_value_address();
-
  private:
   const Equation& operator=( const Equation& );
 

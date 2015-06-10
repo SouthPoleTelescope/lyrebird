@@ -7,8 +7,7 @@
 using namespace std;
 using namespace glm;
 
-VisElem::VisElem(SimpleRen * simple_ren, 
-		 DataVals * dvs,
+VisElem::VisElem(SimpleRen * simple_ren, EquationMap * eqs,
 		 vis_elem_repr v
 		 ){
 
@@ -59,15 +58,15 @@ VisElem::VisElem(SimpleRen * simple_ren,
   geo_id = v.geo_id;
 
 
-  equations = vector<Equation>(v.equations.size());
+  equation_map_ = eqs;
+  equation_inds_ = std::vector<int>(v.equations.size());
+
   for (int i=0; i < v.equations.size(); i++){
-    equations[i].set_equation( dvs, v.equations[i]);
+    equation_inds_[i] = equation_map_->get_eq_index(v.equations[i]);
   }
   has_eq = true;
-
   eq_ind = 0;
 
-  //DCOUT("set drawn", DEBUG_0);
   set_drawn();
   update_color();
 }
@@ -115,8 +114,8 @@ std::string VisElem::get_geo_id(){
 }
 
 Equation & VisElem::get_current_equation(){
-  assert(equations.size() > 0);
-  return equations[eq_ind];
+  assert(equation_inds_.size() > 0);
+  return equation_map_->get_eq(equation_inds_[eq_ind]);
 }
 
 void VisElem::update_color(){
@@ -128,12 +127,10 @@ void VisElem::update_color(){
 
 
 void VisElem::update_all_equations(){
-  for (int i=0; i<equations.size();i++){
-    equations[i].get_value();
+  for (int i=0; i<equation_inds_.size();i++){
+    equation_map_->get_eq(equation_inds_[i]).get_value();
   } 
 }
-
-
 
 bool VisElem::string_matches_labels(const char * pattern){
   for (size_t i=0; i < labels.size(); i++){
@@ -141,8 +138,6 @@ bool VisElem::string_matches_labels(const char * pattern){
   }
   return false;
 }
-
-
 
 void VisElem::get_all_info(std::vector<string> & ai_labels, std::vector<string> & ai_tags,
 			   std::vector<string> & ai_tag_vals,
@@ -153,12 +148,12 @@ void VisElem::get_all_info(std::vector<string> & ai_labels, std::vector<string> 
   assert(ai_labels.size() > 0);
   ai_tags = std::vector<string>(l_data_labels);
   ai_tag_vals = std::vector<string>(l_data_vals);
-
-  ai_eq_labels = std::vector<string>(equations.size(), "");
-  ai_eq_addrs = std::vector<float*>(equations.size(), NULL);
-  for (size_t i=0; i < equations.size(); i++){
-    ai_eq_labels[i] = equations[i].get_label();
-    ai_eq_addrs[i] = equations[i].get_value_address();
+  ai_eq_labels = std::vector<string>(equation_inds_.size(), "");
+  ai_eq_addrs = std::vector<float*>(equation_inds_.size(), NULL);
+  for (size_t i=0; i < equation_inds_.size(); i++){
+    Equation & cur_eq = equation_map_->get_eq(equation_inds_[i]);
+    ai_eq_labels[i] = cur_eq.get_label();
+    ai_eq_addrs[i] = cur_eq.get_value_address();
   }
 }
 
