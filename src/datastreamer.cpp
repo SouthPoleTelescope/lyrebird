@@ -6,7 +6,7 @@
 
 #include "teststreamer.h"
 #include "genericutils.h"
-
+#include "dfmuxstreamer.h"
 using namespace std;
 
 pthread_mutex_t DataStreamer::init_uninit_mutex_ = PTHREAD_MUTEX_INITIALIZER;
@@ -28,7 +28,7 @@ void *data_streamer_thread_func( void * ds){
 DataStreamer * build_data_streamer(datastreamer_desc dd , DataVals * dvs    ){
   if (dd.tp == "test_streamer") return new TestStreamer( dd.streamer_json_desc, dd.tag, dvs, dd.us_update_time);
   //else if (tp == "hdf_history") return new HdfStreamer( file, paths, ids, dv, us_update_time);
-  //else if (tp == "hk_request")  return new HkStreamer( file, paths, ids, dv, us_update_time);
+  else if (dd.tp == "housekeeping")  return new HkStreamer( dd.tag, dd.streamer_json_desc, dvs);
   //else if (tp == "dfmux_streamer")return new DfmuxStreamer( file, paths, ids, dv, us_update_time);
   else{
     cout<<"Requested streamer type " << dd.tp << endl;

@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <list>
 
 #include "G3Pipeline.h"
 #include "G3Module.h"
@@ -9,15 +10,11 @@
 
 #include "hkgetter.h"
 #include <boost/enable_shared_from_this.hpp>
-
+#include "json/json.h"
 
 class HkStreamer :public DataStreamer{
 public:
-  HkStreamer( std::string file, 
-	      std::vector< std::string > paths,  
-	      std::vector< std::string> ids,
-	      DataVals * dv, int us_update_time
-	      );
+  HkStreamer( std::string tag, Json::Value hk_desc, DataVals * dv );
   ~HkStreamer(){}
 
   void initialize();
@@ -25,13 +22,9 @@ public:
   void uninitialize();
 
 private:
-  std::vector <std::string> p_hostnames;
-  std::vector <int> p_module;
-  std::vector <int> p_channel;
-  std::vector < std::string > p_var_name;
-  std::vector < char > p_var_type;
-
   HousekeepingModule * hk_module;
+  std::vector<std::string> unique_boards_;
+  std::vector<int> path_inds_;
 };
 
 
@@ -43,17 +36,15 @@ private:
 
 class DfmuxStreamer :public DataStreamer, public G3Module, public boost::enable_shared_from_this<DfmuxStreamer>{
 public:
-  DfmuxStreamer( std::string file, 
-		 std::vector< std::string > paths,  
-		 std::vector< std::string> ids,
-		 DataVals * dv, int us_update_time
+  DfmuxStreamer( std::string tag, 
+		 
+		 DataVals * dv
 		 );
   ~DfmuxStreamer(){}
 
   //void Process();
   void Process(G3FramePtr frame, std::deque<G3FramePtr> &out);
   
-
 protected:
   void initialize();
   void update_values(int v){}

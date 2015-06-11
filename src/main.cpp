@@ -175,12 +175,9 @@ int main(int argc, char * args[])
   std::vector<dataval_desc> dataval_descs;
   std::vector<equation_desc> eq_descs;
 
-  DCOUT("parsing config files", DEBUG_0);
+  //DCOUT("parsing config files", DEBUG_0);
   //parse the config file
-  parse_config_file(args[1],
-		    dataval_descs,
-		    datastream_descs,
-		    eq_descs,
+  parse_config_file(args[1], dataval_descs, datastream_descs, eq_descs, 
 		    vis_elems, svg_paths, svg_ids,
 		    displayed_global_equations, modifiable_data_vals,
 		    win_x_size, win_y_size, sub_sampling, 
@@ -188,7 +185,7 @@ int main(int argc, char * args[])
 		    );
 
   //initialize all the data values which are circular buffers we dump floats into
-  DCOUT("loading data vals", DEBUG_0);
+  //DCOUT("loading data vals", DEBUG_0);
   DataVals data_vals(dataval_descs.size() + 1, dv_buffer_size);
   for (int i=0; i < dataval_descs.size(); i++){
     data_vals.add_data_val(dataval_descs[i].id,
@@ -198,13 +195,14 @@ int main(int argc, char * args[])
   global_data_vals = &data_vals;
 
   //create all the data streamers which write to the data vals
-  DCOUT("spawning streamers"<<endl, DEBUG_0);
+  //DCOUT("spawning streamers"<<endl, DEBUG_0);
   vector<DataStreamer*> data_streamers;
 
 
   for (int i = 0; i < datastream_descs.size(); i++){
     DataStreamer * ds_tmp = NULL;
     ds_tmp = build_data_streamer(datastream_descs[i], &data_vals);
+    printf("adding datastream\n");
     if (ds_tmp == NULL) print_and_exit("data streamer type not recognized");
     data_streamers.push_back(ds_tmp);
   }
@@ -218,7 +216,7 @@ int main(int argc, char * args[])
 
   //now we configure the window
 
-  DCOUT("initializing glfw", DEBUG_0);
+  //DCOUT("initializing glfw", DEBUG_0);
   int width = win_x_size;
   int height = win_y_size;
   GLFWwindow* window;
@@ -266,7 +264,7 @@ int main(int argc, char * args[])
 
   glClearColor( 0.2,0.2,0.2,1.0);
 
-  DCOUT("creating simple renderer", DEBUG_0);
+  //DCOUT("creating simple renderer", DEBUG_0);
   //create the renderer
   SimpleRen sren;
 
@@ -275,25 +273,25 @@ int main(int argc, char * args[])
    sren.load_svg_file(svg_ids[i], svg_paths[i]);
   }
   
-  DCOUT("loading equation descs", DEBUG_0);
+  //DCOUT("loading equation descs", DEBUG_0);
   EquationMap equation_map(eq_descs.size()+1, &data_vals);
   for (int i=0; i < eq_descs.size(); i++){
     equation_map.add_equation(eq_descs[i]);
   }
   
-  DCOUT("loading visual elements", DEBUG_0);
+  //DCOUT("loading visual elements", DEBUG_0);
   std::vector<VisElemPtr> visual_elements;  
   for (int i=0; i<vis_elems.size(); i++){
     visual_elements.emplace_back(new VisElem(&sren,  &equation_map, vis_elems[i]));
   }
 
-  cout<<"done loading geometry"<<endl;
+  //cout<<"done loading geometry"<<endl;
 
   //////////////////////////////////////////////
   //create the GUI
 
 
-  DCOUT("initializing ant tweak bar", DEBUG_0);
+  //DCOUT("initializing ant tweak bar", DEBUG_0);
   TwInit(TW_OPENGL_CORE, NULL);
 
   TwBar * info_bar = TwNewBar("Info");
@@ -305,19 +303,19 @@ int main(int argc, char * args[])
 
   sren.precalc_ren();
 
-  DCOUT("starting loop", DEBUG_0);
+  //DCOUT("starting loop", DEBUG_0);
 
   double currentTime = glfwGetTime ();
   double lastTime = currentTime;
   double otherTime;
   
   //load the click geometry
-  DCOUT("loading click geometry", DEBUG_0);
+  //DCOUT("loading click geometry", DEBUG_0);
   Highlighter highlight(info_bar, &visual_elements);
   for (int i=0; i < svg_paths.size(); i++){
     highlight.add_shape_definition(svg_ids[i], svg_paths[i]);
   }
-  cout<<"loading defined geometry"<<endl;
+  //cout<<"loading defined geometry"<<endl;
 
   for (int i=0; i < visual_elements.size(); i++){
     highlight.add_defined_shape( visual_elements[i]->get_geo_id(), 
@@ -463,35 +461,35 @@ int main(int argc, char * args[])
     glfwPollEvents();
     
     currentTime = glfwGetTime();
-    double deltaTime = currentTime-lastTime;
+    double delta_time = currentTime-lastTime;
     lastTime = currentTime;
     
     if (!global_mouse_is_handled){
       if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ||
 	  glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS 
 	  ){
-	camera.move_up(deltaTime*2);
+	camera.move_up(delta_time*2);
       }
       if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS ||
 	  glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS
 	  ){
-	camera.move_down(deltaTime*2);
+	camera.move_down(delta_time*2);
       }
       if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS ||
 	  glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS	    
 	  ){
-	camera.move_left(deltaTime*2);
+	camera.move_left(delta_time*2);
       }
       if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ||
 	  glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS 
 	  ){
-	camera.move_right(deltaTime*2);
+	camera.move_right(delta_time*2);
       }
       if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS){
-	camera.zoom(-1*deltaTime);
+	camera.zoom(-1*delta_time);
       }
       if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS){
-	camera.zoom(1*deltaTime);
+	camera.zoom(1*delta_time);
       }
       if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){ //scroll forward in history if we have that type of data streamer
 	for (int i=0; i < numDSs; i++){ 
@@ -510,24 +508,30 @@ int main(int argc, char * args[])
 	}
       }
     }
+
+
+    for (int i=0; i < visual_elements.size(); i++)visual_elements[i]->animate_highlight(delta_time);
+    
+
+
     //handle searching
     if (strcmp( search_str, prev_search_str)){
       highlight.run_search(search_str);
     }    
     strncpy ( prev_search_str, search_str, SEARCH_STR_LEN );      
-    //cout<< "FPS: "<<1/deltaTime<<endl;
+    //cout<< "FPS: "<<1/delta_time<<endl;
   }
   
-  cout<<"Destorying window"<<endl;
+  //cout<<"Destorying window"<<endl;
   
   glfwDestroyWindow(window);
   glfwTerminate();
   
-  cout<<"tell them to kill themselves"<<endl;
+  //cout<<"tell them to kill themselves"<<endl;
   for (int i=0; i < data_streamers.size(); i++){
     data_streamers[i]->die_gracefully();
   }
-  cout<<"burying bodies "<< data_streamers.size() <<endl;
+  //cout<<"burying bodies "<< data_streamers.size() <<endl;
   for (int i=0; i < data_streamers.size(); i++){
     data_streamers[i]->bury_body();
     delete data_streamers[i];    

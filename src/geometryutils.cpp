@@ -266,7 +266,7 @@ void con_svg_to_polys(string fn, float tol,
   NSVGshape* shape;
   NSVGpath* path;
 
-  DCOUT("parsing file\n", DEBUG_0);
+  //DCOUT("parsing file\n", DEBUG_0);
 
   g_image = nsvgParseFromFile(fn.c_str(), "px", 96.0f);
   
@@ -274,9 +274,9 @@ void con_svg_to_polys(string fn, float tol,
   //std::vector<std::vector<glm::vec2> > polygons;
   //std::vector<glm::vec4 > polygon_colors;
 
-  DCOUT("parsing shapes\n", DEBUG_0);
+  //DCOUT("parsing shapes\n", DEBUG_0);
   for (shape = g_image->shapes; shape != NULL; shape = shape->next) {
-    DCOUT("parsing verts\n", DEBUG_0);
+    //DCOUT("parsing verts\n", DEBUG_0);
     for (path = shape->paths; path != NULL; path = path->next) {
       vector<glm::vec2> poly_verts;
       if (shape->fill.type == NSVG_PAINT_COLOR){
@@ -319,7 +319,7 @@ void con_svg_to_geo(string fn, float tol,
   NSVGshape* shape;
   NSVGpath* path;
 
-  DCOUT("parsing file\n", DEBUG_0);
+  //DCOUT("parsing file\n", DEBUG_0);
 
   g_image = nsvgParseFromFile(fn.c_str(), "px", 96.0f);
   
@@ -327,9 +327,9 @@ void con_svg_to_geo(string fn, float tol,
   std::vector<std::vector<glm::vec2> > polygons;
   std::vector<glm::vec4 > polygon_colors;
 
-  DCOUT("parsing shapes\n", DEBUG_0);
+  //DCOUT("parsing shapes\n", DEBUG_0);
   for (shape = g_image->shapes; shape != NULL; shape = shape->next) {
-    DCOUT("parsing verts\n", DEBUG_0);
+    //DCOUT("parsing verts\n", DEBUG_0);
     for (path = shape->paths; path != NULL; path = path->next) {
       vector<glm::vec2> poly_verts;
       if (shape->fill.type == NSVG_PAINT_COLOR){

@@ -108,7 +108,7 @@ if __name__ == '__main__':
     config_dic = {}
     addGeneralSettings(config_dic, win_x_size=800, win_y_size=600, sub_sampling=4, max_framerate=-1, max_num_plotted=10)
 
-    scale_factor = 0.01
+    scale_factor = 0.008
 
     color_maps = ['red_cmap','green_cmap','blue_cmap','white_cmap']
     
@@ -134,7 +134,6 @@ if __name__ == '__main__':
 
                     cmap_num = ds_id_num%len(color_maps)
                     cmap = color_maps[f]
-                    sf = scale_factor*(.175 + .25*f )
 
                     extra_pos = 0.2
 
@@ -144,12 +143,21 @@ if __name__ == '__main__':
                     addGlobalEquation(config_dic, getEquation('c test_%d'%ds_id_num, cmap, "dummyEqLabel_test_%d"%ds_id_num))
                     addGlobalEquation(config_dic, getEquation('test_%d'%ds_id_num, cmap, "dummyLinearEq_test_%d"%ds_id_num))
 
+                    if f ==0:
+                        svg_name = svg_folder + 'smallpol.svg'
+                        svg_h = svg_folder + 'smallhighlight.svg'
+                    elif f == 1:
+                        svg_name = svg_folder + 'medpol.svg'
+                        svg_h = svg_folder + 'medhighlight.svg'
+                    else:
+                        svg_name = svg_folder + 'largepol.svg'
+                        svg_h = svg_folder + 'largehighlight.svg'
                     addVisElem(config_dic, 
-                               x_cen=i*(1+extra_pos) + p, y_cen=j*(1+extra_pos), 
-                               x_scale=sf, y_scale=scale_factor, 
+                               x_cen=i, y_cen=j, 
+                               x_scale=scale_factor, y_scale=scale_factor, 
                                rotation=1.5707963267948966*p, layer = 1-f,
-                               svg_path=svg_folder + 'cross.svg', 
-                               highlight_path = svg_folder + 'highlight.svg',
+                               svg_path=svg_name,
+                               highlight_path = svg_h,
 
 
                                labels=['test_label_%d'%ds_id_num, 'test_sec_label_%d'%ds_id_num],

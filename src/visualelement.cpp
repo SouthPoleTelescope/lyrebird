@@ -52,7 +52,7 @@ VisElem::VisElem(SimpleRen * simple_ren, EquationMap * eqs,
   hYScale = rs.y_scale;
   hTDelt = 0;
 
-  rs.layer = 10;
+  rs.layer = -10;
   rs.geo_index = highlight_geo_index;
   highlight_index = s_ren->add_ren_state(rs);
   geo_id = v.geo_id;
@@ -69,10 +69,15 @@ VisElem::VisElem(SimpleRen * simple_ren, EquationMap * eqs,
 
   set_drawn();
   update_color();
+  is_highlighted_ = false;
 }
 
 void VisElem::set_eq_ind(int ind){
   eq_ind = ind;
+}
+
+int VisElem::get_num_eqs(){
+  return equation_inds_.size();
 }
 
 int VisElem::get_layer(){
@@ -89,20 +94,31 @@ void VisElem::set_not_drawn(){
 
 
 void VisElem::set_highlighted(glm::vec3 color){
+  is_highlighted_ = true;
   s_ren->set_drawn(highlight_index);
   s_ren->set_color( highlight_index, vec4(color, 1) );
 }
 
 void VisElem::set_not_highlighted(){
+  is_highlighted_ = false;
   s_ren->set_not_drawn(highlight_index);
+
 }
 
 void VisElem::animate_highlight(float tstep){
   hTDelt += tstep;
+  /**
   s_ren->set_scale(highlight_index,  
 		 (1 + .05*cos(15*hTDelt)) * hXScale,
 		 (1 + .05*cos(15*hTDelt)) * hYScale);
-  
+  **/
+  if (is_highlighted_){
+    if (fmod(hTDelt, 1) > .25 )
+      s_ren->set_drawn(highlight_index);      
+    else
+      s_ren->set_not_drawn(highlight_index);
+
+  }
 }
 
 glm::mat4 VisElem::get_ms_transform(){

@@ -71,7 +71,7 @@ class VisElem{
   void animate_highlight(float tstep);
 
   void set_eq_ind(int ind);
-
+  int get_num_eqs();
 
   void get_all_info(std::vector<std::string> &labels, std::vector<std::string> & tags,
 		    std::vector<std::string> & tag_vals,
@@ -96,7 +96,6 @@ class VisElem{
   std::vector<int> equation_inds_;
   EquationMap * equation_map_;
 
-
   int eq_ind;
 
   std::string group;
@@ -104,7 +103,7 @@ class VisElem{
 
   std::vector< std::string > l_data_labels; //labelled data things
   std::vector< std::string > l_data_vals;
-  
+  bool is_highlighted_;
 };
 
 
