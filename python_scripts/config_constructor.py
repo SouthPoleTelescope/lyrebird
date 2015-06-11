@@ -110,7 +110,7 @@ if __name__ == '__main__':
 
     scale_factor = 0.008
 
-    color_maps = ['red_cmap','green_cmap','blue_cmap','white_cmap']
+    color_maps = ['bolo_purple_cmap', 'bolo_green_cmap','bolo_blue_cmap','white_cmap']
     
     #addDataSource(config_dic, "test_ds_file_2", "test_ds_2_global", "test_global_id", "test_streamer", "streaming", False)
 
@@ -132,7 +132,6 @@ if __name__ == '__main__':
 
                     ds_id_num = (i*njs*npol*nfre + j * npol * nfre + p*nfre + f)
 
-                    cmap_num = ds_id_num%len(color_maps)
                     cmap = color_maps[f]
 
                     extra_pos = 0.2
@@ -140,7 +139,7 @@ if __name__ == '__main__':
                     addDataVal(config_dic, "test_%d"%ds_id_num, 0, True)
                     test_ds_lst.append("test_%d"%ds_id_num)
 
-                    addGlobalEquation(config_dic, getEquation('c test_%d'%ds_id_num, cmap, "dummyEqLabel_test_%d"%ds_id_num))
+                    addGlobalEquation(config_dic, getEquation('+ .7 * 0.3 c test_%d'%ds_id_num, cmap, "dummyEqLabel_test_%d"%ds_id_num))
                     addGlobalEquation(config_dic, getEquation('test_%d'%ds_id_num, cmap, "dummyLinearEq_test_%d"%ds_id_num))
 
                     if f ==0:
