@@ -349,9 +349,9 @@ int main(int argc, char * args[])
 	       TW_TYPE_FLOAT, eq.get_value_address(), " group='Global Params' ") ;
   }
   
-  int numDSs = data_streamers.size();
-  vector<int> ds_index_variables(numDSs, 0);
-  vector<int> ds_index_variables_prev_state(numDSs, 0);
+  int num_data_sources = data_streamers.size();
+  vector<int> ds_index_variables(num_data_sources, 0);
+  vector<int> ds_index_variables_prev_state(num_data_sources, 0);
 
 
 
@@ -401,13 +401,13 @@ int main(int argc, char * args[])
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
     
-    for (int i = 0; i<numDSs; i++){
+    for (int i = 0; i<num_data_sources; i++){
       if ( ds_index_variables[i] != ds_index_variables_prev_state[i]){
 	data_streamers[i]->request_values(ds_index_variables[i]);
       }
     }
     
-    for (int i = 0; i<numDSs; i++){
+    for (int i = 0; i<num_data_sources; i++){
       ds_index_variables_prev_state[i] = ds_index_variables[i];
     }
     
@@ -447,6 +447,8 @@ int main(int argc, char * args[])
       p.cleanup_plotting();
     }
     
+
+    //updates the info bar
     highlight.update_info_bar();
     
     //updates the main_bar
@@ -492,7 +494,7 @@ int main(int argc, char * args[])
 	camera.zoom(1*delta_time);
       }
       if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){ //scroll forward in history if we have that type of data streamer
-	for (int i=0; i < numDSs; i++){ 
+	for (int i=0; i < num_data_sources; i++){ 
 	  if (data_streamers[i]->get_request_type() == DSRT_REQUEST_HISTORY){
 	    ds_index_variables[i] += 1;
 	    if (ds_index_variables[i]  > data_streamers[i]->get_num_elements()) ds_index_variables[i] = data_streamers[i]->get_num_elements();
@@ -500,7 +502,7 @@ int main(int argc, char * args[])
 	}
       }
       if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS){//scroll back in history if we have that type of data streamer
-	for (int i=0; i < numDSs; i++){
+	for (int i=0; i < num_data_sources; i++){
 	  if (data_streamers[i]->get_request_type() == DSRT_REQUEST_HISTORY){
 	    ds_index_variables[i] -= 1;
 	    if (ds_index_variables[i]  < 0) ds_index_variables[i] = 0;
@@ -509,7 +511,7 @@ int main(int argc, char * args[])
       }
     }
 
-
+    //animates the highlighting
     for (int i=0; i < visual_elements.size(); i++)visual_elements[i]->animate_highlight(delta_time);
     
 

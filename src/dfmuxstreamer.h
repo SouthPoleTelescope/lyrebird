@@ -33,13 +33,9 @@ private:
 
  **/
 
-
 class DfmuxStreamer :public DataStreamer, public G3Module, public boost::enable_shared_from_this<DfmuxStreamer>{
 public:
-  DfmuxStreamer( std::string tag, 
-		 
-		 DataVals * dv
-		 );
+  DfmuxStreamer( std::string tag, Json::Value dfmux_desc,DataVals * dv );
   ~DfmuxStreamer(){}
 
   //void Process();
@@ -50,16 +46,14 @@ protected:
   void update_values(int v){}
   void uninitialize();
 private:
-  std::vector <int> p_board;
-  std::vector <int> p_module;
-  std::vector <int> p_channel;
-  std::vector <int> p_is_i;
+  G3Pipeline local_pipeline_;
+  boost::shared_ptr<DfMuxBuilder> dfmux_builder_;
 
-  G3Pipeline local_pipeline;
-  boost::shared_ptr<DfMuxBuilder> dfmux_builder;
-  boost::shared_ptr<DfmuxStreamer> self_pointer;
-  
+  int num_boards_;
+  std::vector<std::string> hostnames_;
+  std::vector<int> ip_addresses_;
+  std::vector<int> data_val_inds_;  
+
   DfmuxStreamer(const DfmuxStreamer&); //prevent copy construction      
   DfmuxStreamer& operator=(const DfmuxStreamer&); //prevent assignment
-
 };

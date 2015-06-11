@@ -10,7 +10,7 @@ def addHousekeeping(config_dic, tag, boards_list, include_self_equations = True)
 
     #this needs to match the C code, don't change this expecting more data to appear
     MODULE_DATA_NAMES = ['carrier_gain', 'nuller_gain']
-    CHANNEL_DATA_NAMES = ['carrier_amplitude']
+    CHANNEL_DATA_NAMES = ['carrier_amplitude', 'carrier_frequency', 'demod_frequency']
     for b in boards_list:
         for m in range(N_MODULES):
             for mdn in MODULE_DATA_NAMES:
@@ -25,7 +25,7 @@ def addHousekeeping(config_dic, tag, boards_list, include_self_equations = True)
                     CC.addDataVal(config_dic, dvname,-1,False)
                     if include_self_equations:
                         CC.addGlobalEquation(config_dic, CC.getEquation(dvname, 'cmap_white', 
-                                                                        dvname+'_eq'))
+                                                                            dvname+'_eq'))
     desc = { 'hostnames': boards_list}
     CC.addDataSource(config_dic, tag, 'housekeeping',  desc)
                                                                     

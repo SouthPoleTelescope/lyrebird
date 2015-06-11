@@ -58,13 +58,12 @@ class VisElem{
   void set_highlighted(glm::vec3 col);
   void set_not_highlighted();
   
-  void update_color();
-  
+  void update_color();  
   void update_all_equations();
 
   glm::mat4 get_ms_transform();//ms = model space
   std::string get_geo_id();
-
+  
   int get_layer();
   Equation & get_current_equation();
 
