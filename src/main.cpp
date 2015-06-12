@@ -245,7 +245,6 @@ int main(int argc, char * args[])
   for (int i = 0; i < datastream_descs.size(); i++){
     DataStreamer * ds_tmp = NULL;
     ds_tmp = build_data_streamer(datastream_descs[i], &data_vals);
-    printf("adding datastream\n");
     if (ds_tmp == NULL) print_and_exit("data streamer type not recognized");
     data_streamers.push_back(ds_tmp);
   }
@@ -387,7 +386,6 @@ int main(int argc, char * args[])
   //make the global equations
   for (int i=0; i < displayed_global_equations.size(); i++){
     Equation & eq = equation_map.get_eq(equation_map.get_eq_index( displayed_global_equations[i] ));
-    printf("\n\n\nadding %s\n\n\n", eq.get_label().c_str());
     TwAddVarRO(main_bar, eq.get_label().c_str(),
 	       TW_TYPE_FLOAT, eq.get_value_address(), " group='Global Params' ") ;
   }
@@ -493,7 +491,6 @@ int main(int argc, char * args[])
       p.prepare_plotting(glm::vec2(.7, -.7), glm::vec2(.3,.3));
       p.plotBG(glm::vec4(0.0,0.0,0.0,0.9));
       for (int i=num_plots-1; i >= 0; i--){
-	//cout<<"plotting regular"<<endl;
 	  glm::vec3 plotColor;
 	  float minp,maxp;
 	  float * plotVals = plotBundler.get_plot(i, plotColor);
@@ -526,8 +523,7 @@ int main(int argc, char * args[])
     
     TwRefreshBar(main_bar);
     TwDraw();
-    //cout<<"should draw"<<endl;
-    //cout<<"other time "<<1.0/(glfwGetTime()-other_time)<<endl;
+
     glfwSwapBuffers(window);
     glfwPollEvents();
     
@@ -593,7 +589,6 @@ int main(int argc, char * args[])
     //cout<< "FPS: "<<1/delta_time<<endl;
   }
   
-  //cout<<"Destorying window"<<endl;
   
   glfwDestroyWindow(window);
   glfwTerminate();

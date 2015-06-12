@@ -12,7 +12,7 @@ using namespace std;
 pthread_mutex_t DataStreamer::init_uninit_mutex_ = PTHREAD_MUTEX_INITIALIZER;
 
 void *data_streamer_thread_func( void * ds){
-  printf("calling datastreamer thread func\n");
+  //printf("calling datastreamer thread func\n");
   int dsrt = ((DataStreamer*)ds)->get_request_type();
 
   if (dsrt == DSRT_STREAMING)
@@ -53,7 +53,7 @@ DataStreamer::DataStreamer(std::string tag,
 
 
 void DataStreamer::thread_loop_auto(){
-  cout<<"calling threadloop"<<endl;
+  //cout<<"calling threadloop"<<endl;
   pthread_mutex_lock(&init_uninit_mutex_);
   initialize();
   pthread_mutex_unlock(&init_uninit_mutex_);
@@ -65,12 +65,12 @@ void DataStreamer::thread_loop_auto(){
   pthread_mutex_lock(&init_uninit_mutex_);
   uninitialize();
   pthread_mutex_unlock(&init_uninit_mutex_);
-  cout<<"returning from threadloop"<<endl;
+  //cout<<"returning from threadloop"<<endl;
 }
 
 
 void DataStreamer::thread_loop_request(){
-  cout<<"calling threadloop"<<endl;
+  //cout<<"calling threadloop"<<endl;
 
   pthread_mutex_lock(&init_uninit_mutex_);
   initialize();
@@ -89,14 +89,14 @@ void DataStreamer::thread_loop_request(){
   pthread_mutex_lock(&init_uninit_mutex_);
   uninitialize();
   pthread_mutex_unlock(&init_uninit_mutex_);
-  cout<<"returning from threadloop"<<endl;
+  //cout<<"returning from threadloop"<<endl;
 }
 
 
 
 
 void DataStreamer::thread_loop_callback(){
-  cout<<"calling threadloop"<<endl;
+  //cout<<"calling threadloop"<<endl;
 
   pthread_mutex_lock(&init_uninit_mutex_);
   initialize();
@@ -109,7 +109,7 @@ void DataStreamer::thread_loop_callback(){
   pthread_mutex_lock(&init_uninit_mutex_);
   uninitialize();
   pthread_mutex_unlock(&init_uninit_mutex_);
-  cout<<"returning from threadloop"<<endl;
+  //cout<<"returning from threadloop"<<endl;
 }
 
 
@@ -133,11 +133,11 @@ void DataStreamer::bury_body(){
 }
 
 void DataStreamer::start_recording(){
-  cout<<"recording "<<endl;
+  //cout<<"recording "<<endl;
   should_live = true;
   //auto threadF = [this] { thread_loop(); };
   int iret2 = pthread_create( &d_thread, NULL, data_streamer_thread_func, (void*)this);
-  printf("pthread_create gave me %d\n", iret2);
+  //printf("pthread_create gave me %d\n", iret2);
   //d_thread = thread(  [this] { thread_loop(); } ); //closures, weird
 }
 

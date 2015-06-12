@@ -112,7 +112,6 @@ void main(){
 
 void SimpleRen::precalc_ren(){
   assert(!ren_precalced);
-  cout<<"running precalc"<<endl;
   ren_precalced = true;
   n_ren_states = ren_wraps.size();
 
@@ -144,7 +143,6 @@ void SimpleRen::precalc_ren(){
       unique_geos.push_back(ren_wraps[i].rs.geo_index);
     }
   }
-  cout<<"done precalc"<<endl;
 }
 
 

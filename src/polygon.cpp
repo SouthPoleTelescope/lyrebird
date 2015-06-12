@@ -90,7 +90,6 @@ void Triangle::set_AABB(){
 
 void Triangle::apply_transform(mat4 trans){
   /**
-  cout<<endl<<endl<<endl;
   cout<<"Starting at:"<<endl;
   for (int i=0; i < 3; i++)
     cout<<"Tri point "<<i<<": x:"<<ps[i].x<<" y:"<<ps[i].y<<endl;

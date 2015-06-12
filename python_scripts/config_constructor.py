@@ -115,7 +115,7 @@ if __name__ == '__main__':
     #addDataSource(config_dic, "test_ds_file_2", "test_ds_2_global", "test_global_id", "test_streamer", "streaming", False)
 
     addDataVal(config_dic, "test_global_id", 42, False)
-    addGlobalEquation(config_dic, getEquation("a test_global_id",  "cmap_red", "Global Eq Label"));
+    addGlobalEquation(config_dic, getEquation("a test_global_id",  "red_cmap", "Global Eq Label"));
 
     nis = 50
     njs = 50

@@ -15,8 +15,8 @@ TestStreamer::TestStreamer(Json::Value streamer_json_desc,
   }
 }
 
-void TestStreamer::initialize(){std::cout<<"init test"<<std::endl;}
-void TestStreamer::uninitialize(){std::cout<<"uninit test"<<std::endl;}
+void TestStreamer::initialize(){std::cout<<"Init test streamer"<<std::endl;}
+void TestStreamer::uninitialize(){std::cout<<"Uninit test streamer"<<std::endl;}
 void TestStreamer::update_values(int ind){
   //printf("told to update\n");
   val += ( (double)sleep_time)/1e6;

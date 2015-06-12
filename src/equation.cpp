@@ -122,7 +122,7 @@ color_map_t get_color_map(std::string n){
     return rainbow_cmap;
   }
  else {
-   cout<<"Color map not recognized, giving you a white one"<<endl;
+   cout<<"Color map: "<< n <<" not recognized, giving you a white one"<<endl;
    return white_cmap;
  }
 }
