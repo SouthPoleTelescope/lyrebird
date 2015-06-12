@@ -252,8 +252,9 @@ void parse_config_file(string in_file,
     for (int j=0; j< v["labels"].size(); j++){
       vis_elems[i].labels.push_back(v["labels"][j].asString());
     }
-    
+
     vis_elems[i].group = v["group"].asString();
+
     for (int j = 0; j < v["labelled_data"].size(); j++){
       vis_elems[i].labelled_data.push_back( v["labelled_data"][0].asString() );
       vis_elems[i].labelled_data_vs.push_back( v["labelled_data"][1].asString() );

@@ -15,9 +15,6 @@ uint32_t get_ant_tweak_bar_color(glm::vec3 col){
   uint32_t b = ((uint8_t)(255 * col.b));
   uint32_t a = 0;
   return r << 0 | g << 8| b << 16 | a << 24;
-
-  
-
 }
 
 
@@ -26,7 +23,7 @@ int Highlighter::get_clicked_elem(glm::vec2 click_point){
   int elem_id = -1;
   int layer = -1;
   for (int i=0; i < geo_polys_.size(); i++){
-    if (geo_polys_[i].is_inside(click_point)){
+    if (geo_polys_[i].is_inside(click_point) && ((*vis_elems_)[geo_ids_[i]]->is_drawn())){
       if (!is_set){
 	elem_id = geo_ids_[i];
 	layer = geo_layer_[i];

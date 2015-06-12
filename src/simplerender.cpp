@@ -179,6 +179,10 @@ void SimpleRen::set_not_drawn(int ind){
     ren_wraps[ind].is_drawn = false;
 }
 
+bool SimpleRen::is_drawn(int ind){
+  return ren_wraps[ind].is_drawn;
+}
+
 void SimpleRen::set_color(int ind, glm::vec4 new_color){
   ren_wraps[ind].color = new_color;
   ren_wraps[ind].rs.col_r = new_color.r;

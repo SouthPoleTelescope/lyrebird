@@ -1,6 +1,7 @@
 #include "visualelement.h"
 #include <iostream>
 #include <assert.h>
+#include <algorithm>
 
 #include "genericutils.h"
 
@@ -92,6 +93,10 @@ void VisElem::set_not_drawn(){
   s_ren->set_not_drawn(sr_index);
 }
 
+bool VisElem::is_drawn(){
+  return s_ren->is_drawn(sr_index);
+}
+
 
 void VisElem::set_highlighted(glm::vec3 color){
   is_highlighted_ = true;
@@ -174,6 +179,7 @@ void VisElem::get_all_info(std::vector<string> & ai_labels, std::vector<string> 
 }
 
 
-
-
+std::string VisElem::get_group(){
+  return group;
+}
 

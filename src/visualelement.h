@@ -54,6 +54,8 @@ class VisElem{
   
   void set_drawn();
   void set_not_drawn();
+  bool is_drawn();
+
 
   void set_highlighted(glm::vec3 col);
   void set_not_highlighted();
@@ -79,6 +81,7 @@ class VisElem{
 
   bool string_matches_labels(const char * pattern);
 
+  std::string get_group();
  private:
   //VisElem( const VisElem& );
   const VisElem& operator=( const VisElem& );
@@ -94,7 +97,6 @@ class VisElem{
   
   std::vector<int> equation_inds_;
   EquationMap * equation_map_;
-
   int eq_ind;
 
   std::string group;

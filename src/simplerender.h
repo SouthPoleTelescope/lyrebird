@@ -65,6 +65,7 @@ class SimpleRen{
   
   void set_drawn(int ind);
   void set_not_drawn(int ind);
+  bool is_drawn(int ind);
   bool is_still_valid();
   glm::mat4 get_ms_transform(int ind);
 

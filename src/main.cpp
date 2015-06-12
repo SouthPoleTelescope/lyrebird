@@ -6,6 +6,7 @@
 #include <AntTweakBar.h>
 #include <map>
 #include <vector>
+#include <unordered_set>
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
@@ -48,20 +49,62 @@ DataVals * global_data_vals = NULL;
 bool global_mouse_is_handled = false;
 double global_wheel_pos = 0;
 
-void TW_CALL toggleDataValsPause(void * d){
+void TW_CALL toggle_data_vals_pause(void * d){
+  int * ps = (int*)d;
   if (global_data_vals != NULL){
     global_data_vals->toggle_pause();
   }
+
+  if (*ps){
+    TwDefine("Main/Pause label=Pause");
+    *ps = 0;
+  }else{
+    TwDefine("Main/Pause label=Unpause");
+    *ps = 1;
+  }
 }
 
-void TW_CALL requestSamplesCallback(void * dsPointer){
+void TW_CALL request_samples_callback(void * dsPointer){
   ((DataStreamer*) dsPointer)->update_values(-1);
 }
+
+
+
+struct VisibilityInfo{
+  int is_visible;
+  std::string name;
+  std::vector<VisElemPtr> * visual_elements_ptr;
+};
+
+void TW_CALL visiblity_button_callback(void *vis_info){
+  VisibilityInfo * vi = (VisibilityInfo*) vis_info;
+  if (vi->is_visible){
+    std::string label_command = std::string("Main/Vis")+vi->name+std::string(" label='Show ")+vi->name+std::string("'");
+    TwDefine(label_command.c_str());
+    vi->is_visible = 0;
+    for (int i=0; i < vi->visual_elements_ptr->size(); i++)
+      if ( vi->visual_elements_ptr->at(i)->get_group() == vi->name)
+	vi->visual_elements_ptr->at(i)->set_not_drawn();
+  } else{
+    std::string label_command = std::string("Main/Vis")+vi->name+std::string(" label='Hide ")+vi->name+std::string("'");
+    TwDefine(label_command.c_str());
+    vi->is_visible = 1;
+    for (int i=0; i < vi->visual_elements_ptr->size(); i++)
+      if ( vi->visual_elements_ptr->at(i)->get_group() == vi->name)
+	vi->visual_elements_ptr->at(i)->set_drawn();
+  }
+}
+
+
+
+
+
+
+
 
 static void error_callback(int error, const char* description){
   fputs(description, stderr);
 }
-
 
 inline void TwEventMouseButtonGLFW3(GLFWwindow* window, int button, int action, int mods){
   if (TwEventMouseButtonGLFW(button, action)) return;
@@ -284,11 +327,14 @@ int main(int argc, char * args[])
   for (int i=0; i<vis_elems.size(); i++){
     visual_elements.emplace_back(new VisElem(&sren,  &equation_map, vis_elems[i]));
   }
+  sren.precalc_ren();
 
-  //cout<<"done loading geometry"<<endl;
-
+ 
   //////////////////////////////////////////////
   //create the GUI
+
+
+  
 
 
   //DCOUT("initializing ant tweak bar", DEBUG_0);
@@ -300,14 +346,11 @@ int main(int argc, char * args[])
   
   global_info_bar = info_bar;
 
-
-  sren.precalc_ren();
-
   //DCOUT("starting loop", DEBUG_0);
 
-  double currentTime = glfwGetTime ();
-  double lastTime = currentTime;
-  double otherTime;
+  double current_time = glfwGetTime ();
+  double last_time = current_time;
+  double other_time;
   
   //load the click geometry
   //DCOUT("loading click geometry", DEBUG_0);
@@ -368,8 +411,9 @@ int main(int argc, char * args[])
       break;
     }
   }
+  int is_paused = 0;
   if (found_streaming_streamer)
-    TwAddButton(main_bar, "Pause", toggleDataValsPause, NULL, NULL);
+    TwAddButton(main_bar, "Pause", toggle_data_vals_pause, &is_paused, NULL);
 
   TwAddSeparator(main_bar, "ds_sep", NULL);
 
@@ -378,7 +422,7 @@ int main(int argc, char * args[])
     if (dataStreamerReqType == DSRT_STREAMING) continue;
     else if (dataStreamerReqType == DSRT_CALLBACK) continue;
     else if (dataStreamerReqType == DSRT_REQUEST){
-      TwAddButton(main_bar, data_streamers[i]->get_tag().c_str(), requestSamplesCallback, data_streamers[i], NULL); 
+      TwAddButton(main_bar, data_streamers[i]->get_tag().c_str(), request_samples_callback, data_streamers[i], NULL); 
     }else if (dataStreamerReqType == DSRT_REQUEST_HISTORY){
       char def_string[100];
       int max_val = data_streamers[i]->get_num_elements();
@@ -395,8 +439,33 @@ int main(int argc, char * args[])
   }
 
 
+  TwAddSeparator(main_bar, "vis_sep", NULL);
+  /// Code for setting things visible
+  std::unordered_set<std::string> visual_element_groups;
+  for (int i=0; i < visual_elements.size(); i++){
+    std::string vgroup = visual_elements[i]->get_group();
+    visual_element_groups.insert(vgroup);
+  }  
+  std::vector<VisibilityInfo> vis_info;  
+  for (auto it=visual_element_groups.begin(); it!= visual_element_groups.end(); it++){
+    VisibilityInfo vi;
+    vi.is_visible = 1;
+    vi.name = *it;
+    vi.visual_elements_ptr = & visual_elements;
+    vis_info.push_back(vi);
+  }
+  int visibility_index=0;
+  for (auto it=visual_element_groups.begin(); it!= visual_element_groups.end(); it++){
+    TwAddButton(main_bar, (std::string("Vis") + (*it)).c_str(), 
+		visiblity_button_callback, 
+		&(vis_info[visibility_index]), (std::string("label='Hide ") + (*it) + std::string("'")).c_str());
+    visibility_index++;
+  }
+
+
+  //actual loop//
   while (!glfwWindowShouldClose(window)) {
-    otherTime = glfwGetTime();
+    other_time = glfwGetTime();
     
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
@@ -458,13 +527,13 @@ int main(int argc, char * args[])
     TwRefreshBar(main_bar);
     TwDraw();
     //cout<<"should draw"<<endl;
-    //cout<<"other time "<<1.0/(glfwGetTime()-otherTime)<<endl;
+    //cout<<"other time "<<1.0/(glfwGetTime()-other_time)<<endl;
     glfwSwapBuffers(window);
     glfwPollEvents();
     
-    currentTime = glfwGetTime();
-    double delta_time = currentTime-lastTime;
-    lastTime = currentTime;
+    current_time = glfwGetTime();
+    double delta_time = current_time-last_time;
+    last_time = current_time;
     
     if (!global_mouse_is_handled){
       if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ||
