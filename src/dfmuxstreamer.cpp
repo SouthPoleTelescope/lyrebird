@@ -18,7 +18,7 @@ HkStreamer::HkStreamer( std::string tag, Json::Value hk_desc, DataVals * dv )
   if (hk_desc.isMember("hostnames")){
     unique_boards_ = std::vector<std::string>(hk_desc["hostnames"].size());
     Json::Value hns = hk_desc["hostnames"];
-    for (int i=0; i < hns.size(); i++){
+    for (unsigned int i=0; i < hns.size(); i++){
       unique_boards_[i] = hns[i].asString();
     }
   }else{
@@ -100,7 +100,7 @@ DfmuxStreamer::DfmuxStreamer( std::string tag, Json::Value dfmux_desc,DataVals *
     hostnames_ = std::vector<std::string>(dfmux_desc["hostnames"].size());
     num_boards_ = dfmux_desc["hostnames"].size();
     Json::Value hns = dfmux_desc["hostnames"];
-    for (int i=0; i < hns.size(); i++){
+    for (unsigned int i=0; i < hns.size(); i++){
       hostnames_[i] = hns[i].asString();
       int ip_addr = get_ip_addr(hostnames_[i].c_str());
       ip_addresses_.push_back(ip_addr);

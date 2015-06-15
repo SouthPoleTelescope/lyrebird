@@ -132,7 +132,7 @@ void SimpleRen::precalc_ren(){
 
   for (int i=0; i < n_ren_states; i++){
     bool isThere = false;
-    for (int j = 0; j < unique_geos.size(); j++){
+    for (size_t j = 0; j < unique_geos.size(); j++){
       if (unique_geos[j] == ren_wraps[i].rs.geo_index){
 	isThere = true;
 	break;
@@ -212,11 +212,11 @@ void SimpleRen::draw_ren_states(glm::mat4 view_matrix){
   glUseProgram(s_progID);
   glUniformMatrix4fv(s_view_matID,  1, GL_FALSE, &view_matrix[0][0]);
 
-  for (int i = 0; i < unique_geos.size(); i++){
+  for (size_t i = 0; i < unique_geos.size(); i++){
     int curInd = 0;
     int cur_geo_id = unique_geos[i];
 
-    for (int j = 0; j < ren_wraps.size(); j++){
+    for (size_t j = 0; j < ren_wraps.size(); j++){
       if (!ren_wraps[j].is_drawn) continue;
       if (ren_wraps[j].rs.geo_index == cur_geo_id){
 	colbuf[4*curInd+0] = ren_wraps[j].color.r;
@@ -230,7 +230,7 @@ void SimpleRen::draw_ren_states(glm::mat4 view_matrix){
       }
     }
     //bind the vertices
-    int nverts =  nverts = bind_buffer( cur_geo_id );
+    int nverts = bind_buffer( cur_geo_id );
 
     for (int taco = 0; taco<4; taco++){
       glBindBuffer(GL_ARRAY_BUFFER, elem_trans_gpu_buffer[taco]);
@@ -501,7 +501,7 @@ int SimpleRen::load_svg_file(std::string id, std::string path){
 
 
 int SimpleRen::get_geo_index(std::string id){
-  for (int i = 0; i<geo_ids.size(); i++)
+  for (size_t i = 0; i<geo_ids.size(); i++)
     if (geo_ids[i] == id) return i;
   return -1;
 

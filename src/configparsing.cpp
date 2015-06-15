@@ -125,7 +125,7 @@ void parse_config_file(string in_file,
   /**
   if (root.isMember("modifiable_dvs")){
     Json::Value mod_dvs = root["modifiable_dvs"]; 
-    for (int i=0; i < mod_dvs.size(); i++){
+    for (unsigned int i=0; i < mod_dvs.size(); i++){
       if (!mod_dvs[i].isMember("tag") ) log_fatal("tag not in modifiable_dvs");
       if (!mod_dvs[i].isMember("val") ) log_fatal("val not in modifiable_dvs");
       modifiable_data_val_tags.push_back(mod_dvs[i]["tag"].asString());
@@ -138,7 +138,7 @@ void parse_config_file(string in_file,
   //First parse the data streams
   ////////////////////////////////
   if (root.isMember("data_vals")){
-    for (int i=0; i < root["data_vals"].size(); i++){ 
+    for (unsigned int i=0; i < root["data_vals"].size(); i++){ 
       dataval_descs.push_back(parse_dataval_desc(root["data_vals"][i]));
     }
   } else{
@@ -146,25 +146,25 @@ void parse_config_file(string in_file,
   }
 
   if (root.isMember("data_sources")){
-    for (int i=0; i < root["data_sources"].size(); i++){ 
+    for (unsigned int i=0; i < root["data_sources"].size(); i++){ 
       datastream_descs.push_back(parse_datastreamer_desc(root["data_sources"][i]));
     }
   }
   
   //parse the equations
   if ( root.isMember("equations")){
-    for (int i=0; i < root["equations"].size(); i++){
+    for (unsigned int i=0; i < root["equations"].size(); i++){
       equation_descs.push_back(parse_equation_desc( root["equations"][i]));
     }
   }
 
   if (root.isMember("displayed_global_equations")){
-    for (int i=0; i < root["displayed_global_equations"].size(); i++)
+    for (unsigned int i=0; i < root["displayed_global_equations"].size(); i++)
       displayed_global_equations.push_back(root["displayed_global_equations"][i].asString());
   }
 
   if (root.isMember("modifiable_data_vals")){
-    for (int i=0; i < root["modifiable_data_vals"].size(); i++)
+    for (unsigned int i=0; i < root["modifiable_data_vals"].size(); i++)
       modifiable_data_vals.push_back(root["modifiable_data_vals"][i].asString());
   }
 
@@ -249,13 +249,13 @@ void parse_config_file(string in_file,
     full_svg_paths.push_back(svg_path);
     
     //parse tagging information
-    for (int j=0; j< v["labels"].size(); j++){
+    for (unsigned int j=0; j< v["labels"].size(); j++){
       vis_elems[i].labels.push_back(v["labels"][j].asString());
     }
 
     vis_elems[i].group = v["group"].asString();
 
-    for (int j = 0; j < v["labelled_data"].size(); j++){
+    for (unsigned int j=0; j < v["labelled_data"].size(); j++){
       vis_elems[i].labelled_data.push_back( v["labelled_data"][0].asString() );
       vis_elems[i].labelled_data_vs.push_back( v["labelled_data"][1].asString() );
     }
@@ -264,15 +264,15 @@ void parse_config_file(string in_file,
     //Parse the equations //
     ////////////////////////
     Json::Value eqv =  v["equations"];
-    for (int j=0; j < eqv.size(); j++){
+    for (unsigned int j=0; j < eqv.size(); j++){
       vis_elems[i].equations.push_back( eqv[j].asString() );
     }
 
   }  
   //filter the svg ids and paths to be unique so we don't spend forever loading them
-  for (int i=0; i < full_svg_ids.size(); i++){
+  for (unsigned int i=0; i < full_svg_ids.size(); i++){
     bool is_unique = true;
-    for (int j = 0; j < svg_ids.size(); j++)
+    for (unsigned int j=0; j < svg_ids.size(); j++)
       if (full_svg_ids[i] == svg_ids[j]){
 	is_unique = false;
 	break;

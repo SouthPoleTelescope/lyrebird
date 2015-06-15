@@ -17,6 +17,8 @@ libXi
 libXxf86vm
 libXrandr
 libX11
+libXinerama 
+libXcursor
 
 I know that's a lot so just type:
 

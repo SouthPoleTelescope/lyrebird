@@ -10,7 +10,7 @@ TestStreamer::TestStreamer(Json::Value streamer_json_desc,
 {
   val = 0;
   s_path_inds = std::vector<int>(streamer_json_desc.size());
-  for (int i=0; i < streamer_json_desc.size(); i++){
+  for (unsigned int i=0; i < streamer_json_desc.size(); i++){
     s_path_inds[i] = data_vals->get_ind(streamer_json_desc[i].asString());
   }
 }
@@ -20,7 +20,7 @@ void TestStreamer::uninitialize(){std::cout<<"Uninit test streamer"<<std::endl;}
 void TestStreamer::update_values(int ind){
   //printf("told to update\n");
   val += ( (double)sleep_time)/1e6;
-  for (int i=0; i < s_path_inds.size(); i++){
+  for (unsigned int i=0; i < s_path_inds.size(); i++){
     data_vals->update_val(s_path_inds[i], val * (i%123+200)/50.0);
   }
 }

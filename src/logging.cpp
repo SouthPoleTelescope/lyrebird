@@ -1,5 +1,6 @@
 #include "logging.h"
 #include <unistd.h>
+#include <stdarg.h> 
 
 static L3LoggerPtr _global_logger;
 

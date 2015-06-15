@@ -22,7 +22,7 @@ int Highlighter::get_clicked_elem(glm::vec2 click_point){
   int is_set = 0;
   int elem_id = -1;
   int layer = -1;
-  for (int i=0; i < geo_polys_.size(); i++){
+  for (size_t i=0; i < geo_polys_.size(); i++){
     if (geo_polys_[i].is_inside(click_point) && ((*vis_elems_)[geo_ids_[i]]->is_drawn())){
       if (!is_set){
 	elem_id = geo_ids_[i];
@@ -52,7 +52,7 @@ void Highlighter::add_shape_definition(std::string id, std::string svg_path){
   con_svg_to_polys(svg_path, .1, polygons, polygon_colors);
 
   vector<Polygon> pvec;
-  for (int i=0; i < polygons.size();i++){
+  for (size_t i=0; i < polygons.size();i++){
     pvec.push_back(Polygon(polygons[i]));
   }
   shape_polys_[id] = pvec;
@@ -65,7 +65,7 @@ void Highlighter::add_defined_shape(std::string id, glm::mat4 transform, int ele
   vector<Polygon> s_polys = shape_polys_[id];
 
   //cout<<"Found  s_polys.size() "<<s_polys.size()<<endl;
-  for (int i=0; i < s_polys.size(); i++){
+  for (size_t i=0; i < s_polys.size(); i++){
     geo_polys_.push_back(s_polys[i]);
     geo_ids_.push_back(elem_id);
     geo_polys_[geo_polys_.size()-1].apply_transform(transform);
@@ -77,7 +77,7 @@ void Highlighter::set_AABB(){
   vec2 min;
   vec2 max;
   geo_polys_[0].get_AABB(min_AABB_, max_AABB_);
-  for (int i=1; i < geo_polys_.size(); i++){
+  for (size_t i=1; i < geo_polys_.size(); i++){
     geo_polys_[i].get_AABB(min, max);
     if (min.x < min_AABB_.x) min_AABB_.x = min.x;
     if (min.y < min_AABB_.y) min_AABB_.y = min.y;
@@ -94,8 +94,8 @@ void Highlighter::get_AABB(glm::vec2 & min_aabb, glm::vec2 & max_aabb){
 
 
 
-Highlighter::Highlighter(TwBar * info_bar, std::vector<VisElemPtr> * vis_elems)
-  : num_info_bar_elems_(10)
+Highlighter::Highlighter(TwBar * info_bar, std::vector<VisElemPtr> * vis_elems, size_t num_info_bar_elems)
+  : num_info_bar_elems_(num_info_bar_elems)
 {
   info_bar_ = info_bar;
   vis_elems_ = vis_elems;
@@ -117,7 +117,7 @@ void Highlighter::parse_click(glm::vec2 pos, int mod_key){
 
 void Highlighter::run_search(const char * search_str){
   clear_hls();
-  for (int i=0; i < vis_elems_->size(); i++){
+  for (size_t i=0; i < vis_elems_->size(); i++){
     if ((*vis_elems_)[i]->string_matches_labels(search_str)){
       add_hl(i);
     }

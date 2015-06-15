@@ -7,7 +7,7 @@ using namespace std;
 Polygon::Polygon(std::vector<glm::vec2> points){
   vector<vec2> tri_points;
   triangulate_polygon(points,tri_points);
-  for (int i=0; i < tri_points.size(); i+=3){
+  for (size_t i=0; i < tri_points.size(); i+=3){
     tris.push_back( Triangle(tri_points[i],tri_points[i+1],tri_points[i+2]));
   }
   set_AABB();
@@ -19,7 +19,7 @@ void Polygon::set_AABB(){
   vec2 max;
   tris[0].get_AABB(min_AABB, max_AABB);
 
-  for (int i=1; i < tris.size(); i++){
+  for (size_t i=1; i < tris.size(); i++){
     tris[i].get_AABB(min, max);
     if (min.x < min_AABB.x) min_AABB.x = min.x;
     if (min.y < min_AABB.y) min_AABB.y = min.y;
@@ -34,7 +34,7 @@ void Polygon::get_AABB(glm::vec2 & min_aabb, glm::vec2 & max_aabb){
 }
 
 void Polygon::apply_transform(glm::mat4 trans){
-  for (int i = 0; i < tris.size(); i++) tris[i].apply_transform(trans);
+  for (size_t i = 0; i < tris.size(); i++) tris[i].apply_transform(trans);
   set_AABB();
 }
 
@@ -43,7 +43,7 @@ bool Polygon::is_inside(vec2 p){
   //DCOUT( "Checking inside max: x" << max_AABB.x << " y"<<max_AABB.y, DEBUG_1);
   if  (!((p.x >= min_AABB.x) && (p.x <= max_AABB.x) &&
          (p.y >= min_AABB.y) && (p.y <= max_AABB.y)) ) return false;
-  for (int i=0; i < tris.size(); i++){
+  for (size_t i=0; i < tris.size(); i++){
     if (tris[i].is_inside(p)) return true;
   }
   return false;
@@ -89,26 +89,8 @@ void Triangle::set_AABB(){
 }
 
 void Triangle::apply_transform(mat4 trans){
-  /**
-  cout<<"Starting at:"<<endl;
-  for (int i=0; i < 3; i++)
-    cout<<"Tri point "<<i<<": x:"<<ps[i].x<<" y:"<<ps[i].y<<endl;
-  cout<<"applying triangle transform"<<endl;
-  for (int n=0; n<4; n++){
-    for (int m=0; m<4; m++){
-      cout<<"m["<<m<<"]["<<n<<"]: "<<trans[m][n]<<", ";
-    }
-    cout<<endl;
-  }
-  **/
   for (int i=0; i < 3; i++)
     ps[i] = transform_vec2(ps[i], trans);
-  /**
-  cout<<"Done transforming now at:"<<endl;
-  for (int i=0; i < 3; i++)
-    cout<<"Tri point "<<i<<": x:"<<ps[i].x<<" y:"<<ps[i].y<<endl;
-  cout<<endl<<endl<<endl;
-  **/
   set_AABB();
 }
 

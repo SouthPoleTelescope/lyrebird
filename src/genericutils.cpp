@@ -38,7 +38,7 @@ string read_file(string fn){
 }
 
 void print_string_vec( std::vector < std::string > v){
-  for (int i = 0; i < v.size(); i++){
+  for (size_t i = 0; i < v.size(); i++){
     cout << v[i] << ", ";
   }
   cout << endl;

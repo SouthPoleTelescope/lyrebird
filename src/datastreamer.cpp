@@ -15,7 +15,6 @@ pthread_mutex_t DataStreamer::init_uninit_mutex_ = PTHREAD_MUTEX_INITIALIZER;
 void *data_streamer_thread_func( void * ds){
   //printf("calling datastreamer thread func\n");
   int dsrt = ((DataStreamer*)ds)->get_request_type();
-
   if (dsrt == DSRT_STREAMING)
     ((DataStreamer*)ds)->thread_loop_auto();
   else if (  (dsrt == DSRT_REQUEST_HISTORY) 

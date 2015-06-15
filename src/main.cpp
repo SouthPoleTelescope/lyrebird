@@ -82,14 +82,14 @@ void TW_CALL visiblity_button_callback(void *vis_info){
     std::string label_command = std::string("Main/Vis")+vi->name+std::string(" label='Show ")+vi->name+std::string("'");
     TwDefine(label_command.c_str());
     vi->is_visible = 0;
-    for (int i=0; i < vi->visual_elements_ptr->size(); i++)
+    for (size_t i=0; i < vi->visual_elements_ptr->size(); i++)
       if ( vi->visual_elements_ptr->at(i)->get_group() == vi->name)
 	vi->visual_elements_ptr->at(i)->set_not_drawn();
   } else{
     std::string label_command = std::string("Main/Vis")+vi->name+std::string(" label='Hide ")+vi->name+std::string("'");
     TwDefine(label_command.c_str());
     vi->is_visible = 1;
-    for (int i=0; i < vi->visual_elements_ptr->size(); i++)
+    for (size_t i=0; i < vi->visual_elements_ptr->size(); i++)
       if ( vi->visual_elements_ptr->at(i)->get_group() == vi->name)
 	vi->visual_elements_ptr->at(i)->set_drawn();
   }
@@ -225,7 +225,7 @@ int main(int argc, char * args[])
 
   //initialize all the data values which are circular buffers we dump floats into
   DataVals data_vals(dataval_descs.size() + 1, dv_buffer_size);
-  for (int i=0; i < dataval_descs.size(); i++){
+  for (size_t i=0; i < dataval_descs.size(); i++){
     data_vals.add_data_val(dataval_descs[i].id,
 			   dataval_descs[i].init_val, 
 			   dataval_descs[i].is_buffered);
@@ -236,7 +236,7 @@ int main(int argc, char * args[])
   vector<DataStreamer*> data_streamers;
 
 
-  for (int i = 0; i < datastream_descs.size(); i++){
+  for (size_t i = 0; i < datastream_descs.size(); i++){
     DataStreamer * ds_tmp = NULL;
     ds_tmp = build_data_streamer(datastream_descs[i], &data_vals);
     if (ds_tmp == NULL) print_and_exit("data streamer type not recognized");
@@ -245,7 +245,7 @@ int main(int argc, char * args[])
   
   
   //spawn the data streamer threads
-  for (int i=0; i < data_streamers.size(); i++){
+  for (size_t i=0; i < data_streamers.size(); i++){
     data_streamers[i]->start_recording();
   }
 
@@ -302,18 +302,18 @@ int main(int argc, char * args[])
   SimpleRen sren;
 
   //load our geometry
-  for (int i=0; i < svg_paths.size(); i++){
+  for (size_t i=0; i < svg_paths.size(); i++){
    sren.load_svg_file(svg_ids[i], svg_paths[i]);
   }
   
   EquationMap equation_map(eq_descs.size()+1, &data_vals);
-  for (int i=0; i < eq_descs.size(); i++){
+  for (size_t i=0; i < eq_descs.size(); i++){
     equation_map.add_equation(eq_descs[i]);
   }
   
 
   std::vector<VisElemPtr> visual_elements;  
-  for (int i=0; i<vis_elems.size(); i++){
+  for (size_t i=0; i<vis_elems.size(); i++){
     visual_elements.emplace_back(new VisElem(&sren,  &equation_map, vis_elems[i]));
   }
   sren.precalc_ren();
@@ -321,12 +321,7 @@ int main(int argc, char * args[])
  
   //////////////////////////////////////////////
   //create the GUI
-
-
   
-
-
-
   TwInit(TW_OPENGL_CORE, NULL);
 
   TwBar * info_bar = TwNewBar("Info");
@@ -338,15 +333,14 @@ int main(int argc, char * args[])
 
   double current_time = glfwGetTime ();
   double last_time = current_time;
-  double other_time;
   
   //load the click geometry
-  Highlighter highlight(info_bar, &visual_elements);
-  for (int i=0; i < svg_paths.size(); i++){
+  Highlighter highlight(info_bar, &visual_elements, max_num_plotted);
+  for (size_t i=0; i < svg_paths.size(); i++){
     highlight.add_shape_definition(svg_ids[i], svg_paths[i]);
   }
 
-  for (int i=0; i < visual_elements.size(); i++){
+  for (size_t i=0; i < visual_elements.size(); i++){
     highlight.add_defined_shape( visual_elements[i]->get_geo_id(), 
 			      visual_elements[i]->get_ms_transform(), 
 			      i,
@@ -371,7 +365,7 @@ int main(int argc, char * args[])
 
 
   //make the global equations
-  for (int i=0; i < displayed_global_equations.size(); i++){
+  for (size_t i=0; i < displayed_global_equations.size(); i++){
     Equation & eq = equation_map.get_eq(equation_map.get_eq_index( displayed_global_equations[i] ));
     TwAddVarRO(main_bar, eq.get_label().c_str(),
 	       TW_TYPE_FLOAT, eq.get_value_address(), " group='Global Params' ") ;
@@ -390,7 +384,7 @@ int main(int argc, char * args[])
   TwAddVarRW(main_bar, "Search:", TW_TYPE_CSSTRING(sizeof(search_str)), search_str, NULL); // must pass search_str (not &search_str)
   
   bool found_streaming_streamer = false;
-  for (int i=0; i < data_streamers.size(); i++){
+  for (size_t i=0; i < data_streamers.size(); i++){
     if (data_streamers[i]->get_request_type() == DSRT_STREAMING || data_streamers[i]->get_request_type() == DSRT_CALLBACK ){
       found_streaming_streamer = true;
       break;
@@ -402,7 +396,7 @@ int main(int argc, char * args[])
 
   TwAddSeparator(main_bar, "ds_sep", NULL);
 
-  for (int i=0; i < data_streamers.size(); i++){
+  for (size_t i=0; i < data_streamers.size(); i++){
     int dataStreamerReqType = data_streamers[i]->get_request_type();
     if (dataStreamerReqType == DSRT_STREAMING) continue;
     else if (dataStreamerReqType == DSRT_CALLBACK) continue;
@@ -418,7 +412,7 @@ int main(int argc, char * args[])
 
 
   TwAddSeparator(main_bar, "modifiable", NULL);
-  for (int i=0; i < modifiable_data_vals.size(); i++){
+  for (size_t i=0; i < modifiable_data_vals.size(); i++){
     float * dv_addr = data_vals.get_addr(data_vals.get_ind( modifiable_data_vals[i] ));
     TwAddVarRW(main_bar, modifiable_data_vals[i].c_str(), TW_TYPE_FLOAT, dv_addr, "");
   }
@@ -427,7 +421,7 @@ int main(int argc, char * args[])
   TwAddSeparator(main_bar, "vis_sep", NULL);
   /// Code for setting things visible
   std::unordered_set<std::string> visual_element_groups;
-  for (int i=0; i < visual_elements.size(); i++){
+  for (size_t i=0; i < visual_elements.size(); i++){
     std::string vgroup = visual_elements[i]->get_group();
     visual_element_groups.insert(vgroup);
   }  
@@ -450,8 +444,6 @@ int main(int argc, char * args[])
 
   //actual loop//
   while (!glfwWindowShouldClose(window)) {
-    other_time = glfwGetTime();
-    
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
     
@@ -465,7 +457,7 @@ int main(int argc, char * args[])
       ds_index_variables_prev_state[i] = ds_index_variables[i];
     }
     
-    for (int i=0; i < visual_elements.size(); i++) visual_elements[i]->update_color();
+    for (size_t i=0; i < visual_elements.size(); i++) visual_elements[i]->update_color();
     sren.draw_ren_states(camera.get_view_mat());
     
     //handles the plotting
@@ -505,7 +497,7 @@ int main(int argc, char * args[])
     highlight.update_info_bar();
     
     //updates the main_bar
-    //for (int i=0; i < globEquations.size(); i++) globEquations[i].get_value();
+    //for (size_t i=0; i < globEquations.size(); i++) globEquations[i].get_value();
     
     
     TwRefreshBar(main_bar);
@@ -575,7 +567,7 @@ int main(int argc, char * args[])
     }
 
     //animates the highlighting
-    for (int i=0; i < visual_elements.size(); i++)visual_elements[i]->animate_highlight(delta_time);
+    for (size_t i=0; i < visual_elements.size(); i++)visual_elements[i]->animate_highlight(delta_time);
     
 
 
@@ -590,10 +582,10 @@ int main(int argc, char * args[])
   glfwDestroyWindow(window);
   glfwTerminate();
   
-  for (int i=0; i < data_streamers.size(); i++){
+  for (size_t i=0; i < data_streamers.size(); i++){
     data_streamers[i]->die_gracefully();
   }
-  for (int i=0; i < data_streamers.size(); i++){
+  for (size_t i=0; i < data_streamers.size(); i++){
     data_streamers[i]->bury_body();
     delete data_streamers[i];    
   }

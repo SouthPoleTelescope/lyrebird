@@ -20,7 +20,7 @@
 
 class Highlighter{
  public:
-  Highlighter(TwBar * info_bar, std::vector<VisElemPtr> * vis_elems);
+  Highlighter(TwBar * info_bar, std::vector<VisElemPtr> * vis_elems, size_t num_info_bar_elems);
   
   //code for handling shape geometry
   int get_clicked_elem(glm::vec2 click_point);
@@ -63,7 +63,7 @@ class Highlighter{
   TwBar * info_bar_;
   int info_bar_index;
   int info_bar_is_visible_;
-  const int num_info_bar_elems_;
+  const size_t num_info_bar_elems_;
 
 };
 

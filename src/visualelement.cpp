@@ -33,13 +33,13 @@ VisElem::VisElem(SimpleRen * simple_ren, EquationMap * eqs,
   //set all our labels
   //v.labels;
   labels = vector<string>(v.labels.size());
-  for (int i=0; i < v.labels.size(); i++)labels[i] = v.labels[i];
+  for (size_t i=0; i < v.labels.size(); i++)labels[i] = v.labels[i];
 
   group_ = v.group;
   l_data_labels = vector<string>(v.labelled_data.size());
   l_data_vals = vector<string>(v.labelled_data.size());
 
-  for (int i=0; i < v.labelled_data.size(); i++){
+  for (size_t i=0; i < v.labelled_data.size(); i++){
     l_data_labels[i] = v.labelled_data[i];
     l_data_vals[i] = v.labelled_data_vs[i];
   }
@@ -60,7 +60,7 @@ VisElem::VisElem(SimpleRen * simple_ren, EquationMap * eqs,
   equation_map_ = eqs;
   equation_inds_ = std::vector<int>(v.equations.size());
 
-  for (int i=0; i < v.equations.size(); i++){
+  for (size_t i=0; i < v.equations.size(); i++){
     equation_inds_[i] = equation_map_->get_eq_index(v.equations[i]);
   }
   has_eq_ = true;
@@ -145,7 +145,7 @@ void VisElem::update_color(){
 
 
 void VisElem::update_all_equations(){
-  for (int i=0; i<equation_inds_.size();i++){
+  for (size_t i=0; i<equation_inds_.size();i++){
     equation_map_->get_eq(equation_inds_[i]).get_value();
   } 
 }

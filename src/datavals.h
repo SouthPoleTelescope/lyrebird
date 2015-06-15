@@ -58,7 +58,7 @@ class DataVals {
   pthread_rwlock_t  rwlock_;
   bool is_paused_;
 
-  size_t array_size_;
+  int array_size_;
   
   std::unordered_map<std::string, int> id_mapping_;
 };

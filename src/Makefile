@@ -1,6 +1,4 @@
-CC=c++
-
-CC=clang++ 
+CC=g++ 
 
 current_dir = $(shell pwd)
 
