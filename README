@@ -27,3 +27,8 @@ sudo apt-get install libglew-dev
 sudo apt-get install libfftw3-dev
 
 
+
+mkdir build
+cd build
+cmake ..
+make
