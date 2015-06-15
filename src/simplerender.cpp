@@ -2,16 +2,15 @@
 
 #include <math.h>
 #include <unistd.h>
-#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <string>
 #include <float.h>
 
-
 #include "shader.h"
 #include "geometryutils.h"
 #include "genericutils.h"
+#include "logging.h"
 
 using namespace std;
 
@@ -111,7 +110,7 @@ void main(){
 
 
 void SimpleRen::precalc_ren(){
-  assert(!ren_precalced);
+  l3_assert(!ren_precalced);
   ren_precalced = true;
   n_ren_states = ren_wraps.size();
 

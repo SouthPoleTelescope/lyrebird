@@ -13,7 +13,7 @@
 
 #include "nanosvg.h"
 #include "genericutils.h"
-
+#include "logging.h"
 
 static const float EPSILON=0.0000000001f;
 
@@ -163,36 +163,30 @@ void con_poly_to_tris(std::vector<std::vector<glm::vec2> > & polygons,
 		      std::vector < glm::vec2 > & out_vertices,
 		      std::vector < glm::vec2 > & out_uvs,
 		      std::vector < glm::vec4 > & out_color){
-  //triangulate_polygon(const std::vector < glm::vec2 > &contour,std::vector < glm::vec2 > &result)
-    //a.insert(a.end(), b.begin(), b.end());
-    //for each polygon convert each polygon to a set of vertices in triangles
-
-	for (size_t i=0; i < polygons.size(); i++){
-	  std::vector < glm::vec2 > triang_poly = std::vector < glm::vec2 >();
-	  std::vector < glm::vec4 > triang_color = std::vector < glm::vec4 >();
-	  
-	  triangulate_polygon(polygons[i], triang_poly);
-	  for (size_t j=0; j < triang_poly.size(); j++) triang_color.push_back(polygon_colors[i]);
-	  //for (size_t j=0; j < triang_poly.size(); j++) triang_color.push_back(glm::vec4(1.0,1.0,1.0,0.5));
-	  
-	  out_vertices.insert(out_vertices.end(), triang_poly.begin(), triang_poly.end());
-	  out_color.insert(out_color.end(), triang_color.begin(), triang_color.end());
-	}
-	
-	float min_value = 0;
-	float max_value = 0;
-	for (size_t j=0; j < out_vertices.size(); j++){
-		out_uvs.push_back(glm::vec2(out_vertices[j].x, out_vertices[j].y));
-		if (out_vertices[j].x < min_value) min_value = out_vertices[j].x;
-		if (out_vertices[j].y < min_value) min_value = out_vertices[j].y;
-		if (out_vertices[j].x > max_value) max_value = out_vertices[j].x;
-		if (out_vertices[j].y > max_value) max_value = out_vertices[j].y;
-	}
-	float delta = max_value - min_value;
-	for (size_t j=0; j < out_uvs.size(); j++){
-		out_uvs[j].x = (out_uvs[j].x  - min_value)/ delta;
-		out_uvs[j].y = (out_uvs[j].y  - min_value)/ delta;;
-	}
+  for (size_t i=0; i < polygons.size(); i++){
+    std::vector < glm::vec2 > triang_poly = std::vector < glm::vec2 >();
+    std::vector < glm::vec4 > triang_color = std::vector < glm::vec4 >();
+    
+    triangulate_polygon(polygons[i], triang_poly);
+    for (size_t j=0; j < triang_poly.size(); j++) triang_color.push_back(polygon_colors[i]);
+    out_vertices.insert(out_vertices.end(), triang_poly.begin(), triang_poly.end());
+    out_color.insert(out_color.end(), triang_color.begin(), triang_color.end());
+  }
+  
+  float min_value = 0;
+  float max_value = 0;
+  for (size_t j=0; j < out_vertices.size(); j++){
+    out_uvs.push_back(glm::vec2(out_vertices[j].x, out_vertices[j].y));
+    if (out_vertices[j].x < min_value) min_value = out_vertices[j].x;
+    if (out_vertices[j].y < min_value) min_value = out_vertices[j].y;
+    if (out_vertices[j].x > max_value) max_value = out_vertices[j].x;
+    if (out_vertices[j].y > max_value) max_value = out_vertices[j].y;
+  }
+  float delta = max_value - min_value;
+  for (size_t j=0; j < out_uvs.size(); j++){
+    out_uvs[j].x = (out_uvs[j].x  - min_value)/ delta;
+    out_uvs[j].y = (out_uvs[j].y  - min_value)/ delta;;
+  }
 }
 
 float dist_pt_seg(float x, float y, float px, float py, float qx, float qy)
@@ -265,16 +259,11 @@ void con_svg_to_polys(string fn, float tol,
   NSVGimage* g_image = NULL;
   NSVGshape* shape;
   NSVGpath* path;
+  
 
-  //DCOUT("parsing file\n", DEBUG_0);
-
+  l3_assert(file_exists(fn));
   g_image = nsvgParseFromFile(fn.c_str(), "px", 96.0f);
   
-  //converts the svg files to a vec of vertices and colors
-  //std::vector<std::vector<glm::vec2> > polygons;
-  //std::vector<glm::vec4 > polygon_colors;
-
-  //DCOUT("parsing shapes\n", DEBUG_0);
   for (shape = g_image->shapes; shape != NULL; shape = shape->next) {
     //DCOUT("parsing verts\n", DEBUG_0);
     for (path = shape->paths; path != NULL; path = path->next) {
@@ -318,25 +307,17 @@ void con_svg_to_geo(string fn, float tol,
   NSVGimage* g_image = NULL;
   NSVGshape* shape;
   NSVGpath* path;
-
-  //DCOUT("parsing file\n", DEBUG_0);
-
+  l3_assert(file_exists(fn));
   g_image = nsvgParseFromFile(fn.c_str(), "px", 96.0f);
   
   //converts the svg files to a vec of vertices and colors
   std::vector<std::vector<glm::vec2> > polygons;
   std::vector<glm::vec4 > polygon_colors;
-
-  //DCOUT("parsing shapes\n", DEBUG_0);
   for (shape = g_image->shapes; shape != NULL; shape = shape->next) {
-    //DCOUT("parsing verts\n", DEBUG_0);
     for (path = shape->paths; path != NULL; path = path->next) {
       vector<glm::vec2> poly_verts;
       if (shape->fill.type == NSVG_PAINT_COLOR){
-	//cout<<"is paint colo"<<endl;
 	polygon_colors.push_back(con_nanosvg_color_to_glm_vec4(shape->fill.color));
-	//polygon_colors.push_back(glm::vec4(1.0,1.0,1.0,0.5));
-
       }
       else if (shape->fill.type == NSVG_PAINT_NONE){
 	continue;

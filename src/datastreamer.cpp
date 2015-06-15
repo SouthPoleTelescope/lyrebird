@@ -2,11 +2,12 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include <iostream>
 
 #include "teststreamer.h"
 #include "genericutils.h"
 #include "dfmuxstreamer.h"
+//#include "logging.h"  // Fights with the G3Logger
+
 using namespace std;
 
 pthread_mutex_t DataStreamer::init_uninit_mutex_ = PTHREAD_MUTEX_INITIALIZER;
@@ -31,8 +32,7 @@ DataStreamer * build_data_streamer(datastreamer_desc dd , DataVals * dvs    ){
   else if (dd.tp == "housekeeping")  return new HkStreamer( dd.tag, dd.streamer_json_desc, dvs);
   //else if (tp == "dfmux_streamer")return new DfmuxStreamer( file, paths, ids, dv, us_update_time);
   else{
-    cout<<"Requested streamer type " << dd.tp << endl;
-    print_and_exit("I don't know what this is");
+    log_fatal("Requested streamer type %s and I don't know what this is", dd.tp.c_str() );
     return NULL;
   }
 }
@@ -53,7 +53,6 @@ DataStreamer::DataStreamer(std::string tag,
 
 
 void DataStreamer::thread_loop_auto(){
-  //cout<<"calling threadloop"<<endl;
   pthread_mutex_lock(&init_uninit_mutex_);
   initialize();
   pthread_mutex_unlock(&init_uninit_mutex_);
@@ -65,12 +64,11 @@ void DataStreamer::thread_loop_auto(){
   pthread_mutex_lock(&init_uninit_mutex_);
   uninitialize();
   pthread_mutex_unlock(&init_uninit_mutex_);
-  //cout<<"returning from threadloop"<<endl;
+
 }
 
 
 void DataStreamer::thread_loop_request(){
-  //cout<<"calling threadloop"<<endl;
 
   pthread_mutex_lock(&init_uninit_mutex_);
   initialize();
@@ -89,15 +87,12 @@ void DataStreamer::thread_loop_request(){
   pthread_mutex_lock(&init_uninit_mutex_);
   uninitialize();
   pthread_mutex_unlock(&init_uninit_mutex_);
-  //cout<<"returning from threadloop"<<endl;
 }
 
 
 
 
 void DataStreamer::thread_loop_callback(){
-  //cout<<"calling threadloop"<<endl;
-
   pthread_mutex_lock(&init_uninit_mutex_);
   initialize();
   pthread_mutex_unlock(&init_uninit_mutex_);
@@ -109,7 +104,6 @@ void DataStreamer::thread_loop_callback(){
   pthread_mutex_lock(&init_uninit_mutex_);
   uninitialize();
   pthread_mutex_unlock(&init_uninit_mutex_);
-  //cout<<"returning from threadloop"<<endl;
 }
 
 
@@ -129,16 +123,13 @@ void DataStreamer::die_gracefully(){
 void DataStreamer::bury_body(){
 
   pthread_join(d_thread, NULL);
-  //if (d_thread.joinable()) d_thread.join();
 }
 
 void DataStreamer::start_recording(){
-  //cout<<"recording "<<endl;
   should_live = true;
-  //auto threadF = [this] { thread_loop(); };
-  int iret2 = pthread_create( &d_thread, NULL, data_streamer_thread_func, (void*)this);
-  //printf("pthread_create gave me %d\n", iret2);
-  //d_thread = thread(  [this] { thread_loop(); } ); //closures, weird
+  if (pthread_create( &d_thread, NULL, data_streamer_thread_func, (void*)this)){
+    log_fatal("Trouble with spawning a thread");
+  }
 }
 
 

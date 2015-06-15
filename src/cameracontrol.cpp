@@ -103,22 +103,15 @@ glm::vec2 CameraControl::get_mouse_move_trans( double x_pos, double y_pos){
 void CameraControl::register_move_on(double x_pos, double y_pos){
   mouse_moving_ = true;
   glm::vec2 mouse_in(x_pos,y_pos);
-  glm::mat4 trans = get_view_mat_inverse();
   model_space_center_ = get_mouse_move_trans( x_pos,y_pos);
   original_model_space_center_ = center_;
 }
 
-
-
 void CameraControl::register_mouse_move(double x_pos, double y_pos){
   assert(mouse_moving_);
   glm::vec2 mouse_in(x_pos,y_pos);
-  glm::mat4 trans = get_view_mat_inverse();
-  
   glm::vec2 new_model_space = get_mouse_move_trans( x_pos,y_pos);
-  //glm::vec2 new_model_space = con_screen_space_to_model_space(glm::vec2(x_pos,y_pos));
   center_ = original_model_space_center_ - (new_model_space - model_space_center_);
-
 }
 
 void CameraControl::register_move_off(double x_pos, double y_pos){

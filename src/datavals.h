@@ -11,10 +11,6 @@ struct dataval_desc{
   bool is_buffered;
 };
 
-
-
-
-
 template <class T> struct PPStack;
 struct PPToken;
 
@@ -61,6 +57,8 @@ class DataVals {
   float * ring_buffers_;
   pthread_rwlock_t  rwlock_;
   bool is_paused_;
+
+  size_t array_size_;
   
   std::unordered_map<std::string, int> id_mapping_;
 };

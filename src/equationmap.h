@@ -16,5 +16,4 @@ class EquationMap{
   DataVals * data_vals_;
   int max_num_eqs_;
   int num_eqs_;
-
 };

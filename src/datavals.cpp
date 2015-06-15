@@ -2,6 +2,7 @@
 #include <assert.h>
 #include "genericutils.h"
 #include "equation.h"
+#include "logging.h"
 using namespace std;
 
 
@@ -10,6 +11,7 @@ DataVals::DataVals(int n_vals, int buffer_size){
   buffer_size_ = buffer_size;
   buffer_size_full_ = buffer_size_ + 1;
 
+  array_size_ = n_vals;
 
   ring_indices_ = new int[n_vals];
   ring_buffers_ = new float[n_vals * (buffer_size_full_)];
@@ -23,7 +25,7 @@ DataVals::DataVals(int n_vals, int buffer_size){
     is_buffered_[i] = 0;
   }
   //create read write lock
-  if( pthread_rwlock_init( &rwlock_, NULL)) print_and_exit("rwlock_ init failed");
+  if( pthread_rwlock_init( &rwlock_, NULL)) log_fatal("rwlock_ init failed");
   is_paused_ = false;
 }
 
@@ -37,18 +39,16 @@ DataVals::~DataVals(){
 
 int DataVals::get_ind(std::string id){
   if (id_mapping_.find(id) == id_mapping_.end()){
-    printf("ID %s not found\n", id.c_str());
-    print_and_exit("Bleargh");
+    log_fatal("ID %s not found\n", id.c_str());
     return -1;
-      }
-  else
+  }  else
     return id_mapping_[id];
 }
 
 int DataVals::add_data_val(std::string id, float val, int is_buffered){
+  if (n_current_ >= array_size_) log_fatal("Adding too many datavals.");
   int index = n_current_;
-  if ( id_mapping_.find(id) != id_mapping_.end()  )
-    print_and_exit( id + " already in DataVals when adding" );
+  if ( id_mapping_.find(id) != id_mapping_.end() ) log_fatal( "%s already in DataVals when adding", id.c_str() );
   for (int j=0; j < buffer_size_full_; j++) ring_buffers_[j+index*buffer_size_full_] = val;
   n_current_++;
   id_mapping_[id] = index;
@@ -59,6 +59,7 @@ int DataVals::add_data_val(std::string id, float val, int is_buffered){
 
 void DataVals::update_val(int index, float val){
   if (is_paused_) return;
+  if (index >= array_size_) log_fatal("Attempting to access index out of range");
 
   //grab read lock
   pthread_rwlock_rdlock (&rwlock_);

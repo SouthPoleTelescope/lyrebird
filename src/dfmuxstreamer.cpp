@@ -21,6 +21,8 @@ HkStreamer::HkStreamer( std::string tag, Json::Value hk_desc, DataVals * dv )
     for (int i=0; i < hns.size(); i++){
       unique_boards_[i] = hns[i].asString();
     }
+  }else{
+    log_fatal("HkStreamer json description does not have hostnames");
   }
 
   // NEEDS TO LINE UP WITH CODE BELOW OR BAD THINGS WILL BEFALL YOU
@@ -103,6 +105,8 @@ DfmuxStreamer::DfmuxStreamer( std::string tag, Json::Value dfmux_desc,DataVals *
       int ip_addr = get_ip_addr(hostnames_[i].c_str());
       ip_addresses_.push_back(ip_addr);
     }
+  }else{
+    log_fatal("DfmuxStreamer json description does not have hostnames");
   }
   char name_buffer[128];
   for (auto b  = hostnames_.begin(); b!=hostnames_.end(); b++){
@@ -123,7 +127,6 @@ void DfmuxStreamer::Process(G3FramePtr frame, std::deque<G3FramePtr> &out){
   if (frame->type == G3Frame::Timepoint){
     if (frame->Has("DfMux")){
       DfMuxMetaSampleConstPtr samp = frame->Get<DfMuxMetaSample>("DfMux");
-
       int dv_ind = 0;
       for (auto ip = ip_addresses_.begin(); ip != ip_addresses_.end(); ip++){
 	if (samp->find(*ip) == samp->end()) continue;

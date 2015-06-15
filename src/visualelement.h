@@ -86,20 +86,20 @@ class VisElem{
   //VisElem( const VisElem& );
   const VisElem& operator=( const VisElem& );
 
-  int has_eq;
-  int sr_index;
-  int highlight_index;
-  int layer;
-  std::string geo_id;
+  int has_eq_;
+  int simple_ren_index_;
+  int highlight_index_;
+  int layer_;
+  std::string geo_id_;
   SimpleRen * s_ren;
   float hXScale, hYScale, hTDelt;
 
   
   std::vector<int> equation_inds_;
   EquationMap * equation_map_;
-  int eq_ind;
+  int eq_ind_;
 
-  std::string group;
+  std::string group_;
   std::vector< std::string > labels;
 
   std::vector< std::string > l_data_labels; //labelled data things

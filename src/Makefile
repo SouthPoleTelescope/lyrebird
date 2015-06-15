@@ -10,7 +10,6 @@ LDFLAGS= -Wl,-rpath=/home/nlharr/spt_code/spt3g_software/build/skunkworks/ /home
 
 LDFLAGS+= -L../contrib/AntTweakBar/lib/ -L/usr/local/lib/ -L/home/nlharr/spt_code/spt3g_software/build/skunkworks/ -lglfw3 -lGL -lGLU -lX11 -lXi -lpthread -lXxf86vm -lXrandr -lAntTweakBar -Wl,-rpath=../contrib/AntTweakBar/lib/ -lGLEW -ffast-math -lpthread -lfftw3 -lXinerama -lXcursor
 
-
 SOURCES=geometryutils.cpp genericutils.cpp shader.cpp nanosvg.cpp simplerender.cpp configparsing.cpp datastreamer.cpp datavals.cpp teststreamer.cpp jsoncpp.cpp visualelement.cpp cameracontrol.cpp polygon.cpp highlighter.cpp equation.cpp plotter.cpp plotbundler.cpp equationmap.cpp dfmuxstreamer.cpp logging.cpp
 
 

@@ -97,11 +97,6 @@ void TW_CALL visiblity_button_callback(void *vis_info){
 
 
 
-
-
-
-
-
 static void error_callback(int error, const char* description){
   fputs(description, stderr);
 }
@@ -204,6 +199,7 @@ int main(int argc, char * args[])
   int sub_sampling;
   int num_layers;
   int max_framerate;
+  double frame_time;
   int max_num_plotted;
   vector<vis_elem_repr> vis_elems;
   vector<string> svg_paths;
@@ -218,7 +214,7 @@ int main(int argc, char * args[])
   std::vector<dataval_desc> dataval_descs;
   std::vector<equation_desc> eq_descs;
 
-  //DCOUT("parsing config files", DEBUG_0);
+
   //parse the config file
   parse_config_file(args[1], dataval_descs, datastream_descs, eq_descs, 
 		    vis_elems, svg_paths, svg_ids,
@@ -228,7 +224,6 @@ int main(int argc, char * args[])
 		    );
 
   //initialize all the data values which are circular buffers we dump floats into
-  //DCOUT("loading data vals", DEBUG_0);
   DataVals data_vals(dataval_descs.size() + 1, dv_buffer_size);
   for (int i=0; i < dataval_descs.size(); i++){
     data_vals.add_data_val(dataval_descs[i].id,
@@ -238,7 +233,6 @@ int main(int argc, char * args[])
   global_data_vals = &data_vals;
 
   //create all the data streamers which write to the data vals
-  //DCOUT("spawning streamers"<<endl, DEBUG_0);
   vector<DataStreamer*> data_streamers;
 
 
@@ -258,7 +252,6 @@ int main(int argc, char * args[])
 
   //now we configure the window
 
-  //DCOUT("initializing glfw", DEBUG_0);
   int width = win_x_size;
   int height = win_y_size;
   GLFWwindow* window;
@@ -266,12 +259,13 @@ int main(int argc, char * args[])
   if (!glfwInit())
     exit(EXIT_FAILURE);
 
-  glfwWindowHint(GLFW_SAMPLES, 4);
+  glfwWindowHint(GLFW_SAMPLES, sub_sampling);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-  
+  if (max_framerate <= 0) max_framerate = 60;
+  frame_time = 1.0/max_framerate;
 
   window = glfwCreateWindow(width, height, "Lyrebird", NULL, NULL);
   if (!window)
@@ -281,8 +275,6 @@ int main(int argc, char * args[])
     }
 
   glfwMakeContextCurrent(window);
-
-  
 
   // Initialize GLEW
   glewExperimental = true; // Needed for core profile
@@ -306,7 +298,6 @@ int main(int argc, char * args[])
 
   glClearColor( 0.2,0.2,0.2,1.0);
 
-  //DCOUT("creating simple renderer", DEBUG_0);
   //create the renderer
   SimpleRen sren;
 
@@ -315,13 +306,12 @@ int main(int argc, char * args[])
    sren.load_svg_file(svg_ids[i], svg_paths[i]);
   }
   
-  //DCOUT("loading equation descs", DEBUG_0);
   EquationMap equation_map(eq_descs.size()+1, &data_vals);
   for (int i=0; i < eq_descs.size(); i++){
     equation_map.add_equation(eq_descs[i]);
   }
   
-  //DCOUT("loading visual elements", DEBUG_0);
+
   std::vector<VisElemPtr> visual_elements;  
   for (int i=0; i<vis_elems.size(); i++){
     visual_elements.emplace_back(new VisElem(&sren,  &equation_map, vis_elems[i]));
@@ -336,7 +326,7 @@ int main(int argc, char * args[])
   
 
 
-  //DCOUT("initializing ant tweak bar", DEBUG_0);
+
   TwInit(TW_OPENGL_CORE, NULL);
 
   TwBar * info_bar = TwNewBar("Info");
@@ -345,19 +335,16 @@ int main(int argc, char * args[])
   
   global_info_bar = info_bar;
 
-  //DCOUT("starting loop", DEBUG_0);
 
   double current_time = glfwGetTime ();
   double last_time = current_time;
   double other_time;
   
   //load the click geometry
-  //DCOUT("loading click geometry", DEBUG_0);
   Highlighter highlight(info_bar, &visual_elements);
   for (int i=0; i < svg_paths.size(); i++){
     highlight.add_shape_definition(svg_ids[i], svg_paths[i]);
   }
-  //cout<<"loading defined geometry"<<endl;
 
   for (int i=0; i < visual_elements.size(); i++){
     highlight.add_defined_shape( visual_elements[i]->get_geo_id(), 
@@ -529,6 +516,17 @@ int main(int argc, char * args[])
     
     current_time = glfwGetTime();
     double delta_time = current_time-last_time;
+
+
+    // code for doing frame limitting
+    if (delta_time < frame_time)
+      usleep( (frame_time - delta_time) * 1e6);
+    current_time = glfwGetTime();
+    delta_time = current_time-last_time;
+
+
+
+
     last_time = current_time;
     
     if (!global_mouse_is_handled){
@@ -586,24 +584,19 @@ int main(int argc, char * args[])
       highlight.run_search(search_str);
     }    
     strncpy ( prev_search_str, search_str, SEARCH_STR_LEN );      
-    //cout<< "FPS: "<<1/delta_time<<endl;
   }
   
   
   glfwDestroyWindow(window);
   glfwTerminate();
   
-  //cout<<"tell them to kill themselves"<<endl;
   for (int i=0; i < data_streamers.size(); i++){
     data_streamers[i]->die_gracefully();
   }
-  //cout<<"burying bodies "<< data_streamers.size() <<endl;
   for (int i=0; i < data_streamers.size(); i++){
     data_streamers[i]->bury_body();
     delete data_streamers[i];    
   }
-  
-  //clean out the graphics card memory
   sren.clean_out_buffers();
   exit(EXIT_SUCCESS);
 }

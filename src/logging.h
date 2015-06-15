@@ -166,7 +166,7 @@ SET_LOGGER("Unknown");
     __logger_id(), __FILE__, __LINE__, __PRETTY_FUNCTION__, msg, \
     throw std::runtime_error(_l3_str_logger_str.str() + " (in " + __PRETTY_FUNCTION__ + ")");)
 #else
-v#define log_fatal(format, ...) L3_LOGGER(L3LOG_FATAL, \
+#define log_fatal(format, ...) L3_LOGGER(L3LOG_FATAL, \
     __logger_id(), __FILE__, __LINE__, __PRETTY_FUNCTION__, format, \
     ##__VA_ARGS__), kill(getpid(), SIGABRT)
 #endif

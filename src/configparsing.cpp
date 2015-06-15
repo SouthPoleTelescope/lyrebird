@@ -7,7 +7,7 @@
 
 #include "json/json.h"
 #include "genericutils.h"
-
+#include "logging.h"
 
 
 using namespace std;
@@ -66,7 +66,7 @@ void parse_config_file(string in_file,
   Json::Reader reader;
   bool parsingSuccessful = reader.parse( read_in_file, root );
   if ( !parsingSuccessful ) {
-    print_and_exit("Failed to parse configuration \n"+reader.getFormattedErrorMessages());
+    log_fatal("Failed to parse configuration %s\n", reader.getFormattedErrorMessages().c_str());
   }
   
   //////////////////////////////
@@ -85,7 +85,7 @@ void parse_config_file(string in_file,
       if (v["win_x_size"].isInt()){
 	win_x_size = v["win_x_size"].asInt();
       }else {
-	print_and_exit("general_settings/win_x_size supplied but is not integer");
+	log_fatal("general_settings/win_x_size supplied but is not integer");
       }
     }
 
@@ -93,7 +93,7 @@ void parse_config_file(string in_file,
       if (v["win_y_size"].isInt()){
 	win_y_size = v["win_y_size"].asInt();
       }else {
-	print_and_exit("general_settings/win_y_size supplied but is not integer");
+	log_fatal("general_settings/win_y_size supplied but is not integer");
       }
     }
 
@@ -101,7 +101,7 @@ void parse_config_file(string in_file,
       if (v["sub_sampling"].isInt()){
 	sub_sampling = v["sub_sampling"].asInt();
       }else {
-	print_and_exit("general_settings/sub_sampling supplied but is not integer");
+	log_fatal("general_settings/sub_sampling supplied but is not integer");
       }
     }
 
@@ -109,7 +109,7 @@ void parse_config_file(string in_file,
       if (v["max_framerate"].isInt()){
 	max_framerate = v["max_framerate"].asInt();
       }else {
-	print_and_exit("general_settings/max_framerate supplied but is not integer");
+	log_fatal("general_settings/max_framerate supplied but is not integer");
       }
     }      
 
@@ -117,7 +117,7 @@ void parse_config_file(string in_file,
       if (v["max_num_plotted"].isInt()){
 	max_num_plotted = v["max_num_plotted"].asInt();
       }else {
-	print_and_exit("general_settings/max_num_plotted supplied but is not integer");
+	log_fatal("general_settings/max_num_plotted supplied but is not integer");
       }
     }      
   }
@@ -126,8 +126,8 @@ void parse_config_file(string in_file,
   if (root.isMember("modifiable_dvs")){
     Json::Value mod_dvs = root["modifiable_dvs"]; 
     for (int i=0; i < mod_dvs.size(); i++){
-      if (!mod_dvs[i].isMember("tag") ) print_and_exit("tag not in modifiable_dvs");
-      if (!mod_dvs[i].isMember("val") ) print_and_exit("val not in modifiable_dvs");
+      if (!mod_dvs[i].isMember("tag") ) log_fatal("tag not in modifiable_dvs");
+      if (!mod_dvs[i].isMember("val") ) log_fatal("val not in modifiable_dvs");
       modifiable_data_val_tags.push_back(mod_dvs[i]["tag"].asString());
       modifiable_data_vals.push_back(mod_dvs[i]["val"].asFloat());
     }
@@ -142,7 +142,7 @@ void parse_config_file(string in_file,
       dataval_descs.push_back(parse_dataval_desc(root["data_vals"][i]));
     }
   } else{
-    print_and_exit("data_vals not found");
+    log_fatal("data_vals not found");
   }
 
   if (root.isMember("data_sources")){
@@ -174,13 +174,13 @@ void parse_config_file(string in_file,
    //Parse the geometry description //
   ///////////////////////////////////
   if (!root.isMember("visual_elements")){
-    print_and_exit("visual_elements needs to be in config file");
+    log_fatal("visual_elements needs to be in config file");
   }
   Json::Value visElemsJSON = root["visual_elements"];
 
   int n_vis_elems = visElemsJSON.size();
   if ( n_vis_elems == 0){
-    print_and_exit("visual_elements is empty\n");
+    log_fatal("visual_elements is empty\n");
   }
   vis_elems = vector < vis_elem_repr >(n_vis_elems);
 
@@ -189,31 +189,31 @@ void parse_config_file(string in_file,
   vector<string> full_svg_ids;
   for (int i=0; i < n_vis_elems; i++){
     Json::Value v = visElemsJSON[i];
-    if (!v.isMember("x_center")  ) print_and_exit("x_center not found  in visual_element\n");
-    if (!v.isMember("y_center") ) print_and_exit("y_center not found  in visual_element\n");
-    if (!v.isMember("x_scale")  ) print_and_exit("x_scale not found  in visual_element\n");
-    if (!v.isMember("y_scale")  ) print_and_exit("y_scale not found  in visual_element\n");
-    if (!v.isMember("rotation") ) print_and_exit("rotation not found  in visual_element\n");
-    if (!v.isMember("layer")  ) print_and_exit("layer not found  in visual_element\n");
-    if ( !v["x_center"].isNumeric() ) print_and_exit("x_center  not valid in visual_element\n");
-    if ( !v["y_center"].isNumeric() ) print_and_exit("y_center  not valid in visual_element\n");
-    if ( !v["x_scale"].isNumeric() ) print_and_exit("x_scale  not valid in visual_element\n");
-    if ( !v["y_scale"].isNumeric() ) print_and_exit("y_scale  not valid in visual_element\n");
-    if ( !v["rotation"].isNumeric() ) print_and_exit("rotation  not valid in visual_element\n");
-    if ( !v["layer"].isInt() ) print_and_exit("layer  not valid in visual_element\n");
+    if (!v.isMember("x_center")  ) log_fatal("x_center not found  in visual_element\n");
+    if (!v.isMember("y_center") ) log_fatal("y_center not found  in visual_element\n");
+    if (!v.isMember("x_scale")  ) log_fatal("x_scale not found  in visual_element\n");
+    if (!v.isMember("y_scale")  ) log_fatal("y_scale not found  in visual_element\n");
+    if (!v.isMember("rotation") ) log_fatal("rotation not found  in visual_element\n");
+    if (!v.isMember("layer")  ) log_fatal("layer not found  in visual_element\n");
+    if ( !v["x_center"].isNumeric() ) log_fatal("x_center  not valid in visual_element\n");
+    if ( !v["y_center"].isNumeric() ) log_fatal("y_center  not valid in visual_element\n");
+    if ( !v["x_scale"].isNumeric() ) log_fatal("x_scale  not valid in visual_element\n");
+    if ( !v["y_scale"].isNumeric() ) log_fatal("y_scale  not valid in visual_element\n");
+    if ( !v["rotation"].isNumeric() ) log_fatal("rotation  not valid in visual_element\n");
+    if ( !v["layer"].isInt() ) log_fatal("layer  not valid in visual_element\n");
 
 
-    if (!v.isMember("svg_id") ) print_and_exit("svg_id not found  in visual_element\n");
-    if (!v.isMember("svg_path") ) print_and_exit("svg_path not found  in visual_element\n");
+    if (!v.isMember("svg_id") ) log_fatal("svg_id not found  in visual_element\n");
+    if (!v.isMember("svg_path") ) log_fatal("svg_path not found  in visual_element\n");
 
-    if (!v.isMember("highlight_svg_id") ) print_and_exit("highlight_svg_id not found  in visual_element\n");
-    if (!v.isMember("highlight_svg_path") ) print_and_exit("highlight_svg_path not found  in visual_element\n");
+    if (!v.isMember("highlight_svg_id") ) log_fatal("highlight_svg_id not found  in visual_element\n");
+    if (!v.isMember("highlight_svg_path") ) log_fatal("highlight_svg_path not found  in visual_element\n");
 
 
-    if (!v.isMember("labels") ) print_and_exit("labels not found  in visual_element\n");
-    if (!v.isMember("equations") ) print_and_exit("equations not found  in visual_element\n");
-    if (!v.isMember("group") ) print_and_exit("group not found  in visual_element\n");
-    if (!v.isMember("labelled_data") ) print_and_exit("labelled_data not found  in visual_element\n");
+    if (!v.isMember("labels") ) log_fatal("labels not found  in visual_element\n");
+    if (!v.isMember("equations") ) log_fatal("equations not found  in visual_element\n");
+    if (!v.isMember("group") ) log_fatal("group not found  in visual_element\n");
+    if (!v.isMember("labelled_data") ) log_fatal("labelled_data not found  in visual_element\n");
 
 
     
@@ -263,8 +263,6 @@ void parse_config_file(string in_file,
     ////////////////////////
     //Parse the equations //
     ////////////////////////
-
-
     Json::Value eqv =  v["equations"];
     for (int j=0; j < eqv.size(); j++){
       vis_elems[i].equations.push_back( eqv[j].asString() );
