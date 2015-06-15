@@ -147,7 +147,7 @@ endif()
 if(NOT X11_Xinerama_FOUND)
 message(FATAL_ERROR "Xinerama library not found - required for GLFW")
 endif()
-list(APPEND GLFW_x11_LIBRARY "${X11_Xrandr_LIB}" "${X11_Xxf86vm_LIB}" "${X11_Xcursor_LIB}" "${X11_Xinerama_LIB}" "${CMAKE_THREAD_LIBS_INIT}" -lrt -lXi)
+list(APPEND GLFW_x11_LIBRARY "${X11_Xrandr_LIB}" "${X11_Xxf86vm_LIB}" "${X11_Xcursor_LIB}" "${X11_Xinerama_LIB}" "${CMAKE_THREAD_LIBS_INIT}" -lrt ${X11_Xi_LIB})
 find_library( GLFW_glfw_LIBRARY
 NAMES
 glfw

@@ -8,6 +8,7 @@ if (APPLE)
 set (platform MACOSX)
 elseif (UNIX)
 set (platform UNIX)
+find_package(X11)
 else()
 message(SEND_ERROR "This platform (${CMAKE_SYSTEM_NAME}) is not handled yet! Consider a pull-request.")
 endif()
@@ -29,6 +30,6 @@ src/TwEventSDL13.c
 src/TwEventSFML.cpp
 src/TwEventX11.c
 )
-add_definitions(-Wall -fPIC -fno-strict-aliasing -D_${platform} -D__PLACEMENT_NEW_INLINE)
-include_directories(${CMAKE_SOURCE_DIR}/../include)
-add_library(AntTweakBar SHARED ${ANTWB_SOURCES})
+add_definitions(-Wall -Wno-unused -Wno-tautological-compare -fno-strict-aliasing -D_${platform} -D__PLACEMENT_NEW_INLINE)
+include_directories(${CMAKE_SOURCE_DIR}/../include ${X11_INCLUDE_DIR})
+add_library(AntTweakBar ${ANTWB_SOURCES})
