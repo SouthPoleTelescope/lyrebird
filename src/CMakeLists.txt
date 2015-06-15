@@ -12,12 +12,11 @@ find_package(GLEW REQUIRED)
 find_package(FFTW REQUIRED)
 find_package(X11 REQUIRED)
 
-
-include_directories("../contrib/AntTweakBar/include/" ${GLFW_INCLUDE_PATH} ${FFTW_INCLUDE_DIRS} )
-add_library(lyrebird STATIC
+include_directories("../contrib/AntTweakBar/include/" ${GLFW_INCLUDE_PATH} ${FFTW_INCLUDE_DIRS} ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS} ${X11_INCLUDE_DIRS} )
+add_library(lyrebirdvis STATIC
   geometryutils.cpp genericutils.cpp shader.cpp nanosvg.cpp simplerender.cpp configparsing.cpp datastreamer.cpp datavals.cpp teststreamer.cpp jsoncpp.cpp visualelement.cpp cameracontrol.cpp polygon.cpp highlighter.cpp equation.cpp plotter.cpp plotbundler.cpp equationmap.cpp logging.cpp
 )
-add_executable(Lyrebird main.cpp)
-target_link_libraries(Lyrebird lyrebird ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/AntTweakBar/lib/libAntTweakBar.so 
+add_executable(lyrebird main.cpp)
+target_link_libraries(lyrebird lyrebirdvis ${CMAKE_CURRENT_SOURCE_DIR}/../contrib/AntTweakBar/lib/libAntTweakBar.so 
   ${GLFW_LIBRARY} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${GLEW_LIBRARY} ${X11_LIBRARIES}
   ${FFTW_LIBRARIES})  
