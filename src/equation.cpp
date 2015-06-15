@@ -7,7 +7,7 @@
 #include <assert.h>
 #include <tgmath.h>
 #include <ctype.h>
-#include <glm/gtx/color_space.hpp>
+#include "glm/gtx/color_space.hpp"
 
 #include "genericutils.h"
 

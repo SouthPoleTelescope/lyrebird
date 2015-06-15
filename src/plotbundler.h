@@ -2,7 +2,7 @@
 #include <list>
 #include <vector>
 
-#include <glm/glm.hpp>
+#include "glm/glm.hpp"
 #include <fftw3.h>
 
 #include "visualelement.h"

@@ -5,7 +5,7 @@
 #include <memory>
 
 #include <AntTweakBar.h>
-#include <glm/glm.hpp>
+#include "glm/glm.hpp"
 
 #include "simplerender.h"
 #include "datavals.h"

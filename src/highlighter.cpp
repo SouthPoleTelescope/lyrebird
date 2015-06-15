@@ -1,6 +1,6 @@
 #include "highlighter.h"
 
-#include <glm/gtx/color_space.hpp>
+#include "glm/gtx/color_space.hpp"
 #include <list>
 #include "geometryutils.h"
 #include "genericutils.h"

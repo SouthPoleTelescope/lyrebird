@@ -5,7 +5,7 @@
 #include <map>
 
 #include <GL/glew.h>
-#include <glm/glm.hpp>
+#include "glm/glm.hpp"
 
 //stores all the addresses on the graphics card for things
 struct geo_info_t{
