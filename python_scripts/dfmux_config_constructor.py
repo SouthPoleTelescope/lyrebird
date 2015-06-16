@@ -1,13 +1,34 @@
 import argparse, json, os
 import config_constructor as CC
 
+import numpy as np
+from operator import itemgetter, attrgetter
 
-# things we need
 
-def addHousekeeping(config_dic, tag, boards_list, include_self_equations = True):
-    N_MODULES=8
-    N_CHANNELS=64
+N_MODULES=8
+N_CHANNELS=64
 
+'''
+test_format = {'Sq2SB21Ch3':  {'module': 2,
+               'channel':3,
+'board':'iceboard0043.local',
+'x_pos':3.2,
+'y_pos':4.2,
+       'is_polarized': True,
+       'polarization_angle': .1,
+       'resistance': 32132.3,
+'detector_frequency': #90,150, or 220
+                              }}
+
+'''
+def uniquifyList(seq):
+    checked = []
+    for e in seq:
+        if e not in checked:
+            checked.append(e)
+    return checked
+
+def addHousekeeping(config_dic, tag, boards_list, include_self_equations = False):
     #this needs to match the C code, don't change this expecting more data to appear
     MODULE_DATA_NAMES = ['carrier_gain', 'nuller_gain']
     CHANNEL_DATA_NAMES = ['carrier_amplitude', 'carrier_frequency', 'demod_frequency']
@@ -28,12 +49,43 @@ def addHousekeeping(config_dic, tag, boards_list, include_self_equations = True)
                                                                             dvname+'_eq'))
     desc = { 'hostnames': boards_list}
     CC.addDataSource(config_dic, tag, 'housekeeping',  desc)
-                                                                    
+
+def addDfmux(config_dic, tag, boards_list, include_self_equations = False):
+    for b in boards_list:
+        for m in range(N_MODULES):
+            for c in range(N_CHANNELS):
+                CC.addDataVal(config_dic, '%s/%d/%d/I:dfmux_samples'%(b,m,c),-1,False)
+                CC.addDataVal(config_dic, '%s/%d/%d/Q:dfmux_samples'%(b,m,c),-1,False)
+                if include_self_equations:
+                    CC.addGlobalEquation(config_dic, CC.getEquation('%s/%d/%d/I:dfmux_samples'%(b,m,c), 'cmap_white', 
+                                                                    '%s/%d/%d/I:dfmux_samples'%(b,m,c)+'_eq'))
+                    CC.addGlobalEquation(config_dic, CC.getEquation('%s/%d/%d/Q:dfmux_samples'%(b,m,c), 'cmap_white', 
+                                                                    '%s/%d/%d/Q:dfmux_samples'%(b,m,c)+'_eq'))
+    desc = { 'hostnames': boards_list}
+    CC.addDataSource(config_dic, tag, 'dfmux',  desc)
+
+def create_dfmux_config_dic( config_dic, bolo_description_dic):
+    boards_list = uniquifyList(map(lambda k: bolo_description_dic[k]['board'], bolo_description_dic))
+    #figures out the scale factor we want
+    xs = np.array(map(lambda k: bolo_description_dic[k]['x_pos'], bolo_description_dic))
+    ys = np.array(map(lambda k: bolo_description_dic[k]['y_pos'], bolo_description_dic))
+    cpnts = xs + 1.0j * ys
 
 
+    CC.addGeneralSettings(config_dic, win_x_size=800, win_y_size=600, sub_sampling=4, max_framerate=40, max_num_plotted=20)
+    addHousekeeping(config_dic, "Housekeeping", boards_list)
+    addDfmux(config_dic, "Dfmux", boards_list)
 
-
-
+    for k in bolo_description_dic:
+        v = bolo_description_dic[k]
+        board = v['board']
+        module = v['module']
+        channel = v['channel']
+        x = v['x_pos']
+        y = v['y_pos']
+        resistance = v['resistance']
+        detector_frequency = v['detector_frequency']
+        is_polarized = v['is_polarized']
 
 
 boards_list = ['iceboard0043.local']
