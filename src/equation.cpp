@@ -8,8 +8,10 @@
 #include <tgmath.h>
 #include <ctype.h>
 #include "glm/gtx/color_space.hpp"
-
 #include "genericutils.h"
+
+
+#include "dfmuxcalculations.h"
 
 
 
@@ -207,18 +209,9 @@ inline void pp_func_res(PPStack<float> * pp_val_stack, float * val, int offset){
   float cgain = pop(pp_val_stack);
   float namp = pop(pp_val_stack);
   float ngain = pop(pp_val_stack);
-  float I = namp * 10.*(300. * (200./dfmux_gsetting_to_r(ngain))*(96.77/(100+96.77)) / (750.*4)) * 1e-3;
-  float V = camp * 10.*(300.*(200/dfmux_gsetting_to_r(cgain))*(1./180.)*(.03))*1e-3;
-  float ov;
-  if (I==0)
-    ov = 0;
-  else
-    ov = V/I;
+  float ov = dfmux_get_resistance(camp, namp, cgain, ngain);
   push(pp_val_stack, ov);
 }
-
-
-
 
 inline void pp_func_push(PPStack<float> * pp_val_stack, float * val, int offset){
   push(pp_val_stack, *val);
