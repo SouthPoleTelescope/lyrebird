@@ -4,10 +4,10 @@
 #include <memory>
 #include <list>
 
-#include "G3Pipeline.h"
-#include "G3Module.h"
-#include "DfMuxBuilder.h"
-#include "hkgetter.h"
+#include <G3Pipeline.h>
+#include <G3Module.h>
+#include <DfMuxBuilder.h>
+#include <hkgetter.h>
 
 #include <boost/enable_shared_from_this.hpp>
 #include "json/json.h"

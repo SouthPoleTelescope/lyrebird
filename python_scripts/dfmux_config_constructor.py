@@ -19,7 +19,6 @@ test_format = {'Sq2SB21Ch3':  {'module': 2,
        'resistance': 32132.3,
 'detector_frequency': #90,150, or 220
                               }}
-
 '''
 def uniquifyList(seq):
     checked = []
@@ -64,12 +63,12 @@ def addDfmux(config_dic, tag, boards_list, include_self_equations = False):
     desc = { 'hostnames': boards_list}
     CC.addDataSource(config_dic, tag, 'dfmux',  desc)
 
+
 def create_dfmux_config_dic( config_dic, bolo_description_dic):
     boards_list = uniquifyList(map(lambda k: bolo_description_dic[k]['board'], bolo_description_dic))
     #figures out the scale factor we want
     xs = np.array(map(lambda k: bolo_description_dic[k]['x_pos'], bolo_description_dic))
     ys = np.array(map(lambda k: bolo_description_dic[k]['y_pos'], bolo_description_dic))
-    cpnts = xs + 1.0j * ys
 
 
     CC.addGeneralSettings(config_dic, win_x_size=800, win_y_size=600, sub_sampling=4, max_framerate=40, max_num_plotted=20)
@@ -86,6 +85,12 @@ def create_dfmux_config_dic( config_dic, bolo_description_dic):
         resistance = v['resistance']
         detector_frequency = v['detector_frequency']
         is_polarized = v['is_polarized']
+
+
+
+
+
+
 
 
 boards_list = ['iceboard0043.local']
