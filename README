@@ -1,10 +1,6 @@
-
-
-
-
 Program dependencies:
-cmake
-g++ (or clang++ if you are super awesome)
+-cmake
+-g++ or clang++
 
 Library dependencies:
 
@@ -21,14 +17,24 @@ libXinerama
 libXcursor
 
 I know that's a lot so just type:
+
 sudo apt-get install xorg-dev
 sudo apt-get install libglu1-mesa-dev 
 sudo apt-get install libglew-dev
 sudo apt-get install libfftw3-dev
 
+Once you have done that you need to install glfw3 (not earlier versions)
+This may or may not live in your favorite package manager.  If it doesn't see: http://www.glfw.org/
 
+Once that is out of the way in the root directory type:
 
 mkdir build
 cd build
 cmake ..
 make
+
+If you would like to build with a different compiler like clang use:
+
+cmake .. -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+
+Instead of cmake ..
