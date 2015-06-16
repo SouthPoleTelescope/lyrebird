@@ -1,3 +1,9 @@
+Environment Variables needed to be set:
+
+export SPT3G_SOFTWARE_PATH=[path to spt3g_software]
+export SPT3G_SOFTWARE_BUILD_PATH=[path to where you built spt3g software]
+
+
 Program dependencies:
 -cmake
 -g++ or clang++
