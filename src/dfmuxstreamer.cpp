@@ -170,6 +170,8 @@ void DfmuxStreamer::update_values(int ind){
 
 void DfmuxStreamer::initialize(){
   //add this to a pipeline downstream of the dfmux buiilder so we can get the delicious samples
+
+  log_debug("instantiating builder and collector.  listening on %s for %d boards", listen_ip_.c_str(), n_boards_specified_);
   dfmux_builder_ = boost::shared_ptr<DfMuxBuilder>(new  DfMuxBuilder(n_boards_specified_, 10000));
   dfmux_collector_ = boost::shared_ptr<DfMuxCollector>(new  DfMuxCollector(listen_ip_.c_str(), dfmux_builder_));
   dfmux_collector_->Start();

@@ -51,7 +51,7 @@ def addHousekeeping(config_dic, tag, boards_list, include_self_equations = True)
     desc = { 'hostnames': boards_list}
     CC.addDataSource(config_dic, tag, 'housekeeping',  desc)
 
-def addDfmux(config_dic, tag, boards_list, include_self_equations = True, listen_ip_address = "192.168.1.227", n_boards = 20):
+def addDfmux(config_dic, tag, boards_list, include_self_equations = True, listen_ip_address = "192.168.1.227", n_boards = 12):
     for b in boards_list:
         for m in range(N_MODULES):
             for c in range(N_CHANNELS):
@@ -190,8 +190,6 @@ test_dfmux_desc = {'Sq1Ch1':
                        }
 
 config_dic = {}
-
 create_dfmux_config_dic(config_dic, test_dfmux_desc)
-
 
 json.dump( config_dic, open("test_dfmux_display.json",'w'), indent=2)
