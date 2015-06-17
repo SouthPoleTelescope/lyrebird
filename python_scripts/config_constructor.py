@@ -139,7 +139,7 @@ if __name__ == '__main__':
                     addDataVal(config_dic, "test_%d"%ds_id_num, 0, True)
                     test_ds_lst.append("test_%d"%ds_id_num)
 
-                    addGlobalEquation(config_dic, getEquation('+ .7 * 0.3 c test_%d'%ds_id_num, cmap, "dummyEqLabel_test_%d"%ds_id_num, "TestSins"))
+                    addGlobalEquation(config_dic, getEquation('/ + 1 c test_%d 2'%ds_id_num, cmap, "dummyEqLabel_test_%d"%ds_id_num, "TestSins"))
                     addGlobalEquation(config_dic, getEquation('test_%d'%ds_id_num, cmap, "dummyLinearEq_test_%d"%ds_id_num, "TestLins"))
 
                     if f ==0:
@@ -157,8 +157,7 @@ if __name__ == '__main__':
                                rotation=1.5707963267948966*p, layer = 1-f,
                                svg_path=svg_name,
                                highlight_path = svg_h,
-
-
+                               
                                labels=['test_label_%d'%ds_id_num, 'test_sec_label_%d'%ds_id_num],
                                group = 'Detector_type_%d'%f,
                                equations = ["dummyEqLabel_test_%d"%ds_id_num, "dummyLinearEq_test_%d"%ds_id_num  ],

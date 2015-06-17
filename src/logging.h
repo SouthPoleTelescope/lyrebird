@@ -100,6 +100,7 @@ void l3_clogger(L3LogLevel level, const char *unit, const char *file,
 
 // Set default logger in global namespace
 #ifdef PROJECT
+#warn "setting project"
 #define L3LOGSTR1(X) #X
 #define L3LOGSTR(X) L3LOGSTR1(X)
 SET_LOGGER(L3LOGSTR(PROJECT));

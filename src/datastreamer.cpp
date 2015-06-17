@@ -25,10 +25,10 @@ void *data_streamer_thread_func( void * ds){
   return NULL;
 }
 
-DataStreamer * build_data_streamer(datastreamer_desc dd , DataVals * dvs    ){
-  if (dd.tp == "test_streamer") return new TestStreamer( dd.streamer_json_desc, dd.tag, dvs, dd.us_update_time);
-  else if (dd.tp == "housekeeping")  return new HkStreamer( dd.tag, dd.streamer_json_desc, dvs);
-  else if (dd.tp == "dfmux")return new DfmuxStreamer( dd.tag, dd.streamer_json_desc, dvs);
+std::shared_ptr<DataStreamer> build_data_streamer(datastreamer_desc dd , DataVals * dvs    ){
+  if (dd.tp == "test_streamer") return std::shared_ptr<DataStreamer>(new TestStreamer( dd.streamer_json_desc, dd.tag, dvs, dd.us_update_time));
+  else if (dd.tp == "housekeeping")  return std::shared_ptr<DataStreamer>(new HkStreamer( dd.tag, dd.streamer_json_desc, dvs));
+  else if (dd.tp == "dfmux")return std::shared_ptr<DataStreamer>(new DfmuxStreamer( dd.tag, dd.streamer_json_desc, dvs));
   else{
     log_fatal("Requested streamer type %s and I don't know what this is", dd.tp.c_str() );
     return NULL;
@@ -119,7 +119,6 @@ void DataStreamer::die_gracefully(){
 }
 
 void DataStreamer::bury_body(){
-
   pthread_join(d_thread, NULL);
 }
 
@@ -141,6 +140,7 @@ std::string DataStreamer::get_tag(){
 
 
 void DataStreamer::request_values(int ind){
+  log_debug("request_values");
   pthread_mutex_lock(&count_mutex);
   request_index = ind;
   pthread_cond_signal( &count_threshold_cv );

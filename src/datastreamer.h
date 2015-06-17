@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "json/json.h" 
 
@@ -83,7 +84,7 @@ class DataStreamer{
   int request_index;
 };
 
-DataStreamer * build_data_streamer(datastreamer_desc dd, DataVals * dvs   );
+std::shared_ptr<DataStreamer> build_data_streamer(datastreamer_desc dd, DataVals * dvs   );
 void *data_streamer_thread_func( DataStreamer * ds);
 
 

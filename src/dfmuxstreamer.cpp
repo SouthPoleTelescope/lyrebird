@@ -9,8 +9,7 @@
 #include <netdb.h>
 #include <string.h>
 #include <assert.h>
-
-
+#include <deque>
 
 #define NMODULES 8
 #define NCHANNELS 64
@@ -56,6 +55,7 @@ void HkStreamer::initialize(){
 }
 
 void HkStreamer::update_values(int v){
+  log_debug("updating hk values");
   assert(hk_module);
   std::map<std::string, HkBoardInfo > b_map;
   hk_module->get_housekeeping_structs(b_map);
@@ -96,7 +96,7 @@ int get_ip_addr(const char * hostname){
 
 
 DfmuxStreamer::DfmuxStreamer( std::string tag, Json::Value dfmux_desc,DataVals * dv )
-  :DataStreamer(tag, dv, 0, DSRT_CALLBACK){
+  :DataStreamer(tag, dv, 10000, DSRT_STREAMING){
   //sample_hn/mod/channel/iq
   if (dfmux_desc.isMember("hostnames")){
     hostnames_ = std::vector<std::string>(dfmux_desc["hostnames"].size());
@@ -110,6 +110,18 @@ DfmuxStreamer::DfmuxStreamer( std::string tag, Json::Value dfmux_desc,DataVals *
   }else{
     log_fatal("DfmuxStreamer json description does not have hostnames");
   }
+  if (dfmux_desc.isMember("listen_ip_address")){
+    listen_ip_ = dfmux_desc["listen_ip_address"].asString();
+  }else{
+    log_fatal("listen_ip_address not found in dfmux_desc");
+  }
+
+  if (dfmux_desc.isMember("n_boards")){
+    n_boards_specified_ = dfmux_desc["n_boards"].asInt();
+  }else{
+    log_fatal("n_boards not found in dfmux_desc");
+  }
+
   char name_buffer[128];
   for (auto b  = hostnames_.begin(); b!=hostnames_.end(); b++){
     for (int m=0; m < NMODULES; m++){
@@ -134,6 +146,7 @@ void DfmuxStreamer::Process(G3FramePtr frame, std::deque<G3FramePtr> &out){
 	if (samp->find(*ip) == samp->end()) continue;
 	const DfMuxBoardSamples & board_sample = samp->at(*ip);
 	for (int m = 0; m < NMODULES; m++){
+	  if (board_sample.find(m) == board_sample.end()) continue;
 	  DfMuxSampleConstPtr mod_ptr = board_sample.at(m);
 	  for (int c =0; c < NCHANNELS; c++){
 	    data_vals->update_val(data_val_inds_[dv_ind], mod_ptr->at(c*2)); dv_ind++;
@@ -141,19 +154,27 @@ void DfmuxStreamer::Process(G3FramePtr frame, std::deque<G3FramePtr> &out){
 	  }
 	}
       }
-      //frame['DfMux'][ipaddress][module_num][channel_num]//
     }
   }
 }
 
+
+
+void DfmuxStreamer::update_values(int ind){
+  std::deque<G3FramePtr> frames;
+  std::deque<G3FramePtr> dummy_out;
+  dfmux_builder_->Process(G3FramePtr(), frames);
+  for (auto i = frames.begin(); i != frames.end(); i++)
+    Process(*i, dummy_out);
+}
+
 void DfmuxStreamer::initialize(){
   //add this to a pipeline downstream of the dfmux buiilder so we can get the delicious samples
-  dfmux_builder_ = boost::shared_ptr<DfMuxBuilder>(new  DfMuxBuilder(num_boards_, 10000));
-  local_pipeline_.Add(dfmux_builder_);
-  local_pipeline_.Add(shared_from_this());
-  local_pipeline_.Run();
+  dfmux_builder_ = boost::shared_ptr<DfMuxBuilder>(new  DfMuxBuilder(n_boards_specified_, 10000));
+  dfmux_collector_ = boost::shared_ptr<DfMuxCollector>(new  DfMuxCollector(listen_ip_.c_str(), dfmux_builder_));
+  dfmux_collector_->Start();
 }
 
 void DfmuxStreamer::uninitialize(){
-  dfmux_builder_.reset();
+  dfmux_collector_->Stop();
 }

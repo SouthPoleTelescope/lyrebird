@@ -19,7 +19,7 @@ void TestStreamer::initialize(){std::cout<<"Init test streamer"<<std::endl;}
 void TestStreamer::uninitialize(){std::cout<<"Uninit test streamer"<<std::endl;}
 void TestStreamer::update_values(int ind){
   //printf("told to update\n");
-  val += ( (double)sleep_time)/1e6;
+  val += ( (double)sleep_time)/5e5;
   for (unsigned int i=0; i < s_path_inds.size(); i++){
     data_vals->update_val(s_path_inds[i], val * (i%123+200)/50.0);
   }

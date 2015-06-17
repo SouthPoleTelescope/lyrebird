@@ -47,6 +47,7 @@ glm::vec4 blue_cmap(float val){
   return glm::vec4(0,0,val,1.0);
 }
 
+
 glm::vec4 rainbow_cmap(float val){
   val = val > 1.0 ? 1.0 : val;
   val = val < 0.0 ? 0.0 : val;
@@ -122,8 +123,7 @@ color_map_t get_color_map(std::string n){
     return white_cmap;
   }else if (n=="rainbow_cmap"){
     return rainbow_cmap;
-  }
- else {
+  } else {
    cout<<"Color map: "<< n <<" not recognized, giving you a white one"<<endl;
    return white_cmap;
  }
@@ -156,6 +156,22 @@ template <class T> inline T pop(PPStack<T> *ps)
 // function library
 
  
+
+inline void pp_func_and(PPStack<float> * pp_val_stack, float * val, int offset){
+  float v0 = pop(pp_val_stack);
+  float v1 = pop(pp_val_stack);
+  push(pp_val_stack, v0 && v1 ? 1.0f : 0.0f);
+}
+inline void pp_func_or(PPStack<float> * pp_val_stack, float * val, int offset){
+  float v0 = pop(pp_val_stack);
+  float v1 = pop(pp_val_stack);
+  push(pp_val_stack, v0 || v1 ? 1.0f : 0.0f);
+}
+inline void pp_func_not(PPStack<float> * pp_val_stack, float * val, int offset){
+  float v0 = pop(pp_val_stack);
+  push(pp_val_stack, !v0 ? 1.0f : 0.0f);
+}
+
 inline void pp_func_add(PPStack<float> * pp_val_stack, float * val, int offset){
   float v0 = pop(pp_val_stack);
   float v1 = pop(pp_val_stack);
@@ -187,6 +203,10 @@ inline void pp_func_abs(PPStack<float> * pp_val_stack, float * val, int offset){
 inline void pp_func_cos(PPStack<float> * pp_val_stack, float * val, int offset){
   push(pp_val_stack, (float)cos(pop(pp_val_stack) ));
 }
+inline void pp_func_sqrt(PPStack<float> * pp_val_stack, float * val, int offset){
+  push(pp_val_stack, (float)sqrt(pop(pp_val_stack) ));
+}
+
 inline void pp_func_sin(PPStack<float> * pp_val_stack, float * val, int offset){
   push(pp_val_stack, (float)sin(pop(pp_val_stack) ));
 }
@@ -223,6 +243,15 @@ inline void pp_func_push_offset(PPStack<float> * pp_val_stack, float * val, int 
 
 pp_func get_pp_func(char id){
   switch(id){
+  case '|':
+    return pp_func_or;
+    break;
+  case '!':
+    return pp_func_not;
+    break;
+  case '&':
+    return pp_func_and;
+    break;
   case '+':
     return pp_func_add;
     break;
@@ -250,6 +279,9 @@ pp_func get_pp_func(char id){
   case 't':
     return pp_func_tan;
     break;
+  case 'q':
+    return pp_func_sqrt;
+    break;
   case 'r':
     return pp_func_res;
     break;
@@ -259,8 +291,19 @@ pp_func get_pp_func(char id){
   }
   return NULL;
 }
+
+//stores the change in the stack vals
 int get_pp_func_len(char id){
   switch(id){
+  case '|':
+    return 1;
+    break;
+  case '!':
+    return 0;
+    break;
+  case '&':
+    return 1;
+    break;
   case '+':
     return 1;
     break;
@@ -288,6 +331,9 @@ int get_pp_func_len(char id){
   case 't':
     return 0;
     break;
+  case 'q':
+    return 0;
+    break;
   case 'r':
     return 3;
     break;
@@ -303,7 +349,11 @@ int is_pp_func(char id){
 	   (id == '*') || (id == '/') ||
 	   (id == '^') || (id == 'a') ||
 	   (id == 's') || (id == 'c') ||
-	   (id == 't'));
+	   (id == 't') || (id == 'r') ||
+	   (id == '&') || (id == '|') ||
+	   (id == '!')
+
+	   );
 }
 
 //////////////////////////////////////

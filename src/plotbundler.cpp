@@ -101,7 +101,7 @@ void PlotBundler::update_plots(std::list<int> & pis, std::list<glm::vec3> & cis)
       }
 
       //zeros the lowest bins because fuck it
-      for (int j=0; j < 1; j++)
+      for (int j=0; j < 2; j++)
       	psd_vals[i*psd_buffer_size+j] = 0;
 
       last_updated[i] = 0;

@@ -26,6 +26,7 @@
 #include "highlighter.h"
 #include "equation.h"
 #include "simplerender.h"
+#include "logging.h"
 
 #include <list>
 #include <memory>
@@ -65,7 +66,7 @@ void TW_CALL toggle_data_vals_pause(void * d){
 }
 
 void TW_CALL request_samples_callback(void * dsPointer){
-  ((DataStreamer*) dsPointer)->update_values(-1);
+  ((DataStreamer*) dsPointer)->request_values(0);
 }
 
 
@@ -181,7 +182,7 @@ void WindowSizeCB(GLFWwindow* window, int width, int height)
 
 int main(int argc, char * args[])
 {
-
+  GetRootLogger()->SetLogLevel(L3LOG_DEBUG);
 
   int dv_buffer_size = 2048;
 
@@ -225,7 +226,7 @@ int main(int argc, char * args[])
 		    win_x_size, win_y_size, sub_sampling, 
 		    num_layers, max_framerate, max_num_plotted
 		    );
-
+  log_debug("done parse_config_file");
   //initialize all the data values which are circular buffers we dump floats into
   DataVals data_vals(dataval_descs.size() + 1, dv_buffer_size);
   for (size_t i=0; i < dataval_descs.size(); i++){
@@ -236,11 +237,11 @@ int main(int argc, char * args[])
   global_data_vals = &data_vals;
 
   //create all the data streamers which write to the data vals
-  vector<DataStreamer*> data_streamers;
+  vector<std::shared_ptr< DataStreamer> >data_streamers;
 
-
+  log_debug("creating data_streamers");
   for (size_t i = 0; i < datastream_descs.size(); i++){
-    DataStreamer * ds_tmp = NULL;
+    std::shared_ptr< DataStreamer> ds_tmp  = NULL;
     ds_tmp = build_data_streamer(datastream_descs[i], &data_vals);
     if (ds_tmp == NULL) print_and_exit("data streamer type not recognized");
     data_streamers.push_back(ds_tmp);
@@ -404,7 +405,8 @@ int main(int argc, char * args[])
     if (dataStreamerReqType == DSRT_STREAMING) continue;
     else if (dataStreamerReqType == DSRT_CALLBACK) continue;
     else if (dataStreamerReqType == DSRT_REQUEST){
-      TwAddButton(main_bar, data_streamers[i]->get_tag().c_str(), request_samples_callback, data_streamers[i], NULL); 
+      TwAddButton(main_bar, data_streamers[i]->get_tag().c_str(), 
+		  request_samples_callback, &(*(data_streamers[i])), NULL); 
     }else if (dataStreamerReqType == DSRT_REQUEST_HISTORY){
       char def_string[100];
       int max_val = data_streamers[i]->get_num_elements();
@@ -585,13 +587,17 @@ int main(int argc, char * args[])
   glfwDestroyWindow(window);
   glfwTerminate();
   
+
+  log_debug("Telling data_streamers to die_gracefully");
   for (size_t i=0; i < data_streamers.size(); i++){
     data_streamers[i]->die_gracefully();
   }
+  log_debug("Telling data_streamers to bury_body");
   for (size_t i=0; i < data_streamers.size(); i++){
     data_streamers[i]->bury_body();
-    delete data_streamers[i];    
   }
+  
+  log_debug("Cleaning graphics card memory");
   sren.clean_out_buffers();
   exit(EXIT_SUCCESS);
 }
