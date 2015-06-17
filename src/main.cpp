@@ -93,6 +93,9 @@ void TW_CALL visiblity_button_callback(void *vis_info){
       if ( vi->visual_elements_ptr->at(i)->get_group() == vi->name)
 	vi->visual_elements_ptr->at(i)->set_drawn();
   }
+
+  global_highlighter->clear_hls();
+
 }
 
 

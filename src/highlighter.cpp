@@ -118,7 +118,7 @@ void Highlighter::parse_click(glm::vec2 pos, int mod_key){
 void Highlighter::run_search(const char * search_str){
   clear_hls();
   for (size_t i=0; i < vis_elems_->size(); i++){
-    if ((*vis_elems_)[i]->string_matches_labels(search_str)){
+    if ((*vis_elems_)[i]->string_matches_labels(search_str) && (*vis_elems_)[i]->is_drawn()){
       add_hl(i);
     }
   }

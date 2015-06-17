@@ -9,15 +9,17 @@ N_MODULES=8
 N_CHANNELS=64
 
 '''
-test_format = {'Sq2SB21Ch3':  {'module': 2,
-               'channel':3,
-'board':'iceboard0043.local',
-'x_pos':3.2,
-'y_pos':4.2,
-       'is_polarized': True,
-       'polarization_angle': .1,
-       'resistance': 32132.3,
-'detector_frequency': #90,150, or 220
+test_format = {'Sq2SB21Ch3':  
+                   {'module': 2,
+                   'channel':3,
+                  'board':'iceboard0043.local',
+                 'other_ids': [],
+                  'x_pos':3.2,
+                   'y_pos':4.2,
+                    'is_polarized': True,
+                   'polarization_angle': .1,
+                  'resistance': 32132.3,
+                 'detector_frequency': #90,150, or 220
                               }}
 '''
 def uniquifyList(seq):
@@ -64,12 +66,13 @@ def addDfmux(config_dic, tag, boards_list, include_self_equations = False):
     CC.addDataSource(config_dic, tag, 'dfmux',  desc)
 
 
-def create_dfmux_config_dic( config_dic, bolo_description_dic):
+def create_dfmux_config_dic( config_dic, bolo_description_dic, 
+                             bolo_svg_scale_factor = 0.01, 
+                             svg_folder = os.path.abspath('../svgs')+'/'):
     boards_list = uniquifyList(map(lambda k: bolo_description_dic[k]['board'], bolo_description_dic))
     #figures out the scale factor we want
     xs = np.array(map(lambda k: bolo_description_dic[k]['x_pos'], bolo_description_dic))
     ys = np.array(map(lambda k: bolo_description_dic[k]['y_pos'], bolo_description_dic))
-
 
     CC.addGeneralSettings(config_dic, win_x_size=800, win_y_size=600, sub_sampling=4, max_framerate=40, max_num_plotted=20)
     addHousekeeping(config_dic, "Housekeeping", boards_list)
@@ -85,33 +88,44 @@ def create_dfmux_config_dic( config_dic, bolo_description_dic):
         resistance = v['resistance']
         detector_frequency = v['detector_frequency']
         is_polarized = v['is_polarized']
-
-
-
-
-
-
-
+        polarization_angle = v['polarization_angle']
+        other_ids = v['other_ids']
+        if is_polarized:
+            if detector_frequency == 90:
+                svg_path = svg_folder + '/largepol.svg'
+                highligh_path = svg_folder + '/largehighlight.svg'
+            elif detector_frequency == 150:
+                svg_path = svg_folder + '/medpol.svg'
+                highligh_path = svg_folder + '/medhighlight.svg'
+            elif detector_frequency == 220:
+                svg_path = svg_folder + '/smallpol.svg'
+                highligh_path = svg_folder + '/smallhighlight.svg'
+            else:
+                print "I don't recognize your detector frequency"
+                svg_path = svg_folder + '/box.svg'
+                highligh_path = svg_folder + '/boxhighlight.svg'
+        else:
+            svg_path = svg_folder + '/box.svg'
+            highligh_path = svg_folder + '/boxhighlight.svg'
+        #creates all the equations we want:
+        #carrier frequency
+        #carrier gain
+        #nuller gain
+        #current r frac value
+        CC.addVisElem(config_dic, 
+                      x_cen = x, y_cen = y, 
+                      x_scale = bolo_svg_scale_factor, y_scale = bolo_svg_scale_factor, 
+                      rotation = polarization_angle,
+                      svg_path = svg_path,
+                      highlight_path = highlight_path,
+                      layer = 1, labels= [k]+other_ids,
+                      equations = ["iceboard0043.local/1:carrier_gain_eq"], 
+                      labelled_data={}, 
+                      group="%d GHz Detectors" % detector_frequency)
 
 boards_list = ['iceboard0043.local']
 modules_list = [1,2,3,4]
-
 config_dic = {}
 svg_folder = os.path.abspath('../svgs')+'/'
-CC.addGeneralSettings(config_dic, win_x_size = 800, win_y_size=600, 
-                   sub_sampling=2, max_framerate=60, max_num_plotted=10)
 
-                                        
-addHousekeeping(config_dic, "Housekeeping", boards_list)
-
-CC.addVisElem(config_dic, 
-           x_cen=0, y_cen=0, x_scale=1, y_scale=1, rotation=0, 
-           svg_path=svg_folder + 'box.svg', 
-           highlight_path = svg_folder + 'highlight.svg',
-           layer = 1, labels=["testbox"],
-           equations = ["iceboard0043.local/1:carrier_gain_eq"], 
-           labelled_data={}, group="Test")
-
-
-#print json.dumps(config_dic, indent = 2)
 json.dump( config_dic, open("test_eq_display.json",'w'), indent=2)

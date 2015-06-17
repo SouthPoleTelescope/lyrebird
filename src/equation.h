@@ -32,11 +32,9 @@ struct equation_desc{
   std::string eq;
   std::string cmap_id;
   std::string label;
+  std::string display_label;
 };
 typedef struct equation_desc equation_desc;
-
-
-
 
 
 class VisElem;
@@ -50,6 +48,7 @@ class Equation{
   void get_bulk_value(float * v);
   glm::vec4 get_color();
   std::string get_label();
+  std::string get_display_label();
   float * get_value_address();
  private:
   const Equation& operator=( const Equation& );
@@ -63,7 +62,8 @@ class Equation{
 
   int n_args;
   color_map_t cmap;
-  std::string label;
+  std::string label_;
+  std::string display_label_;
   DataVals * data_vals;
 
   float cached_value;

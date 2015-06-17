@@ -485,7 +485,8 @@ void Equation::set_equation(DataVals * dvs, equation_desc desc){
   data_vals = dvs;
   tokenize_equation_or_die(desc.eq.c_str(), &ppp_stack, data_vals);
   cmap =  get_color_map(desc.cmap_id);
-  label = desc.label;
+  label_ = desc.label;
+  display_label_ = desc.display_label;
 }
 
 
@@ -515,7 +516,10 @@ glm::vec4 Equation::get_color(){
 }
 
 string Equation::get_label(){
-  return label;
+  return label_;
+}
+string Equation::get_display_label(){
+  return display_label_;
 }
 
 float * Equation::get_value_address(){
