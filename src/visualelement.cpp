@@ -158,14 +158,18 @@ bool VisElem::string_matches_labels(const char * pattern){
 }
 
 void VisElem::get_all_info(std::vector<string> & ai_labels, std::vector<string> & ai_tags,
-			   std::vector<string> & ai_tag_vals,
+			   std::vector<string*> & ai_tag_vals,
 			   std::vector<string> & ai_eq_labels,  std::vector<float*> & ai_eq_addrs
 			  ){
   l3_assert(labels.size() > 0);
   ai_labels = std::vector<string>(labels);
   l3_assert(ai_labels.size() > 0);
   ai_tags = std::vector<string>(l_data_labels);
-  ai_tag_vals = std::vector<string>(l_data_vals);
+  ai_tag_vals = std::vector<string*>(l_data_vals.size(), NULL);
+  for (size_t i=0; i < l_data_vals.size(); i++){
+    ai_tag_vals[i] = &(l_data_vals[i]);
+  }
+  
   ai_eq_labels = std::vector<string>(equation_inds_.size(), "");
   ai_eq_addrs = std::vector<float*>(equation_inds_.size(), NULL);
   for (size_t i=0; i < equation_inds_.size(); i++){

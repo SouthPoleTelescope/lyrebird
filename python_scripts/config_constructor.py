@@ -162,7 +162,7 @@ if __name__ == '__main__':
                                labels=['test_label_%d'%ds_id_num, 'test_sec_label_%d'%ds_id_num],
                                group = 'Detector_type_%d'%f,
                                equations = ["dummyEqLabel_test_%d"%ds_id_num, "dummyLinearEq_test_%d"%ds_id_num  ],
-                               labelled_data={}
+                               labelled_data=[["hey you","let's dance"], ["no seriously","dance"]]
                     )
     config_dic["displayed_global_equations"] = ["dummyEqLabel_test_0", "dummyEqLabel_test_6"]
     config_dic["modifiable_data_vals"] = ["test_global_id"]

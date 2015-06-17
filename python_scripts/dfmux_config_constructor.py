@@ -59,9 +59,13 @@ def addDfmux(config_dic, tag, boards_list, include_self_equations = False):
                 CC.addDataVal(config_dic, '%s/%d/%d/Q:dfmux_samples'%(b,m,c),-1,False)
                 if include_self_equations:
                     CC.addGlobalEquation(config_dic, CC.getEquation('%s/%d/%d/I:dfmux_samples'%(b,m,c), 'cmap_white', 
-                                                                    '%s/%d/%d/I:dfmux_samples'%(b,m,c)+'_eq'))
+                                                                    '%s/%d/%d/I:dfmux_samples'%(b,m,c)+'_eq',
+                                                                    '%s/%d/%d/I:dfmux_samples'%(b,m,c)+'_eq'
+                                                                ))
                     CC.addGlobalEquation(config_dic, CC.getEquation('%s/%d/%d/Q:dfmux_samples'%(b,m,c), 'cmap_white', 
-                                                                    '%s/%d/%d/Q:dfmux_samples'%(b,m,c)+'_eq'))
+                                                                    '%s/%d/%d/Q:dfmux_samples'%(b,m,c)+'_eq',
+                                                                    '%s/%d/%d/Q:dfmux_samples'%(b,m,c)+'_eq'
+                                                                ))
     desc = { 'hostnames': boards_list}
     CC.addDataSource(config_dic, tag, 'dfmux',  desc)
 

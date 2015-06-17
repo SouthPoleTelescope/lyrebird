@@ -75,7 +75,7 @@ class VisElem{
   int get_num_eqs();
 
   void get_all_info(std::vector<std::string> &labels, std::vector<std::string> & tags,
-		    std::vector<std::string> & tag_vals,
+		    std::vector<std::string*> & tag_vals,
 		    std::vector<std::string> & eq_labels,std::vector<float*> & eq_addrs
 		    );
 

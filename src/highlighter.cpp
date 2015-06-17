@@ -142,7 +142,7 @@ void Highlighter::fill_info_bar(){
       (*vis_elems_)[el]->update_all_equations();
       std::vector<string> ai_labels;
       std::vector<string> ai_tags;
-      std::vector<string> ai_tag_vals;
+      std::vector<string*> ai_tag_vals;
       std::vector<string> ai_eq_labels;
       std::vector<float*> ai_eq_addrs;
       (*vis_elems_)[el]->get_all_info(ai_labels, ai_tags, ai_tag_vals, ai_eq_labels, ai_eq_addrs);
@@ -152,12 +152,22 @@ void Highlighter::fill_info_bar(){
       atb_colors_[i] = get_ant_tweak_bar_color(*hl_colors_it);
       std::string color_label = ai_labels[0] + std::string("_color");
       std::string color_opts = group_label + std::string(" label=color ");
-	TwAddVarRO(info_bar_, color_label.c_str(), TW_TYPE_COLOR32, &(atb_colors_[i]), color_opts.c_str());
+      TwAddVarRO(info_bar_, color_label.c_str(), TW_TYPE_COLOR32, &(atb_colors_[i]), color_opts.c_str());
+
+
+      for (size_t i=0; i < ai_tags.size(); i++){
+	std::string tag_name = ai_labels[0] + ai_tags[i];
+	std::string atb_opts = group_label + std::string(" label='") + ai_tags[i] + std::string("' ");
+	TwAddVarRO(info_bar_, 
+		   tag_name.c_str(), TW_TYPE_STDSTRING,
+		   ai_tag_vals[i], atb_opts.c_str()
+		   );
+      }
 
 
       for (size_t i=0; i < ai_eq_labels.size(); i++){
 	std::string eq_name = ai_labels[0] + ai_eq_labels[i];
-	std::string atb_opts = group_label + std::string(" label=") + ai_eq_labels[i] + std::string(" ");
+	std::string atb_opts = group_label + std::string(" label='") + ai_eq_labels[i] + std::string("' ");
 	TwAddVarRO(info_bar_, eq_name.c_str(), TW_TYPE_FLOAT,
 		   ai_eq_addrs[i],atb_opts.c_str());
       }

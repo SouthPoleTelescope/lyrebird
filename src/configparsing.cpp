@@ -256,10 +256,12 @@ void parse_config_file(string in_file,
 
     vis_elems[i].group = v["group"].asString();
 
+
     for (unsigned int j=0; j < v["labelled_data"].size(); j++){
-      vis_elems[i].labelled_data.push_back( v["labelled_data"][0].asString() );
-      vis_elems[i].labelled_data_vs.push_back( v["labelled_data"][1].asString() );
+      vis_elems[i].labelled_data.push_back( v["labelled_data"][j][0].asString() );
+      vis_elems[i].labelled_data_vs.push_back( v["labelled_data"][j][1].asString() );
     }
+
 
     ////////////////////////
     //Parse the equations //
