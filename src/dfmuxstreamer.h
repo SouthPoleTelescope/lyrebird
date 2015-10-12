@@ -4,11 +4,11 @@
 #include <memory>
 #include <list>
 
-#include "G3Pipeline.h"
-#include "G3Module.h"
-#include "dfmux/DfMuxBuilder.h"
-#include "dfmux/DfMuxCollector.h"
-#include "hkgetter.h"
+#include <G3Pipeline.h>
+#include <G3Module.h>
+#include <dfmux/DfMuxBuilder.h>
+#include <dfmux/DfMuxCollector.h>
+#include <hkgetter.h>
 
 #include <boost/enable_shared_from_this.hpp>
 #include "json/json.h"
@@ -23,7 +23,6 @@ public:
   void uninitialize();
 
 private:
-  HousekeepingModule * hk_module;
   std::vector<std::string> unique_boards_;
   std::vector<int> path_inds_;
 };

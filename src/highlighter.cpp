@@ -220,7 +220,7 @@ std::list<glm::vec3> Highlighter::get_plot_colors(){
 //random utils
 glm::vec3 Highlighter::get_hl_color(int ind){
   glm::vec3 hsv_col;  // 0-360, 0-1, 0-1 are the units  
-  hsv_col[0] = (ind * 67)%360;
+  hsv_col[0] = ((ind+1) * 67)%360 ;
   hsv_col[1] = 1;
   hsv_col[2] = 1;  
   return rgbColor(hsv_col);

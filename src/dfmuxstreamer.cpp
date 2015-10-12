@@ -51,14 +51,12 @@ HkStreamer::HkStreamer( std::string tag, Json::Value hk_desc, DataVals * dv )
 }
 
 void HkStreamer::initialize(){
-  hk_module = new HousekeepingModule(unique_boards_, 30000);
 }
 
 void HkStreamer::update_values(int v){
   log_debug("updating hk values");
-  assert(hk_module);
   std::map<std::string, HkBoardInfo > b_map;
-  hk_module->get_housekeeping_structs(b_map);
+  get_housekeeping_structs(unique_boards_, 10000, b_map);
   size_t i=0; 
   for (auto b  = unique_boards_.begin(); b!=unique_boards_.end(); b++){
     HkBoardInfo & binfo = b_map[*b];
@@ -75,7 +73,6 @@ void HkStreamer::update_values(int v){
 }
 
 void HkStreamer::uninitialize(){
-  delete hk_module;
 }
 
 

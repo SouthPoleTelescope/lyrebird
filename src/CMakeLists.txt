@@ -8,12 +8,12 @@ find_package(GLEW REQUIRED)
 find_package(FFTW REQUIRED)
 find_package(X11 REQUIRED)
 
-find_package(Skunkworks REQUIRED)
+find_package(Spt3g REQUIRED)
 
 add_subdirectory(AntTweakBar)
 
 include_directories("./AntTweakBar/include/" ${GLFW_INCLUDE_PATH} ${FFTW_INCLUDE_DIRS} 
-  ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS} ${X11_INCLUDE_DIRS} ${SKUNKWORKS_INCLUDES})
+  ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS} ${X11_INCLUDE_DIRS} ${SPT3G_INCLUDES})
 
 add_library(lyrebirdvis STATIC
   geometryutils.cpp genericutils.cpp shader.cpp nanosvg.cpp simplerender.cpp configparsing.cpp 
@@ -24,4 +24,4 @@ add_library(lyrebirdvis STATIC
 add_executable(lyrebird main.cpp)
 target_link_libraries(lyrebird lyrebirdvis AntTweakBar
   ${GLFW_LIBRARY} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${GLEW_LIBRARY} ${X11_LIBRARIES}
-  ${FFTW_LIBRARIES} ${SKUNKWORKS_LIBRARIES})  
+  ${FFTW_LIBRARIES} ${SPT3G_LIBRARIES})  
