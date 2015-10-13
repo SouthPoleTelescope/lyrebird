@@ -151,7 +151,7 @@ bool triangulate_polygon(const std::vector < glm::vec2 > &contour,std::vector < 
     }
   }
 
-  delete V;
+  delete [] V;
 
   return true;
 }
