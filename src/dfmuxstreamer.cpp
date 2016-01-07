@@ -16,43 +16,22 @@
 #include <G3Pipeline.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <deque>
 
-using namespace boost::python;
 
-object setup_network_streamer(std::string hostname, int port)
-{ 
-	Py_Initialize();
-	// Retrieve the main module.
-	object main = import("__main__");
-	// Retrieve the main module's namespace
-	object global(main.attr("__dict__"));
-
-	char * command = (char *)malloc( sizeof(char) * 4096);
-	sprintf(command, 
-		"from spt3g import core, dfmux, hk, networkstreamer\n"
-		"my_network_listener = networkstreamer.NetworkReceiver(\"%s\", %d)\n"
-		"def get_data():\n"
-		"    global my_network_listener\n"
-		"    return my_network_listener(None)\n",
-		hostname.c_str(), port);
-	// Define greet function in Python.
-	object result = exec( command, global, global);
-	object fun = global["get_data"];
-	return fun;
+G3FramePtr get_frame(G3NetworkReceiver & fun){
+	std::deque<G3FramePtr> out;
+	fun.Process(G3FramePtr(NULL), out);
+	return out.front();
 }
 
-G3FramePtr get_frame(object fun){
-	return extract<G3FramePtr>(fun());
-}
-
-void cleanup_network_streamer(){
-	Py_Finalize();	
-}
 
 
 G3DataStreamer::G3DataStreamer(Json::Value desc,
 			       std::string tag, DataVals * dv, int us_update_time )
-	: DataStreamer(tag, dv, us_update_time, DSRT_STREAMING)
+	: DataStreamer(tag, dv, us_update_time, DSRT_STREAMING),
+	  frame_grabbing_function_( desc["network_streamer_hostname"].asString(),
+				    desc["network_streamer_port"].asInt())
 {
 	has_id_map_ = false;
 	n_boards_ = desc["board_list"].size();
@@ -70,7 +49,7 @@ G3DataStreamer::G3DataStreamer(Json::Value desc,
 }
 
 void G3DataStreamer::update_values(int n){
-	G3FramePtr frame = boost::python::extract<G3FramePtr>(frame_grabbing_function_());
+	G3FramePtr frame = get_frame(frame_grabbing_function_);
 	if (frame->type == G3Frame::Wiring){
 		DfMuxWiringMapConstPtr wm = frame->Get<DfMuxWiringMap>("WiringMap");
 		for (auto b = wm->begin(); b != wm->end(); b++){
@@ -93,12 +72,10 @@ void G3DataStreamer::update_values(int n){
 void G3DataStreamer::initialize(){
 	initialize_hk_values();
 	initialize_dfmux_values();
-	frame_grabbing_function_ = setup_network_streamer(hostname_, port_);
 }
 
 void G3DataStreamer::uninitialize(){
 	keep_getting_data_ = false;
-	cleanup_network_streamer();
 }
 
 int G3DataStreamer::get_num_hk_values(){

@@ -32,6 +32,6 @@ add_executable(lyrebird main.cpp)
 
 target_link_libraries(lyrebird lyrebirdvis AntTweakBar
   ${GLFW_LIBRARY} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${GLEW_LIBRARY} ${X11_LIBRARIES}
-  ${FFTW_LIBRARIES} ${SPT3G_LIBRARIES} ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})  
+  ${FFTW_LIBRARIES} ${SPT3G_LIBRARIES} )
 
 

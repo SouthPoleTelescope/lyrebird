@@ -27,7 +27,6 @@ void *data_streamer_thread_func( void * ds){
 std::shared_ptr<DataStreamer> build_data_streamer(datastreamer_desc dd , DataVals * dvs    ){
 	if (dd.tp == "test_streamer") return std::shared_ptr<DataStreamer>(new TestStreamer( dd.streamer_json_desc, dd.tag, dvs, dd.us_update_time));
 	else if (dd.tp == "dfmux")  return std::shared_ptr<DataStreamer>(new G3DataStreamer( dd.streamer_json_desc, dd.tag, dvs, dd.us_update_time));
-	//else if (dd.tp == "dfmux")return std::shared_ptr<DataStreamer>(new DfmuxStreamer( dd.tag, dd.streamer_json_desc, dvs));
 	else{
 		log_fatal("Requested streamer type %s and I don't know what this is", dd.tp.c_str() );
 		return NULL;
