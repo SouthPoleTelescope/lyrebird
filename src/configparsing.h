@@ -21,6 +21,9 @@ void parse_config_file(std::string in_file,
 		       std::vector<std::string> & displayed_global_equations,
 		       std::vector<std::string> & modifiable_data_vals,
 
+		       std::vector<std::string> & command_lst,
+		       std::vector<std::string> & command_label,
+
 		       int & win_x_size,
 		       int & win_y_size,
 		       int & sub_sampling,

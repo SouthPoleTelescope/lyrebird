@@ -166,6 +166,11 @@ if __name__ == '__main__':
     config_dic["displayed_global_equations"] = ["dummyEqLabel_test_0", "dummyEqLabel_test_6"]
     config_dic["modifiable_data_vals"] = ["test_global_id"]
 
+    config_dic['external_commands_list'] = ['echo hello', 'echo goodbye']
+    config_dic['external_commands_id_list'] = ['SAY HALLO', "SAY GOODBYE"]
+
+
+
     addDataSource(config_dic, "test_streamer", "test_streamer", test_ds_lst, 1000)
     storeConfigFile(config_dic, "test_config_file.json")
 

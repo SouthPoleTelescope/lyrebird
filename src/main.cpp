@@ -65,6 +65,13 @@ void TW_CALL toggle_data_vals_pause(void * d){
   }
 }
 
+
+void TW_CALL run_external_command(void * c){
+	char * command = (char *)c;
+	system(command);
+}
+
+
 void TW_CALL request_samples_callback(void * dsPointer){
   ((DataStreamer*) dsPointer)->request_values(0);
 }
@@ -218,11 +225,14 @@ int main(int argc, char * args[])
   std::vector<dataval_desc> dataval_descs;
   std::vector<equation_desc> eq_descs;
 
+  std::vector<std::string> command_lst;
+  std::vector<std::string> command_label;
 
   //parse the config file
   parse_config_file(args[1], dataval_descs, datastream_descs, eq_descs, 
 		    vis_elems, svg_paths, svg_ids,
 		    displayed_global_equations, modifiable_data_vals,
+		    command_lst, command_label,
 		    win_x_size, win_y_size, sub_sampling, 
 		    num_layers, max_framerate, max_num_plotted
 		    );
@@ -388,18 +398,23 @@ int main(int argc, char * args[])
   char search_str[SEARCH_STR_LEN] = ""; // sizeof(search_str) is 64
   TwAddVarRW(main_bar, "Search:", TW_TYPE_CSSTRING(sizeof(search_str)), search_str, NULL); // must pass search_str (not &search_str)
   
-  bool found_streaming_streamer = false;
-  for (size_t i=0; i < data_streamers.size(); i++){
-    if (data_streamers[i]->get_request_type() == DSRT_STREAMING || data_streamers[i]->get_request_type() == DSRT_CALLBACK ){
-      found_streaming_streamer = true;
-      break;
-    }
-  }
+
   int is_paused = 0;
-  if (found_streaming_streamer)
-    TwAddButton(main_bar, "Pause", toggle_data_vals_pause, &is_paused, NULL);
 
   TwAddSeparator(main_bar, "ds_sep", NULL);
+  TwAddButton(main_bar, "Pause", toggle_data_vals_pause, &is_paused, NULL);
+
+  for (size_t i=0; i < command_lst.size(); i++){
+	  TwAddButton(main_bar, command_label[i].c_str(), 
+		      run_external_command, const_cast<char*>( command_lst[i].c_str()),
+		      NULL); 
+  }
+
+
+  TwAddSeparator(main_bar, "command_sep", NULL);
+
+  //char test_command[] = "echo hello";
+  //TwAddButton(main_bar, "Run", run_external_command, test_command, NULL);
 
   for (size_t i=0; i < data_streamers.size(); i++){
     int dataStreamerReqType = data_streamers[i]->get_request_type();
@@ -415,7 +430,6 @@ int main(int argc, char * args[])
       TwAddVarRW(main_bar, data_streamers[i]->get_tag().c_str(), TW_TYPE_INT32, &(ds_index_variables[i]), def_string);
     }
   }
-
 
   TwAddSeparator(main_bar, "modifiable", NULL);
   for (size_t i=0; i < modifiable_data_vals.size(); i++){
@@ -525,9 +539,6 @@ int main(int argc, char * args[])
     current_time = glfwGetTime();
     delta_time = current_time-last_time;
 
-
-
-
     last_time = current_time;
     
     if (!global_mouse_is_handled){
@@ -576,14 +587,16 @@ int main(int argc, char * args[])
     }
 
     //animates the highlighting
-    for (size_t i=0; i < visual_elements.size(); i++)visual_elements[i]->animate_highlight(delta_time);
+    for (size_t i=0; i < visual_elements.size(); i++)
+	    visual_elements[i]->animate_highlight(delta_time);
     
 
 
     //handle searching
     if (strcmp( search_str, prev_search_str)){
       highlight.run_search(search_str);
-    }    
+    } 
+
     strncpy ( prev_search_str, search_str, SEARCH_STR_LEN );      
   }
   

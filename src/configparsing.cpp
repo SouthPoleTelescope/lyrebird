@@ -52,6 +52,9 @@ void parse_config_file(string in_file,
 		       std::vector<std::string> & displayed_global_equations,
 		       std::vector<std::string> & modifiable_data_vals,
 
+		       std::vector<std::string> & command_lst,
+		       std::vector<std::string> & command_label,
+
 		       int & win_x_size,
 		       int & win_y_size,
 		       int & sub_sampling,
@@ -167,6 +170,13 @@ void parse_config_file(string in_file,
       modifiable_data_vals.push_back(root["modifiable_data_vals"][i].asString());
   }
 
+  if (root.isMember("external_commands_list")  && root.isMember("external_commands_id_list") ){
+    
+	  for (unsigned int i=0; i < root["external_commands_list"].size(); i++){
+		  command_lst.push_back(root["external_commands_list"][i].asString());
+		  command_label.push_back(root["external_commands_id_list"][i].asString());
+	  }
+  }
 
 
     ///////////////////////////////////
