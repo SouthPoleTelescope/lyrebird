@@ -16,7 +16,6 @@ DataVals::DataVals(int n_vals, int buffer_size){
 
 
 void DataVals::initialize(){
-	log_warn("Initiailizing dvs %d", array_size_);
   ring_indices_ = new int[array_size_];
   ring_buffers_ = new float[array_size_ * (buffer_size_full_)];
   is_buffered_ = new int[array_size_];
