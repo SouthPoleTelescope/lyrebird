@@ -50,26 +50,26 @@ DataStreamer::DataStreamer(std::string tag,
 
 
 void DataStreamer::thread_loop_auto(){
-  pthread_mutex_lock(&init_uninit_mutex_);
-  initialize();
-  pthread_mutex_unlock(&init_uninit_mutex_);
-  while (should_live){
-    update_values(-1);
-    usleep(sleep_time);    
-  }
-
-  pthread_mutex_lock(&init_uninit_mutex_);
-  uninitialize();
-  pthread_mutex_unlock(&init_uninit_mutex_);
-
+	//pthread_mutex_lock(&init_uninit_mutex_);
+	//initialize();
+	//pthread_mutex_unlock(&init_uninit_mutex_);
+	while (should_live){
+		update_values(-1);
+		usleep(sleep_time);    
+	}
+	
+	pthread_mutex_lock(&init_uninit_mutex_);
+	uninitialize();
+	pthread_mutex_unlock(&init_uninit_mutex_);
+	
 }
 
 
 void DataStreamer::thread_loop_request(){
 
-  pthread_mutex_lock(&init_uninit_mutex_);
-  initialize();
-  pthread_mutex_unlock(&init_uninit_mutex_);
+	//pthread_mutex_lock(&init_uninit_mutex_);
+	//initialize();
+	//pthread_mutex_unlock(&init_uninit_mutex_);
 
   while (should_live){
 
@@ -90,17 +90,17 @@ void DataStreamer::thread_loop_request(){
 
 
 void DataStreamer::thread_loop_callback(){
-  pthread_mutex_lock(&init_uninit_mutex_);
-  initialize();
-  pthread_mutex_unlock(&init_uninit_mutex_);
-  while (should_live){
-    pthread_mutex_lock(&count_mutex);
-    pthread_cond_wait( &count_threshold_cv, &count_mutex);
-    pthread_mutex_unlock(&count_mutex);
-  }
-  pthread_mutex_lock(&init_uninit_mutex_);
-  uninitialize();
-  pthread_mutex_unlock(&init_uninit_mutex_);
+	//pthread_mutex_lock(&init_uninit_mutex_);
+	//initialize();
+	//pthread_mutex_unlock(&init_uninit_mutex_);
+	while (should_live){
+		pthread_mutex_lock(&count_mutex);
+		pthread_cond_wait( &count_threshold_cv, &count_mutex);
+		pthread_mutex_unlock(&count_mutex);
+	}
+	pthread_mutex_lock(&init_uninit_mutex_);
+	uninitialize();
+	pthread_mutex_unlock(&init_uninit_mutex_);
 }
 
 
@@ -123,6 +123,7 @@ void DataStreamer::bury_body(){
 
 void DataStreamer::start_recording(){
   should_live = true;
+  initialize();
   if (pthread_create( &d_thread, NULL, data_streamer_thread_func, (void*)this)){
     log_fatal("Trouble with spawning a thread");
   }
