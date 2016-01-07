@@ -171,13 +171,15 @@ void parse_config_file(string in_file,
   }
 
   if (root.isMember("external_commands_list")  && root.isMember("external_commands_id_list") ){
-    
-	  for (unsigned int i=0; i < root["external_commands_list"].size(); i++){
+	  if (root["external_commands_list"].size() != root["external_commands_id_list"].size()){
+		  log_fatal("all external commands need labels and vice versa");
+	  }
+    	  for (unsigned int i=0; i < root["external_commands_list"].size(); i++){
 		  command_lst.push_back(root["external_commands_list"][i].asString());
 		  command_label.push_back(root["external_commands_id_list"][i].asString());
 	  }
   }
-
+  
 
     ///////////////////////////////////
    //Parse the geometry description //
