@@ -41,6 +41,7 @@ def addDataStreamer(config_dic, tag, boards_list,
                                                                 'Q_Sample'
                                                 ))
                 glob_eqs.append('%s/%d/%d/Q:dfmux_samples'%(b,m,c)+'_eq')
+                glob_eqs.append('%s/%d/%d/I:dfmux_samples'%(b,m,c)+'_eq')
     CC.addDataSource(config_dic, tag, 'dfmux',  desc)
     return glob_eqs
 

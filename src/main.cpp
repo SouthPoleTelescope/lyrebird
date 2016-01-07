@@ -369,7 +369,6 @@ int main(int argc, char * args[])
   TwDefine(" GLOBAL contained=true ");
   TwDefine("'Main' alpha=220 position='0 0' size='200 300'");
 
-
   //make the global equations
   for (size_t i=0; i < displayed_global_equations.size(); i++){
     Equation & eq = equation_map.get_eq(equation_map.get_eq_index( displayed_global_equations[i] ));
@@ -504,7 +503,10 @@ int main(int argc, char * args[])
     highlight.update_info_bar();
     
     //updates the main_bar
-    //for (size_t i=0; i < globEquations.size(); i++) globEquations[i].get_value();
+    for (size_t i=0; i < displayed_global_equations.size(); i++) {
+	    equation_map.get_eq(equation_map.get_eq_index( displayed_global_equations[i])).get_value();
+    }
+
     
     
     TwRefreshBar(main_bar);

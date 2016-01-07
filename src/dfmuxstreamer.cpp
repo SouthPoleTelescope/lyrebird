@@ -72,7 +72,6 @@ G3DataStreamer::G3DataStreamer(Json::Value desc,
 void G3DataStreamer::update_values(int n){
 	G3FramePtr frame = boost::python::extract<G3FramePtr>(frame_grabbing_function_());
 	if (frame->type == G3Frame::Wiring){
-		log_warn("Grabbing wiring");
 		DfMuxWiringMapConstPtr wm = frame->Get<DfMuxWiringMap>("WiringMap");
 		for (auto b = wm->begin(); b != wm->end(); b++){
 			const DfMuxChannelMapping & cmap = b->second;
@@ -86,8 +85,6 @@ void G3DataStreamer::update_values(int n){
 		DfMuxMetaSampleConstPtr ms = frame->Get<DfMuxMetaSample>("DfMux");
 		if (has_id_map_) update_dfmux_values(*ms);
 	} else if (frame->type == G3Frame::Housekeeping){
-		log_warn("Grabbing hk");
-
 		G3MapBoardInfoConstPtr bi = frame->Get<G3MapBoardInfo>("HkBoardInfo");
 		if (has_id_map_) update_hk_values(*bi);
 	}
@@ -197,8 +194,8 @@ void G3DataStreamer::update_dfmux_values(const DfMuxMetaSample & samp){
 			}
 			DfMuxSampleConstPtr mod_ptr = board_sample.at(m);
 			for (int c =0; c < NUM_CHANNELS; c++){
-				dvs_->update_val(dfmux_path_inds_[dv_ind], mod_ptr->at(c*2)); dv_ind++;
-				dvs_->update_val(dfmux_path_inds_[dv_ind], mod_ptr->at(c*2+1)); dv_ind++;
+				dvs_->update_val(dfmux_path_inds_[dv_ind], (float) mod_ptr->at(c*2)); dv_ind++;
+				dvs_->update_val(dfmux_path_inds_[dv_ind], (float) mod_ptr->at(c*2+1)); dv_ind++;
 			}
 		}
 	}
