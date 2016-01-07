@@ -18,5 +18,7 @@ class TestStreamer :public DataStreamer{
  private:
   double val;
   std::vector<int> s_path_inds;
+
+	Json::Value streamer_json_desc_;
 };
 

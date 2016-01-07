@@ -11,7 +11,7 @@
 #include "genericutils.h"
 
 
-#include "dfmuxcalculations.h"
+#include <hk/dfmuxcalculations.h>
 
 
 

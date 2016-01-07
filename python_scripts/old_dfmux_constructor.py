@@ -1,14 +1,21 @@
 import argparse, json, os
 import config_constructor as CC
-
 import numpy as np
 from operator import itemgetter, attrgetter
-
-
 N_MODULES=8
 N_CHANNELS=64
 
+
+
+
+
 '''
+- Need list of physical ids we want information for
+- Need mapping from physical id to stored id.
+- Need pixel ids
+
+
+
 test_channel_format = {'Sq2SB21Ch3':  
                         {'module': 2,
                          'channel':3,

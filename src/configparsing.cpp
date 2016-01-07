@@ -142,9 +142,7 @@ void parse_config_file(string in_file,
     for (unsigned int i=0; i < root["data_vals"].size(); i++){ 
       dataval_descs.push_back(parse_dataval_desc(root["data_vals"][i]));
     }
-  } else{
-    log_fatal("data_vals not found");
-  }
+  } 
 
   if (root.isMember("data_sources")){
     for (unsigned int i=0; i < root["data_sources"].size(); i++){ 
@@ -175,114 +173,116 @@ void parse_config_file(string in_file,
    //Parse the geometry description //
   ///////////////////////////////////
   if (!root.isMember("visual_elements")){
-    log_fatal("visual_elements needs to be in config file");
-  }
-  Json::Value visElemsJSON = root["visual_elements"];
+	  log_warn("visual_elements needs to be in config file");
+  } else {
+	  Json::Value visElemsJSON = root["visual_elements"];
+	  
+	  int n_vis_elems = visElemsJSON.size();
+	  if ( n_vis_elems == 0){
+		  log_fatal("visual_elements is empty\n");
+	  }
+	  vis_elems = vector < vis_elem_repr >(n_vis_elems);
+	  
+	  
+	  vector<string> full_svg_paths;
+	  vector<string> full_svg_ids;
+	  for (int i=0; i < n_vis_elems; i++){
+		  Json::Value v = visElemsJSON[i];
+		  if (!v.isMember("x_center")  ) log_fatal("x_center not found  in visual_element\n");
+		  if (!v.isMember("y_center") ) log_fatal("y_center not found  in visual_element\n");
+		  if (!v.isMember("x_scale")  ) log_fatal("x_scale not found  in visual_element\n");
+		  if (!v.isMember("y_scale")  ) log_fatal("y_scale not found  in visual_element\n");
+		  if (!v.isMember("rotation") ) log_fatal("rotation not found  in visual_element\n");
+		  if (!v.isMember("layer")  ) log_fatal("layer not found  in visual_element\n");
+		  if ( !v["x_center"].isNumeric() ) log_fatal("x_center  not valid in visual_element\n");
+		  if ( !v["y_center"].isNumeric() ) log_fatal("y_center  not valid in visual_element\n");
+		  if ( !v["x_scale"].isNumeric() ) log_fatal("x_scale  not valid in visual_element\n");
+		  if ( !v["y_scale"].isNumeric() ) log_fatal("y_scale  not valid in visual_element\n");
+		  if ( !v["rotation"].isNumeric() ) log_fatal("rotation  not valid in visual_element\n");
+		  if ( !v["layer"].isInt() ) log_fatal("layer  not valid in visual_element\n");
+		  
+		  
+		  if (!v.isMember("svg_id") ) log_fatal("svg_id not found  in visual_element\n");
+		  if (!v.isMember("svg_path") ) log_fatal("svg_path not found  in visual_element\n");
+		  
+		  if (!v.isMember("highlight_svg_id") ) log_fatal("highlight_svg_id not found  in visual_element\n");
+		  if (!v.isMember("highlight_svg_path") ) log_fatal("highlight_svg_path not found  in visual_element\n");
+		  
+		  
+		  if (!v.isMember("labels") ) log_fatal("labels not found  in visual_element\n");
+		  if (!v.isMember("equations") ) log_fatal("equations not found  in visual_element\n");
+		  if (!v.isMember("group") ) log_fatal("group not found  in visual_element\n");
+		  if (!v.isMember("labelled_data") ) log_fatal("labelled_data not found  in visual_element\n");
+		  
+		  
+		  
 
-  int n_vis_elems = visElemsJSON.size();
-  if ( n_vis_elems == 0){
-    log_fatal("visual_elements is empty\n");
-  }
-  vis_elems = vector < vis_elem_repr >(n_vis_elems);
-
-  
-  vector<string> full_svg_paths;
-  vector<string> full_svg_ids;
-  for (int i=0; i < n_vis_elems; i++){
-    Json::Value v = visElemsJSON[i];
-    if (!v.isMember("x_center")  ) log_fatal("x_center not found  in visual_element\n");
-    if (!v.isMember("y_center") ) log_fatal("y_center not found  in visual_element\n");
-    if (!v.isMember("x_scale")  ) log_fatal("x_scale not found  in visual_element\n");
-    if (!v.isMember("y_scale")  ) log_fatal("y_scale not found  in visual_element\n");
-    if (!v.isMember("rotation") ) log_fatal("rotation not found  in visual_element\n");
-    if (!v.isMember("layer")  ) log_fatal("layer not found  in visual_element\n");
-    if ( !v["x_center"].isNumeric() ) log_fatal("x_center  not valid in visual_element\n");
-    if ( !v["y_center"].isNumeric() ) log_fatal("y_center  not valid in visual_element\n");
-    if ( !v["x_scale"].isNumeric() ) log_fatal("x_scale  not valid in visual_element\n");
-    if ( !v["y_scale"].isNumeric() ) log_fatal("y_scale  not valid in visual_element\n");
-    if ( !v["rotation"].isNumeric() ) log_fatal("rotation  not valid in visual_element\n");
-    if ( !v["layer"].isInt() ) log_fatal("layer  not valid in visual_element\n");
-
-
-    if (!v.isMember("svg_id") ) log_fatal("svg_id not found  in visual_element\n");
-    if (!v.isMember("svg_path") ) log_fatal("svg_path not found  in visual_element\n");
-
-    if (!v.isMember("highlight_svg_id") ) log_fatal("highlight_svg_id not found  in visual_element\n");
-    if (!v.isMember("highlight_svg_path") ) log_fatal("highlight_svg_path not found  in visual_element\n");
-
-
-    if (!v.isMember("labels") ) log_fatal("labels not found  in visual_element\n");
-    if (!v.isMember("equations") ) log_fatal("equations not found  in visual_element\n");
-    if (!v.isMember("group") ) log_fatal("group not found  in visual_element\n");
-    if (!v.isMember("labelled_data") ) log_fatal("labelled_data not found  in visual_element\n");
-
-
-    
-
-    //parse geometric data
-    vis_elems[i].x_center = v["x_center"].asFloat();
-    vis_elems[i].y_center = v["y_center"].asFloat();
-    vis_elems[i].x_scale = v["x_scale"].asFloat();
-    vis_elems[i].y_scale = v["y_scale"].asFloat();
-    vis_elems[i].rotation = v["rotation"].asFloat();
-    vis_elems[i].layer = v["layer"].asInt();
-
-    if (vis_elems[i].layer + 1 > num_layers){
-      num_layers = vis_elems[i].layer + 1;
-    }
-
-
-    //parse the visual elements
-    vis_elems[i].geo_id = v["svg_id"].asString();
-    vis_elems[i].svg_path = v["svg_path"].asString();
-
-    vis_elems[i].highlight_geo_id = v["highlight_svg_id"].asString();
-    vis_elems[i].highlight_svg_path = v["highlight_svg_path"].asString();
-
-    string svg_id = v["svg_id"].asString();
-    string svg_path= v["svg_path"].asString();
-    full_svg_ids.push_back(svg_id);
-    full_svg_paths.push_back(svg_path);
-
-    svg_id = v["highlight_svg_id"].asString();
-    svg_path= v["highlight_svg_path"].asString();
-    full_svg_ids.push_back(svg_id);
-    full_svg_paths.push_back(svg_path);
-    
-    //parse tagging information
-    for (unsigned int j=0; j< v["labels"].size(); j++){
-      vis_elems[i].labels.push_back(v["labels"][j].asString());
-    }
-
-    vis_elems[i].group = v["group"].asString();
+		  //parse geometric data
+		  vis_elems[i].x_center = v["x_center"].asFloat();
+		  vis_elems[i].y_center = v["y_center"].asFloat();
+		  vis_elems[i].x_scale = v["x_scale"].asFloat();
+		  vis_elems[i].y_scale = v["y_scale"].asFloat();
+		  vis_elems[i].rotation = v["rotation"].asFloat();
+		  vis_elems[i].layer = v["layer"].asInt();
+		  
+		  if (vis_elems[i].layer + 1 > num_layers){
+			  num_layers = vis_elems[i].layer + 1;
+		  }
 
 
-    for (unsigned int j=0; j < v["labelled_data"].size(); j++){
-      vis_elems[i].labelled_data.push_back( v["labelled_data"][j][0].asString() );
-      vis_elems[i].labelled_data_vs.push_back( v["labelled_data"][j][1].asString() );
-    }
+		  //parse the visual elements
+		  vis_elems[i].geo_id = v["svg_id"].asString();
+		  vis_elems[i].svg_path = v["svg_path"].asString();
+		  
+		  vis_elems[i].highlight_geo_id = v["highlight_svg_id"].asString();
+		  vis_elems[i].highlight_svg_path = v["highlight_svg_path"].asString();
+		  
+		  string svg_id = v["svg_id"].asString();
+		  string svg_path= v["svg_path"].asString();
+		  full_svg_ids.push_back(svg_id);
+		  full_svg_paths.push_back(svg_path);
+		  
+		  svg_id = v["highlight_svg_id"].asString();
+		  svg_path= v["highlight_svg_path"].asString();
+		  full_svg_ids.push_back(svg_id);
+		  full_svg_paths.push_back(svg_path);
+		  
+		  //parse tagging information
+		  for (unsigned int j=0; j< v["labels"].size(); j++){
+			  vis_elems[i].labels.push_back(v["labels"][j].asString());
+		  }
+		  
+		  vis_elems[i].group = v["group"].asString();
+		  
+		  
+		  for (unsigned int j=0; j < v["labelled_data"].size(); j++){
+			  vis_elems[i].labelled_data.push_back( v["labelled_data"][j][0].asString() );
+			  vis_elems[i].labelled_data_vs.push_back( v["labelled_data"][j][1].asString() );
+		  }
+		  
+		  ////////////////////////
+		  //Parse the equations //
+		  ////////////////////////
+		  Json::Value eqv =  v["equations"];
+		  for (unsigned int j=0; j < eqv.size(); j++){
+			  vis_elems[i].equations.push_back( eqv[j].asString() );
+		  }
+		  
+	  }
 
-
-    ////////////////////////
-    //Parse the equations //
-    ////////////////////////
-    Json::Value eqv =  v["equations"];
-    for (unsigned int j=0; j < eqv.size(); j++){
-      vis_elems[i].equations.push_back( eqv[j].asString() );
-    }
-
+	  //filter the svg ids and paths to be unique so we don't spend forever loading them
+	  for (unsigned int i=0; i < full_svg_ids.size(); i++){
+		  bool is_unique = true;
+		  for (unsigned int j=0; j < svg_ids.size(); j++)
+			  if (full_svg_ids[i] == svg_ids[j]){
+				  is_unique = false;
+				  break;
+			  }
+		  if (is_unique){
+			  svg_ids.push_back(full_svg_ids[i]);
+			  svg_paths.push_back(full_svg_paths[i]);
+		  }
+	  }
   }  
-  //filter the svg ids and paths to be unique so we don't spend forever loading them
-  for (unsigned int i=0; i < full_svg_ids.size(); i++){
-    bool is_unique = true;
-    for (unsigned int j=0; j < svg_ids.size(); j++)
-      if (full_svg_ids[i] == svg_ids[j]){
-	is_unique = false;
-	break;
-      }
-    if (is_unique){
-      svg_ids.push_back(full_svg_ids[i]);
-      svg_paths.push_back(full_svg_paths[i]);
-    }
-  }
+
 }

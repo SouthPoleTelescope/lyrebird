@@ -228,15 +228,10 @@ int main(int argc, char * args[])
 		    );
   log_debug("done parse_config_file");
   //initialize all the data values which are circular buffers we dump floats into
-  DataVals data_vals(dataval_descs.size() + 1, dv_buffer_size);
-  for (size_t i=0; i < dataval_descs.size(); i++){
-    data_vals.add_data_val(dataval_descs[i].id,
-			   dataval_descs[i].init_val, 
-			   dataval_descs[i].is_buffered);
-  }
-  global_data_vals = &data_vals;
 
   //create all the data streamers which write to the data vals
+
+  DataVals data_vals(dataval_descs.size() + 1, dv_buffer_size);
   vector<std::shared_ptr< DataStreamer> >data_streamers;
 
   log_debug("creating data_streamers");
@@ -247,13 +242,20 @@ int main(int argc, char * args[])
     data_streamers.push_back(ds_tmp);
   }
   
+  data_vals.initialize();
+
+  for (size_t i=0; i < dataval_descs.size(); i++){
+    data_vals.add_data_val(dataval_descs[i].id,
+			   dataval_descs[i].init_val, 
+			   dataval_descs[i].is_buffered);
+  }
+  global_data_vals = &data_vals;
+
   
   //spawn the data streamer threads
   for (size_t i=0; i < data_streamers.size(); i++){
     data_streamers[i]->start_recording();
   }
-
-
   //now we configure the window
 
   int width = win_x_size;

@@ -10,15 +10,19 @@ DataVals::DataVals(int n_vals, int buffer_size){
   //vals = new float[n_vals];
   buffer_size_ = buffer_size;
   buffer_size_full_ = buffer_size_ + 1;
-
   array_size_ = n_vals;
+}
 
-  ring_indices_ = new int[n_vals];
-  ring_buffers_ = new float[n_vals * (buffer_size_full_)];
-  is_buffered_ = new int[n_vals];
+
+
+void DataVals::initialize(){
+	log_warn("Initiailizing dvs %d", array_size_);
+  ring_indices_ = new int[array_size_];
+  ring_buffers_ = new float[array_size_ * (buffer_size_full_)];
+  is_buffered_ = new int[array_size_];
 
   n_current_ = 0;
-  for (int i=0; i < n_vals; i++){
+  for (int i=0; i < array_size_; i++){
     //vals[i] = 0;
     ring_buffers_[ i * buffer_size_full_] = 0;
     ring_indices_[i] = 0;
@@ -28,6 +32,12 @@ DataVals::DataVals(int n_vals, int buffer_size){
   if( pthread_rwlock_init( &rwlock_, NULL)) log_fatal("rwlock_ init failed");
   is_paused_ = false;
 }
+
+
+void DataVals::register_data_source(int n_vals){
+	array_size_ += n_vals;
+}
+
 
 DataVals::~DataVals(){
   //delete [] vals;
@@ -39,11 +49,17 @@ DataVals::~DataVals(){
 
 int DataVals::get_ind(std::string id){
   if (id_mapping_.find(id) == id_mapping_.end()){
-    log_fatal("ID %s not found\n", id.c_str());
+    log_warn("ID %s not found\n", id.c_str());
     return -1;
   }  else
     return id_mapping_[id];
 }
+
+
+bool DataVals::has_id(std::string id){
+	return id_mapping_.find(id) != id_mapping_.end();
+}
+
 
 int DataVals::add_data_val(std::string id, float val, int is_buffered){
   if (n_current_ >= array_size_) log_fatal("Adding too many datavals.");
@@ -60,6 +76,7 @@ int DataVals::add_data_val(std::string id, float val, int is_buffered){
 void DataVals::update_val(int index, float val){
   if (is_paused_) return;
   if (index >= array_size_) log_fatal("Attempting to access index out of range");
+  if (index < 0) return;
 
   //grab read lock
   pthread_rwlock_rdlock (&rwlock_);

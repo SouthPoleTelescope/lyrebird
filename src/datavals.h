@@ -19,9 +19,15 @@ class DataVals {
   DataVals(int n_vals, int buffer_size);
   ~DataVals();
 
+
+  void initialize();
+  void register_data_source(int n_vals);
+
   //get the index of a variable with name id
   // if not found returns -1
   int get_ind(std::string id); 
+
+  bool has_id(std::string id); 
 
   //adds a data val.  Exits if you have too many
   int add_data_val(std::string id, float val, int is_buffered); 

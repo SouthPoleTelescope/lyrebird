@@ -3,19 +3,23 @@
 
 using namespace std;
 
-
 TestStreamer::TestStreamer(Json::Value streamer_json_desc,
 	       std::string tag, DataVals * dv, int us_update_time  )
-  : DataStreamer(tag, dv, us_update_time, DSRT_STREAMING)
+	: DataStreamer(tag, dv, us_update_time, DSRT_STREAMING),
+	  streamer_json_desc_(streamer_json_desc)
 {
+	// lets the datavals object know how many we will be adding
+  dv->register_data_source(streamer_json_desc.size());
   val = 0;
-  s_path_inds = std::vector<int>(streamer_json_desc.size());
-  for (unsigned int i=0; i < streamer_json_desc.size(); i++){
-    s_path_inds[i] = data_vals->get_ind(streamer_json_desc[i].asString());
-  }
 }
 
-void TestStreamer::initialize(){std::cout<<"Init test streamer"<<std::endl;}
+void TestStreamer::initialize(){std::cout<<"Init test streamer"<<std::endl;
+  s_path_inds = std::vector<int>(streamer_json_desc_.size());
+  for (unsigned int i=0; i < streamer_json_desc_.size(); i++){
+	  //adds our datavals
+	  s_path_inds[i] = data_vals->add_data_val(streamer_json_desc_[i].asString(), 0, true);
+  }
+}
 void TestStreamer::uninitialize(){std::cout<<"Uninit test streamer"<<std::endl;}
 void TestStreamer::update_values(int ind){
   //printf("told to update\n");

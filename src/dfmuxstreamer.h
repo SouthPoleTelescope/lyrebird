@@ -2,60 +2,60 @@
 #include <iostream>
 #include <string>
 #include <memory>
-#include <list>
+#include <vector>
+#include <map>
 
 #include <G3Pipeline.h>
 #include <G3Module.h>
-#include <dfmux/DfMuxBuilder.h>
-#include <dfmux/DfMuxCollector.h>
-#include <hkgetter.h>
 
-#include <boost/enable_shared_from_this.hpp>
+#include <dfmux/DfMuxBuilder.h>
+#include <dfmux/HardwareMap.h>
+#include <hk/hkgetter.h>
+
+#include <boost/python.hpp>
+
 #include "json/json.h"
 
-class HkStreamer :public DataStreamer{
+
+#define NUM_MODULES 8
+#define NUM_CHANNELS 64
+
+// desc needs: ip/port to connect to.
+// list of things to report on
+class G3DataStreamer : public DataStreamer {
 public:
-  HkStreamer( std::string tag, Json::Value hk_desc, DataVals * dv );
-  ~HkStreamer(){}
+	//desc needs a list of board ids, ip, port
+	//
+	G3DataStreamer(Json::Value streamer_json_desc,
+		       std::string tag, DataVals * dv, int us_update_time  );
+	void initialize(); 
+	void uninitialize();
+	void update_values(int n);
 
-  void initialize();
-  void update_values(int v);
-  void uninitialize();
+	void initialize_hk_values();
+	void initialize_dfmux_values();
 
+	void update_hk_values(const G3MapBoardInfo & board_info);
+	void update_dfmux_values(const DfMuxMetaSample & ms);
+
+	int get_num_hk_values();
+	int get_num_dfmux_values();
 private:
-  std::vector<std::string> unique_boards_;
-  std::vector<int> path_inds_;
+
+	std::map<std::string, int> id_to_ip_map_;
+	bool has_id_map_;
+
+	std::vector<std::string>  board_list_;
+	int n_boards_;
+	std::string hostname_;
+	int port_;
+	bool keep_getting_data_;
+	
+	boost::python::object frame_grabbing_function_;
+	DataVals * dvs_;
+	
+	std::vector<int> hk_path_inds_;
+	std::vector<int> dfmux_path_inds_;
 };
 
 
-/**
-   Instantiates a builder, pipeline, and makes itself the last module in the pipe
-
- **/
-
-class DfmuxStreamer :public DataStreamer, public G3Module{
-public:
-  DfmuxStreamer( std::string tag, Json::Value dfmux_desc,DataVals * dv );
-  ~DfmuxStreamer(){}
-
-  //void Process();
-  void Process(G3FramePtr frame, std::deque<G3FramePtr> &out);
-  void update_values(int ind);
-protected:
-  void initialize();
-  void uninitialize();
-private:
-  std::string listen_ip_;
-  int n_boards_specified_;
-
-  boost::shared_ptr<DfMuxBuilder> dfmux_builder_;
-  boost::shared_ptr<DfMuxCollector> dfmux_collector_;
-
-  int num_boards_;
-  std::vector<std::string> hostnames_;
-  std::vector<int> ip_addresses_;
-  std::vector<int> data_val_inds_;  
-
-  DfmuxStreamer(const DfmuxStreamer&); //prevent copy construction      
-  DfmuxStreamer& operator=(const DfmuxStreamer&); //prevent assignment
-};
