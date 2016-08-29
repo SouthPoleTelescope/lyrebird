@@ -11,7 +11,7 @@
 #include <networkstreamer/networkreceiver.h>
 #include <dfmux/DfMuxBuilder.h>
 #include <dfmux/HardwareMap.h>
-#include <hk/hkgetter.h>
+#include <dfmux/Housekeeping.h>
 
 #include "json/json.h"
 
@@ -34,7 +34,7 @@ public:
 	void initialize_hk_values();
 	void initialize_dfmux_values();
 
-	void update_hk_values(const G3MapBoardInfo & board_info);
+	void update_hk_values(const DfMuxHousekeepingMap & board_info);
 	void update_dfmux_values(const DfMuxMetaSample & ms);
 
 	int get_num_hk_values();

@@ -11,10 +11,6 @@
 #include "genericutils.h"
 
 
-#include <hk/dfmuxcalculations.h>
-
-
-
 using namespace std;
 
 
@@ -224,6 +220,7 @@ inline float dfmux_gsetting_to_r(int gain){
 }
 
 
+/**
 inline void pp_func_res(PPStack<float> * pp_val_stack, float * val, int offset){
   float camp = pop(pp_val_stack);
   float cgain = pop(pp_val_stack);
@@ -232,6 +229,7 @@ inline void pp_func_res(PPStack<float> * pp_val_stack, float * val, int offset){
   float ov = dfmux_get_resistance(camp, namp, cgain, ngain);
   push(pp_val_stack, ov);
 }
+**/
 
 inline void pp_func_push(PPStack<float> * pp_val_stack, float * val, int offset){
   push(pp_val_stack, *val);
@@ -282,9 +280,9 @@ pp_func get_pp_func(char id){
   case 'q':
     return pp_func_sqrt;
     break;
-  case 'r':
-    return pp_func_res;
-    break;
+    //case 'r':
+    //return pp_func_res;
+    //break;
   default:
     return NULL;
     break;
@@ -334,9 +332,9 @@ int get_pp_func_len(char id){
   case 'q':
     return 0;
     break;
-  case 'r':
-    return 3;
-    break;
+    //case 'r':
+    //return 3;
+    //break;
   default:
     return 0;
     break;

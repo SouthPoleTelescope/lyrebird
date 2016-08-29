@@ -7,8 +7,6 @@
 #include <assert.h>
 #include <deque>
 
-#include <hk/dfmuxcalculations.h>
-
 #include <iostream>
 #include <string>
 
@@ -17,6 +15,22 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <deque>
+
+
+std::string get_physical_id(int board_serial, int crate_serial, int board_slot,
+                            int module = 0, int channel = 0) {
+	std::stringstream ss;
+	if (board_slot == 0) ss << board_serial;
+        else ss << crate_serial << "_" << board_slot;
+        if (module > 0) {
+                ss << "/" << module;
+                if (channel > 0) ss << "/" << channel;
+        }
+        return ss.str();
+}
+
+
+
 
 
 G3FramePtr get_frame(G3NetworkReceiver & fun){
@@ -64,7 +78,7 @@ void G3DataStreamer::update_values(int n){
 		DfMuxMetaSampleConstPtr ms = frame->Get<DfMuxMetaSample>("DfMux");
 		if (has_id_map_) update_dfmux_values(*ms);
 	} else if (frame->type == G3Frame::Housekeeping){
-		G3MapBoardInfoConstPtr bi = frame->Get<G3MapBoardInfo>("HkBoardInfo");
+		DfMuxHousekeepingMapConstPtr bi = frame->Get<DfMuxHousekeepingMap>("HkBoardInfo");
 		if (has_id_map_) update_hk_values(*bi);
 	}
 }
@@ -127,7 +141,7 @@ void G3DataStreamer::initialize_dfmux_values(){
 }
 
 
-void G3DataStreamer::update_hk_values(const G3MapBoardInfo & b_map){
+void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
 	size_t i=0; 
 	for (auto b  = board_list_.begin(); b != board_list_.end(); b++){
 		if (id_to_ip_map_.find(*b) == id_to_ip_map_.end()){
@@ -139,16 +153,15 @@ void G3DataStreamer::update_hk_values(const G3MapBoardInfo & b_map){
 		}
 		const HkBoardInfo & binfo = b_map.at(ip);
 		for (int m=0; m < NUM_MODULES; m++){
-			dvs_->update_val(hk_path_inds_[i], binfo.modules[m].carrier_gain); i++;
-			dvs_->update_val(hk_path_inds_[i], binfo.modules[m].nuller_gain); i++;
+			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).carrier_gain); i++;
+			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).nuller_gain); i++;
 			for (int c=0; c < NUM_CHANNELS; c++){
-				dvs_->update_val(hk_path_inds_[i], binfo.modules[m].channels[c].carrier_amplitude);i++;
-				dvs_->update_val(hk_path_inds_[i], binfo.modules[m].channels[c].carrier_frequency);i++;
-				dvs_->update_val(hk_path_inds_[i], binfo.modules[m].channels[c].demod_frequency);i++;
+				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).carrier_amplitude);i++;
+				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).carrier_frequency);i++;
+				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).demod_frequency);i++;
 			}
 		}
 	}
-	
 }
 
 void G3DataStreamer::update_dfmux_values(const DfMuxMetaSample & samp){
