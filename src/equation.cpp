@@ -10,6 +10,7 @@
 #include "glm/gtx/color_space.hpp"
 #include "genericutils.h"
 
+#include <dfmux/Housekeeping.h>
 
 using namespace std;
 
@@ -211,16 +212,6 @@ inline void pp_func_tan(PPStack<float> * pp_val_stack, float * val, int offset){
 }
 
 
-inline float dfmux_gsetting_to_r(int gain){
-  assert(gain >= 0 && gain < 16);
-  const float rs[] = {300.0000, 212.0000, 174.2857, 153.3333, 140.0000, 130.7692,
-		      124.0000, 118.8235, 114.7368, 111.4286, 108.6957, 106.4000,
-		      104.4444, 102.7586, 101.2903, 100.0000};
-  return rs[gain];
-}
-
-
-/**
 inline void pp_func_res(PPStack<float> * pp_val_stack, float * val, int offset){
   float camp = pop(pp_val_stack);
   float cgain = pop(pp_val_stack);
@@ -229,7 +220,7 @@ inline void pp_func_res(PPStack<float> * pp_val_stack, float * val, int offset){
   float ov = dfmux_get_resistance(camp, namp, cgain, ngain);
   push(pp_val_stack, ov);
 }
-**/
+
 
 inline void pp_func_push(PPStack<float> * pp_val_stack, float * val, int offset){
   push(pp_val_stack, *val);
@@ -280,9 +271,9 @@ pp_func get_pp_func(char id){
   case 'q':
     return pp_func_sqrt;
     break;
-    //case 'r':
-    //return pp_func_res;
-    //break;
+  case 'r':
+	  return pp_func_res;
+	  break;
   default:
     return NULL;
     break;
@@ -332,9 +323,9 @@ int get_pp_func_len(char id){
   case 'q':
     return 0;
     break;
-    //case 'r':
-    //return 3;
-    //break;
+  case 'r':
+    return 3;
+    break;
   default:
     return 0;
     break;
