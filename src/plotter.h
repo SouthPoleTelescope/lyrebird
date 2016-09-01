@@ -14,9 +14,7 @@ class Plotter{
 
   void plot(float * vals, int n_elems, float min, float max, 
 	    glm::vec4 color, int is_log_scale, 
-	    float x_start, float x_sep,
-	    float * vlines, int n_vlines,
-	    float * vline_height
+	    float x_start, float x_sep
 	  );
   void cleanup_plotting();
 

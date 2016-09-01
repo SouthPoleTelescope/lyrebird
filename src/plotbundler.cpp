@@ -6,6 +6,17 @@
 using namespace std;
 
 
+void PlotBundler::get_psd_start_and_sep(float & start, float & sep) {
+	if (num_plots == 0) {
+		start = 0;
+		sep = 0;
+	}
+	float sample_rate = sample_rate_buffer[0];
+	sep = sample_rate / buffer_size_;
+	start = 0;
+}
+
+
 PlotBundler::PlotBundler(int max_num_plots, int buffer_size,  std::vector<VisElemPtr> * vis_elems){
   max_num_plots_ = max_num_plots;
   buffer_size_ = buffer_size;
@@ -98,24 +109,24 @@ void PlotBundler::update_plots(std::list<int> & pis, std::list<glm::vec3> & cis)
     if (last_updated[i] < 0 || last_updated[i] > max_num_plots_){
       //cout<<"updating i "<<i<<endl;
       //update the fft
-
+	    
       for (int j=0; j<buffer_size_; j++) psd_tmp_buffer[j] = psd_hann_buffer[j] * plot_vals[i * buffer_size_ + j];
       fftw_execute(fft_plan);
       for (int j=1; j < psd_buffer_size; j++){
-	psd_vals[i*psd_buffer_size + j] = sqrt( fft_out[j][0]*fft_out[j][0] + fft_out[j][1]*fft_out[j][1]);
+	psd_vals[i*psd_buffer_size + j - 1] = sqrt( fft_out[j][0]*fft_out[j][0] + 
+						fft_out[j][1]*fft_out[j][1]);
       }
-
       //zeros the lowest bins because fuck it
-      for (int j=0; j < 2; j++)
+      for (int j=0; j < 1; j++)
       	psd_vals[i*psd_buffer_size+j] = 0;
-
+      psd_vals[i*psd_buffer_size+psd_buffer_size-1]  = 0;
+	      
       last_updated[i] = 0;
     }else{
       last_updated[i]++;
     }
   }
-
-
+  
   psd_min = 0;
   psd_max = -1e30;
   for (int i=0; i < num_plots * psd_buffer_size; i++){
@@ -124,14 +135,11 @@ void PlotBundler::update_plots(std::list<int> & pis, std::list<glm::vec3> & cis)
   }
 }
 
-
-
 float * PlotBundler::get_plot(int index, glm::vec3 & plot_color){
   assert(index < num_plots);
   plot_color = color_vals[index];
   return plot_vals + buffer_size_ * index;
 }
-
 
 float * PlotBundler::get_psd(int index, glm::vec3 & plot_color){
   assert(index < num_plots);

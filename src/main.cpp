@@ -499,32 +499,23 @@ int main(int argc, char * args[])
 	  float * plotVals = plotBundler.get_plot(i, plotColor);
 	  plotBundler.get_plot_min_max(minp, maxp);
 	  p.plot(plotVals, dv_buffer_size, minp, maxp, glm::vec4(plotColor,1), 0,
-		 0,0, NULL, 0, NULL
-		  );
+		 1,1 );
       }
       p.plotFG(glm::vec4(1.0,1.0,1.0,1.0)); 
       
-      
       p.prepare_plotting(glm::vec2(.7, -.1), glm::vec2(.3,.3));
       p.plotBG(glm::vec4(0.0,0.0,0.0,0.9));
-
-      #define N_MAGS 3
-      float vlines[10 * N_MAGS];
-      float vline_height[10 * N_MAGS];
-
-      for (int j = 0; j < N_MAGS; j++){
-	      for (int i=0; i<10; i++) {
-		      vlines[i + j * 10] = (i + 1)  * powf(10.0, j);
-		      vline_height[i + j * 10] =  0.5/ ((float) ( 1 + (i) % 10));
-	      }
-      }
+      
+      float psd_0point;
+      float psd_sep;
+      plotBundler.get_psd_start_and_sep(psd_0point, psd_sep);
       for (int i=num_plots-1; i >= 0; i--){
 	glm::vec3 plotColor;
 	float minp,maxp;
 	float * plotVals = plotBundler.get_psd(i, plotColor);
 	plotBundler.get_psd_min_max(minp, maxp);
 	p.plot(plotVals, dv_buffer_size/2+1, minp, maxp, glm::vec4(plotColor,1), 1,
-	       1, 1, vlines, 10 * N_MAGS, vline_height);
+	       psd_sep, psd_sep);
       }
       //p.plotFG(glm::vec4(1.0,1.0,1.0,1.0)); 
       p.cleanup_plotting();
