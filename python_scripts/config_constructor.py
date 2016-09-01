@@ -48,8 +48,8 @@ def addDataSource(config_dic, tag, ds_type, desc, update_time=0):
                                         'update_time':update_time,
                                         'desc':desc})
 
-def getEquation(eq_func, eq_color_map, eq_label, display_label):
-    return {"function":eq_func,"cmap": eq_color_map, "label": eq_label, "display_label":display_label}
+def getEquation(eq_func, eq_color_map, eq_label, display_label, sample_rate_val):
+    return {"function":eq_func,"cmap": eq_color_map, "label": eq_label, "display_label":display_label, "sample_rate_id":sample_rate_val}
 
 def addGlobalEquation(config_dic, equation):
     if not 'equations' in config_dic:
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     #addDataSource(config_dic, "test_ds_file_2", "test_ds_2_global", "test_global_id", "test_streamer", "streaming", False)
 
     addDataVal(config_dic, "test_global_id", 42, False)
-    addGlobalEquation(config_dic, getEquation("a test_global_id",  "red_cmap", "GlobalEqLabel", "GlobalEquation"));
+    addGlobalEquation(config_dic, getEquation("a test_global_id",  "red_cmap", "GlobalEqLabel", "GlobalEquation", "test_global_id"));
 
     nis = 50
     njs = 50
@@ -139,8 +139,8 @@ if __name__ == '__main__':
                     #addDataVal(config_dic, "test_%d"%ds_id_num, 0, True)
                     test_ds_lst.append("test_%d"%ds_id_num)
 
-                    addGlobalEquation(config_dic, getEquation('/ + 1 c test_%d 2'%ds_id_num, cmap, "dummyEqLabel_test_%d"%ds_id_num, "TestSins"))
-                    addGlobalEquation(config_dic, getEquation('test_%d'%ds_id_num, cmap, "dummyLinearEq_test_%d"%ds_id_num, "TestLins"))
+                    addGlobalEquation(config_dic, getEquation('/ + 1 c test_%d 2'%ds_id_num, cmap, "dummyEqLabel_test_%d"%ds_id_num, "TestSins", 'test_%d'%ds_id_num))
+                    addGlobalEquation(config_dic, getEquation('test_%d'%ds_id_num, cmap, "dummyLinearEq_test_%d"%ds_id_num, "TestLins", 'test_%d'%ds_id_num,))
 
                     if f ==0:
                         svg_name = svg_folder + 'smallpol.svg'

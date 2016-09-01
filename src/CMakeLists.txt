@@ -25,7 +25,7 @@ add_library(lyrebirdvis STATIC
   geometryutils.cpp genericutils.cpp shader.cpp nanosvg.cpp simplerender.cpp configparsing.cpp 
   datastreamer.cpp datavals.cpp teststreamer.cpp jsoncpp.cpp visualelement.cpp cameracontrol.cpp 
   polygon.cpp highlighter.cpp equation.cpp plotter.cpp plotbundler.cpp equationmap.cpp logging.cpp
-  dfmuxstreamer.cpp
+  dfmuxstreamer.cpp numberlineart.cpp
 )
 
 add_executable(lyrebird main.cpp)

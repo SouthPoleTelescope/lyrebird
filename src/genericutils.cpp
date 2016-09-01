@@ -5,8 +5,10 @@
 #include <streambuf>
 #include <math.h>
 #include <fnmatch.h>
+#include <ctime>
 
 using namespace std;
+
 
 void print_and_exit(string msg){
   cout<<msg<<endl;

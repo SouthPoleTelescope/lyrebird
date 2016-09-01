@@ -47,6 +47,9 @@ class DataVals {
   
   int get_buffer_size();
   int is_buffered(int index);
+
+	double get_sample_rate(int index);
+
   
  private:
   DataVals(const DataVals&); //prevent copy construction      
@@ -61,6 +64,11 @@ class DataVals {
   int * is_buffered_;
   int * ring_indices_;
   float * ring_buffers_;
+
+
+  int * n_vals_;
+  float * start_times_;
+
   pthread_rwlock_t  rwlock_;
   bool is_paused_;
 

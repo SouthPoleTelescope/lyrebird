@@ -7,6 +7,8 @@
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include <iostream>
+#include "numberlineart.h"
+
 
 #include "shader.h"
 
@@ -58,6 +60,11 @@ void main(){
   glBindBuffer(GL_ARRAY_BUFFER, square_vert_buffer_);
   glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(float), squareVerts, GL_STATIC_DRAW);
 
+
+  glGenBuffers(1, &simple_line_buffer_);
+  glBindBuffer(GL_ARRAY_BUFFER, simple_line_buffer_);
+  glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), squareVerts, GL_STREAM_DRAW);
+
   
   float fgVerts[] = {-1,-1,-0.99,  -1,1,-0.99,
 		     -1,1,-0.99,  1,1,-0.99,
@@ -83,19 +90,12 @@ void main(){
 		     -0.75,1,-0.99, -0.75, 0.95,-0.99,
 		     0.25,1,-0.99, 0.25, 0.95,-0.99,
 		     0.75,1,-0.99, 0.75, 0.95,-0.99,
-
-
-		     //-1,0,-0.99, -.8,0,-0.99,
-		     //1,0,-0.99, .8,0,-0.99
-
-                        };
+  };
 
   n_fg_lines_ = 18;
   glGenBuffers(1, &fg_vert_buffer_);
   glBindBuffer(GL_ARRAY_BUFFER, fg_vert_buffer_);
-  glBufferData(GL_ARRAY_BUFFER, 6 * n_fg_lines_ * sizeof(float), fgVerts, GL_STATIC_DRAW);
-
-
+  glBufferData(GL_ARRAY_BUFFER, 6 * n_fg_lines_ * sizeof(float), fgVerts, GL_DYNAMIC_DRAW);
 
 }
 
@@ -153,20 +153,36 @@ void Plotter::plotFG(glm::vec4 color){
   
 }
 
-void Plotter::plot(float * vals, int n_elems, float min, float max, glm::vec4 color, int is_log_scale){
-  assert(n_elems <= max_num_points_);
-
-  //glLineWidth( 2);
+void Plotter::plot(float * vals, int n_elems, 
+		   float min, float max, 
+		   glm::vec4 color, 
+		   int is_log_scale,
+		   float x_start, float x_sep,
+		   float * vlines, int n_vlines,
+		   float * vline_height
+	){
+	assert(n_elems <= max_num_points_);
+	
+	//glLineWidth( 2);
+	std::vector<float> vline_tmps(n_vlines, 0);
+	for (int i=0; i < n_vlines; i++) {
+		// get x value;
+		// when calcing pos just apply that transform
+		vline_tmps[i] = (vlines[i] - x_start) / x_sep;
+	}
 
   if (!is_log_scale){
     //cout<<"in plotter min: "<< min << " max: "<< max <<endl;
     for (int i=0; i < n_elems; i++){
-
       plot_buffer_[i*3+1] = (vals[i]-min)/(max-min)*2 -1;
       if (plot_buffer_[i*3+1] < -1) plot_buffer_[i*3+1] = -1;
       if (plot_buffer_[i*3+1] > 1) plot_buffer_[i*3+1] = 1;
       plot_buffer_[i*3] = ((float)i)/((float)n_elems) * 2 -1;
       plot_buffer_[i*3 + 2] = -0.97;
+    }
+
+    for (int i=0; i < n_vlines; i++) {
+	    vline_tmps[i] = vline_tmps[i]/((float)n_elems) * 2 -1;
     }
   }else{
     for (int i=0; i < n_elems; i++){
@@ -178,17 +194,18 @@ void Plotter::plot(float * vals, int n_elems, float min, float max, glm::vec4 co
       plot_buffer_[i*3] = log2((float)i+1.0f) /(log2(n_elems) - log2(1)) * 2 - 1;
       plot_buffer_[i*3 + 2] = -0.97;
     }
+
+    for (int i=0; i < n_vlines; i++) {
+	    vline_tmps[i] = log2((float)vline_tmps[i]+1.0f) /(log2(n_elems) - log2(1)) * 2 - 1; 
+    }
   }
 
   glUniformMatrix4fv(view_matrix_uniform_,  1, GL_FALSE, &view_transform_[0][0]);
   glUniform4fv(vertex_color_shader_uniform_, 1, &( color[0]  ));
-  
+
+  glEnableVertexAttribArray(vertex_pos_shader_attrib_);  
   glBindBuffer(GL_ARRAY_BUFFER, line_vert_buffer_);
   glBufferSubData(GL_ARRAY_BUFFER, 0, n_elems * 3 * sizeof(GLfloat), &( plot_buffer_[0]));
-  
-  
-  glEnableVertexAttribArray(vertex_pos_shader_attrib_);
-  glBindBuffer(GL_ARRAY_BUFFER, line_vert_buffer_);
   glVertexAttribPointer(vertex_pos_shader_attrib_,
 			3,                  // size
 			GL_FLOAT,           // type
@@ -199,15 +216,52 @@ void Plotter::plot(float * vals, int n_elems, float min, float max, glm::vec4 co
   
   glDrawArrays(GL_LINE_STRIP, 0, n_elems);
   
-  
-  
+
+  for (int i=0; i < n_vlines; i++) {
+	  float line_buff[6];
+	  line_buff[0] = vline_tmps[i];
+	  line_buff[3] = vline_tmps[i];
+	  line_buff[1] = -1 + vline_height[i];
+	  line_buff[4] = -1;
+	  line_buff[2] = -0.99;
+	  line_buff[5] = -0.99;
+
+	  glm::vec4 col_line(1,1,1,1);
+
+	  glUniform4fv(vertex_color_shader_uniform_, 1, &( col_line[0]  ));
+	  glBindBuffer(GL_ARRAY_BUFFER, simple_line_buffer_);
+	  glEnableVertexAttribArray(vertex_pos_shader_attrib_);
+	  glVertexAttribPointer(vertex_pos_shader_attrib_, 3,GL_FLOAT,GL_FALSE,	0, (void*)0  );
+	  glBufferSubData(GL_ARRAY_BUFFER, 0, 6 * sizeof(GLfloat), line_buff);
+	  glDrawArrays(GL_LINE_STRIP, 0, 2);
+  }
+
+  if (n_vlines > 0) {
+	  std::vector<GLfloat> vs;
+	  get_power_of_ten_number_lines(-4, 0.05, 0,0,-0.99, vs);
+	  glm::vec4 col_line(1,1,1,1);
+
+	  GLuint number_buffer;
+	  glGenBuffers(1, &number_buffer);
+	  glBindBuffer(GL_ARRAY_BUFFER, number_buffer);
+	  glBufferData(GL_ARRAY_BUFFER, 3 * vs.size() * sizeof(GLfloat), 
+		       &(vs[0]), GL_STREAM_DRAW);
+	  glUniform4fv(vertex_color_shader_uniform_, 1, &( col_line[0]  ));
+	  glEnableVertexAttribArray(vertex_pos_shader_attrib_);
+	  glVertexAttribPointer(vertex_pos_shader_attrib_, 3,GL_FLOAT,GL_FALSE,	0, (void*)0  );
+	  glBindBuffer(GL_ARRAY_BUFFER, number_buffer);
+	  glDrawArrays(GL_LINES, 0, vs.size()/3 );
+	  //glDeleteBuffers(1, &number_buffer);
+  }
+
+
   glBindBuffer(GL_ARRAY_BUFFER, 0);
   glDisableVertexAttribArray(vertex_pos_shader_attrib_);
 
+
+  
   glLineWidth(1);
-
 }
-
 
 void Plotter::cleanup_plotting(){
   glUseProgram(0);

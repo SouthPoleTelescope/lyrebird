@@ -19,6 +19,7 @@ equation_desc parse_equation_desc(Json::Value & eqjson){
   desc.cmap_id = eqjson["cmap"].asString();
   desc.label = eqjson["label"].asString();
   desc.display_label = eqjson["display_label"].asString();
+  desc.sample_rate_id = eqjson["sample_rate_id"].asString();
   return desc;
 }
 

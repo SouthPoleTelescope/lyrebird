@@ -1,5 +1,11 @@
 #include "datavals.h"
 #include <assert.h>
+#include <ctime>
+#include <iostream>
+
+#include <GLFW/glfw3.h>
+
+
 #include "genericutils.h"
 #include "equation.h"
 #include "logging.h"
@@ -20,12 +26,20 @@ void DataVals::initialize(){
   ring_buffers_ = new float[array_size_ * (buffer_size_full_)];
   is_buffered_ = new int[array_size_];
 
+  n_vals_ = new int[array_size_];
+  start_times_ = new float[array_size_];
+
+  
+
   n_current_ = 0;
   for (int i=0; i < array_size_; i++){
     //vals[i] = 0;
     ring_buffers_[ i * buffer_size_full_] = 0;
     ring_indices_[i] = 0;
     is_buffered_[i] = 0;
+    n_vals_[i] = 0;
+    start_times_[i] = 0;
+    
   }
   //create read write lock
   if( pthread_rwlock_init( &rwlock_, NULL)) log_fatal("rwlock_ init failed");
@@ -43,6 +57,8 @@ DataVals::~DataVals(){
   delete [] ring_indices_;
   delete [] ring_buffers_;
   delete [] is_buffered_;
+  delete [] n_vals_;
+  delete [] start_times_;
 
 }
 
@@ -81,6 +97,10 @@ void DataVals::update_val(int index, float val){
   pthread_rwlock_rdlock (&rwlock_);
   //vals[index] = val;
   ring_buffers_[buffer_size_full_ * index] = val;
+
+  n_vals_[index] += 1;
+  if (start_times_[index] == 0) start_times_[index] = glfwGetTime();
+
   if (is_buffered_[index]){
     ring_buffers_[buffer_size_full_ * index +  ring_indices_[index] + 1] = val;
     ring_indices_[index]++;
@@ -88,6 +108,14 @@ void DataVals::update_val(int index, float val){
   }
   pthread_rwlock_unlock (&rwlock_);
 }
+
+
+double DataVals::get_sample_rate(int index) {
+	if (n_vals_[index] == 0) return 0.0;
+	else return n_vals_[index] / (glfwGetTime() - start_times_[index]);
+}
+
+
 
 
 float * DataVals::get_addr(int index){

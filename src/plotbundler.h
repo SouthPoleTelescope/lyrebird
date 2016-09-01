@@ -7,8 +7,6 @@
 
 #include "visualelement.h"
 
-
-
 class PlotBundler{
  public:
   PlotBundler(int max_num_plots, int buffer_size,  std::vector<VisElemPtr> * vis_elems);
@@ -25,31 +23,33 @@ class PlotBundler{
 
   int get_psd_buffer_size();
 
- private:
-  PlotBundler(const PlotBundler&); //prevent copy construction      
-  PlotBundler& operator=(const PlotBundler&); //prevent assignment
-  std::vector<VisElemPtr> * vis_elems_;
-  
-  float * plot_vals;
-  float * psd_vals;
+private:
+	PlotBundler(const PlotBundler&); //prevent copy construction      
+	PlotBundler& operator=(const PlotBundler&); //prevent assignment
+	std::vector<VisElemPtr> * vis_elems_;
+	
+	float * plot_vals;
+	float * psd_vals;
+	
+	double * psd_tmp_buffer;
+	double * psd_hann_buffer;
 
-  double * psd_tmp_buffer;
-  double * psd_hann_buffer;
+	glm::vec3 * color_vals;
+	int * last_updated;
+	int * previousVEInds;
 
-  glm::vec3 * color_vals;
-  int * last_updated;
-  int * previousVEInds;
+	float * sample_rate_buffer;
 
-  fftw_complex * fft_out;  
-
-  int num_plots;  
-  int max_num_plots_;
-  int buffer_size_;
-
-  int psd_buffer_size;
-
-  float plot_min, plot_max;
-  float psd_min, psd_max;
-
-  fftw_plan fft_plan;
+	fftw_complex * fft_out;  
+	
+	int num_plots;  
+	int max_num_plots_;
+	int buffer_size_;
+	
+	int psd_buffer_size;
+	
+	float plot_min, plot_max;
+	float psd_min, psd_max;
+	
+	fftw_plan fft_plan;
 };

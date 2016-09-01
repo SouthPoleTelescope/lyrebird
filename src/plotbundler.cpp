@@ -23,6 +23,7 @@ PlotBundler::PlotBundler(int max_num_plots, int buffer_size,  std::vector<VisEle
   psd_tmp_buffer = fftw_alloc_real(buffer_size_);
   psd_hann_buffer = new double[buffer_size_];
 
+  sample_rate_buffer = new float[max_num_plots_];
 
   num_plots = 0;
   for (int i=0; i < max_num_plots_; i++){
@@ -50,6 +51,8 @@ PlotBundler::~PlotBundler(){
   delete [] previousVEInds;
   delete [] psd_hann_buffer;
 
+  delete [] sample_rate_buffer;
+
   fftw_free(psd_tmp_buffer);
   fftw_free(fft_out);
   fftw_destroy_plan(fft_plan);
@@ -70,13 +73,15 @@ void PlotBundler::update_plots(std::list<int> & pis, std::list<glm::vec3> & cis)
     color_vals[num_plots] = *it2;
     //cout<< "Plot "<< num_plots<< " r" << (*it2).r<<"g"<<(*it2).g<<"b"<<(*it2).b<<endl;
     (*vis_elems_)[*it1]->get_current_equation().get_bulk_value(&(plot_vals[num_plots * buffer_size_]));
-
+    
+    sample_rate_buffer[num_plots] = (*vis_elems_)[*it1]->get_current_equation().get_sample_rate();
+    
     //check to see if the highlighted elements have changed
     if (previousVEInds[num_plots] != *it1){
-      previousVEInds[num_plots] = *it1;
-      last_updated[num_plots] = -1;
+	    previousVEInds[num_plots] = *it1;
+	    last_updated[num_plots] = -1;
     }
-
+    
     num_plots++;
     if (num_plots >= max_num_plots_) break;
   }

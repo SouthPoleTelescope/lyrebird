@@ -53,8 +53,6 @@ typedef struct ren_wrap ren_wrap;
 
 render_state get_empty_ren_state();
 
-
-
 class SimpleRen{
  public:
   SimpleRen();

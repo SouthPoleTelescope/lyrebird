@@ -237,6 +237,15 @@ int main(int argc, char * args[])
 		    num_layers, max_framerate, max_num_plotted
 		    );
   log_debug("done parse_config_file");
+
+  //create the window
+  int width = win_x_size;
+  int height = win_y_size;
+  GLFWwindow* window;
+  glfwSetErrorCallback(error_callback);
+  if (!glfwInit())
+    exit(EXIT_FAILURE);
+
   //initialize all the data values which are circular buffers we dump floats into
 
   //create all the data streamers which write to the data vals
@@ -266,14 +275,8 @@ int main(int argc, char * args[])
   for (size_t i=0; i < data_streamers.size(); i++){
     data_streamers[i]->start_recording();
   }
-  //now we configure the window
 
-  int width = win_x_size;
-  int height = win_y_size;
-  GLFWwindow* window;
-  glfwSetErrorCallback(error_callback);
-  if (!glfwInit())
-    exit(EXIT_FAILURE);
+  //now we configure the window
 
   glfwWindowHint(GLFW_SAMPLES, sub_sampling);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -481,6 +484,7 @@ int main(int argc, char * args[])
     sren.draw_ren_states(camera.get_view_mat());
     
     //handles the plotting
+
     list<int> plot_inds = highlight.get_plot_inds();
     list<glm::vec3> color_inds = highlight.get_plot_colors();
     if (plot_inds.size() > 0){
@@ -494,24 +498,37 @@ int main(int argc, char * args[])
 	  float minp,maxp;
 	  float * plotVals = plotBundler.get_plot(i, plotColor);
 	  plotBundler.get_plot_min_max(minp, maxp);
-	  p.plot(plotVals, dv_buffer_size, minp, maxp, glm::vec4(plotColor,1), 0);
+	  p.plot(plotVals, dv_buffer_size, minp, maxp, glm::vec4(plotColor,1), 0,
+		 0,0, NULL, 0, NULL
+		  );
       }
       p.plotFG(glm::vec4(1.0,1.0,1.0,1.0)); 
       
       
       p.prepare_plotting(glm::vec2(.7, -.1), glm::vec2(.3,.3));
       p.plotBG(glm::vec4(0.0,0.0,0.0,0.9));
+
+      #define N_MAGS 3
+      float vlines[10 * N_MAGS];
+      float vline_height[10 * N_MAGS];
+
+      for (int j = 0; j < N_MAGS; j++){
+	      for (int i=0; i<10; i++) {
+		      vlines[i + j * 10] = (i + 1)  * powf(10.0, j);
+		      vline_height[i + j * 10] =  0.5/ ((float) ( 1 + (i) % 10));
+	      }
+      }
       for (int i=num_plots-1; i >= 0; i--){
 	glm::vec3 plotColor;
 	float minp,maxp;
 	float * plotVals = plotBundler.get_psd(i, plotColor);
 	plotBundler.get_psd_min_max(minp, maxp);
-	p.plot(plotVals, dv_buffer_size/2+1, minp, maxp, glm::vec4(plotColor,1), 1);
+	p.plot(plotVals, dv_buffer_size/2+1, minp, maxp, glm::vec4(plotColor,1), 1,
+	       1, 1, vlines, 10 * N_MAGS, vline_height);
       }
-      p.plotFG(glm::vec4(1.0,1.0,1.0,1.0)); 
+      //p.plotFG(glm::vec4(1.0,1.0,1.0,1.0)); 
       p.cleanup_plotting();
     }
-    
 
     //updates the info bar
     highlight.update_info_bar();

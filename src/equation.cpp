@@ -519,13 +519,20 @@ Equation::Equation(){
   is_set = false;
 }
 
-void Equation::set_equation(DataVals * dvs, equation_desc desc){
+
+float Equation::get_sample_rate() {
+	return data_vals->get_sample_rate(sample_rate_index);
+}
+
+void Equation::set_equation(DataVals * dvs, 
+			    equation_desc desc){
   is_set=true;
   data_vals = dvs;
   tokenize_equation_or_die(desc.eq.c_str(), &ppp_stack, data_vals);
   cmap =  get_color_map(desc.cmap_id);
   label_ = desc.label;
   display_label_ = desc.display_label;
+  sample_rate_index = data_vals->get_ind(desc.sample_rate_id);
 }
 
 
