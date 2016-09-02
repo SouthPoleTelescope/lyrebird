@@ -166,8 +166,8 @@ void Plotter::plot(float * vals, int n_elems,
 	int low_val = ceilf(logf(x_start)/logf(10));
 	int high_val = ceilf(logf(x_start + x_sep * n_elems)/logf(10));
 	int n_mags = high_val - low_val + 1;
-
-
+	
+	
 	int n_vlines = 10 * (1 + high_val-low_val);
 	float * vlines = NULL;
 	float * vline_height = NULL;
