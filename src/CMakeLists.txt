@@ -25,12 +25,17 @@ add_library(lyrebirdvis STATIC
   geometryutils.cpp genericutils.cpp shader.cpp nanosvg.cpp simplerender.cpp configparsing.cpp 
   datastreamer.cpp datavals.cpp teststreamer.cpp jsoncpp.cpp visualelement.cpp cameracontrol.cpp 
   polygon.cpp highlighter.cpp equation.cpp plotter.cpp plotbundler.cpp equationmap.cpp logging.cpp
-  dfmuxstreamer.cpp numberlineart.cpp
+  dfmuxstreamer.cpp numberlineart.cpp sockethelper.cpp
 )
 
 add_executable(lyrebird main.cpp)
 
 target_link_libraries(lyrebird lyrebirdvis AntTweakBar
+  ${GLFW_LIBRARY} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${GLEW_LIBRARY} ${X11_LIBRARIES}
+  ${FFTW_LIBRARIES} ${SPT3G_LIBRARIES} )
+
+add_executable(testsocket sockettest.cpp)
+target_link_libraries(testsocket lyrebirdvis AntTweakBar
   ${GLFW_LIBRARY} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${GLEW_LIBRARY} ${X11_LIBRARIES}
   ${FFTW_LIBRARIES} ${SPT3G_LIBRARIES} )
 
