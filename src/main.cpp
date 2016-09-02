@@ -470,6 +470,8 @@ int main(int argc, char * args[])
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
     
+    
+    highlight.check_socket();
     for (int i = 0; i<num_data_sources; i++){
       if ( ds_index_variables[i] != ds_index_variables_prev_state[i]){
 	data_streamers[i]->request_values(ds_index_variables[i]);

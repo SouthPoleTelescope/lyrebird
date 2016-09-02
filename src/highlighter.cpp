@@ -6,6 +6,7 @@
 #include "genericutils.h"
 #include <unistd.h>
 #include <assert.h>
+
 using namespace std;
 using namespace glm;
 
@@ -100,6 +101,25 @@ Highlighter::Highlighter(TwBar * info_bar, std::vector<VisElemPtr> * vis_elems, 
   info_bar_ = info_bar;
   vis_elems_ = vis_elems;
   info_bar_index=-1;
+
+  if (bind_udp_socket(listen_socket_, "127.0.0.1", 5555)){
+	  listen_socket_ = -1;
+  }
+  send_socket_ = socket(AF_INET, SOCK_DGRAM, 0);
+  if ( fill_addr("127.0.0.1", 5556, send_addr_) ){
+	  send_socket_ = -1;
+  }
+}
+
+void Highlighter::check_socket(){
+	if (listen_socket_ < 0) return;
+	std::vector<std::string> strs;
+	if (get_string_list(listen_socket_, strs)) return;
+	for (size_t i=0; i < strs.size(); i++) {
+		if (strs[i].size() > 0) {
+			run_search(strs[i].c_str(), true);
+		}
+	}
 }
 
 //parsing inputs
@@ -115,11 +135,11 @@ void Highlighter::parse_click(glm::vec2 pos, int mod_key){
   fill_info_bar();
 }
 
-void Highlighter::run_search(const char * search_str){
+void Highlighter::run_search(const char * search_str, bool no_send){
   clear_hls();
   for (size_t i=0; i < vis_elems_->size(); i++){
     if ((*vis_elems_)[i]->string_matches_labels(search_str) && (*vis_elems_)[i]->is_drawn()){
-      add_hl(i);
+	    add_hl(i, no_send);
     }
   }
   fill_info_bar();
@@ -200,7 +220,7 @@ void Highlighter::clear_hls(){
   }
 }
 
-void Highlighter::add_hl(int index){
+void Highlighter::add_hl(int index, bool no_send){
   for (auto iter = hl_inds_.begin(); iter != hl_inds_.end(); ++iter) {
     if (*iter == index) return;
   }
@@ -208,6 +228,15 @@ void Highlighter::add_hl(int index){
   (*vis_elems_)[index]->set_highlighted(hcol);
   hl_inds_.push_back(index);
   hl_colors_.push_back(hcol);
+
+  if (! no_send || send_socket_ < 0) {
+	  if ((*vis_elems_)[index]->labels.size()== 0) return;
+	  std::string s( (*vis_elems_)[index]->labels[0] );
+	  sendto(send_socket_, 
+		 s.c_str(), s.size()+1,
+		 0, (struct sockaddr *)&send_addr_,
+		 sizeof(send_addr_));
+  }
 }
 
 std::list<int> Highlighter::get_plot_inds(){

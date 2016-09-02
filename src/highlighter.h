@@ -9,7 +9,7 @@
 
 #include "polygon.h"
 #include "visualelement.h"
-
+#include "sockethelper.h"
 
 
 /**
@@ -33,9 +33,9 @@ class Highlighter{
   
   //code for parsing inputs
   void parse_click(glm::vec2 pos, int mod_key);
-  void run_search(const char * search_str);
+void run_search(const char * search_str, bool no_send = false);
   void clear_hls();
-  void add_hl(int index);
+void add_hl(int index, bool no_send = false);
   void update_info_bar();
 
   std::list<int> get_plot_inds();
@@ -44,6 +44,7 @@ class Highlighter{
 
   void fill_info_bar();
 
+	void check_socket();
  private:
   //used for shape geometry
   glm::vec2 min_AABB_;
@@ -64,6 +65,9 @@ class Highlighter{
   int info_bar_index;
   int info_bar_is_visible_;
   const size_t num_info_bar_elems_;
-
+	int listen_socket_;
+	int send_socket_;
+sockaddr_in send_addr_;
+	
 };
 

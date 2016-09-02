@@ -82,6 +82,8 @@ class VisElem{
   bool string_matches_labels(const char * pattern);
 
   std::string get_group();
+
+  std::vector< std::string > labels;
  private:
   //VisElem( const VisElem& );
   const VisElem& operator=( const VisElem& );
@@ -100,8 +102,8 @@ class VisElem{
   int eq_ind_;
 
   std::string group_;
-  std::vector< std::string > labels;
-
+	
+	
   std::vector< std::string > l_data_labels; //labelled data things
   std::vector< std::string > l_data_vals;
   bool is_highlighted_;
