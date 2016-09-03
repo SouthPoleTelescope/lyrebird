@@ -7,7 +7,7 @@ import curses
 class FancyScatterPlot(object):
     def __init__(self, x, y, labels, 
                  x_label = 'Test X Label',
-                 y_label = 'TEst Y Label',
+                 y_label = 'Test Y Label',
                  send_port = 5555,
                  recv_port = 5556,
                  frac_screen = 0.03):
@@ -100,9 +100,9 @@ class FancyScatterPlot(object):
         valid_inds = np.where( dist_perc < self.frac_screen)[0]
         self.highlight_inds(valid_inds, no_send = False)
 
+'''
 if __name__ == '__main__':
     #hashtag awesoem
-
     ndets = 14705
     x = np.array(np.random.rand(ndets))
     y = np.array(np.random.normal(size = ndets))
@@ -115,3 +115,94 @@ if __name__ == '__main__':
         y = np.array(np.random.normal(size = ndets))
         ugh.check_socket()
         ugh.update_data(x,y)
+'''
+
+import curses, traceback
+
+#need screen geometry and squid list and squid mapping
+def add_squid_info(screen, y, x, 
+                   sq_label, sq_label_size,
+                   carrier_good, nuller_good, demod_good,
+                   temperature_good,
+                   bolometer_good, bolo_label = '',
+                   neutral_c = 3,
+                   good_c = 2,
+                   bad_c = 1):
+    col_map = {True: curses.color_pair(good_c), 
+               False: curses.color_pair(bad_c) }
+
+    current_index = x
+    screen.addstr(y, current_index, sq_label, curses.color_pair(neutral_c))
+    current_index += sq_label_size
+
+    screen.addstr(y, current_index, 'C', col_map[carrier_good])
+    current_index += 1
+
+    screen.addstr(y, current_index, 'N', col_map[nuller_good])
+    current_index += 1
+
+    screen.addstr(y, current_index, 'D', col_map[demod_good])
+    current_index += 1
+
+    screen.addstr(y, current_index, 'T', col_map[temperature_good])
+    current_index += 1
+
+    screen.addstr(y, current_index, 'B', col_map[bolometer_good])
+    current_index += 1
+    if (not bolometer_good):
+        screen.addstr(y, current_index, ' '+bolo_label, col_map[False])
+
+def main(stdscr):
+    # Frame the interface area at fixed VT100 size
+    screen = stdscr.subwin(0, 160, 0, 0)
+    screen.box()
+    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE)
+    curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+    curses.init_pair(3, curses.COLOR_BLUE, curses.COLOR_BLACK)
+
+    squids = ['Sq_%d'%i for i in range(256)]
+    squids_per_col = 32
+    squid_col_width = 20
+    while 1:
+        screen.keypad(1)
+        for i, s in enumerate(squids):
+            add_squid_info(screen, 
+                           i % squids_per_col + 1, 
+                           1 +squid_col_width * ( i // squids_per_col), 
+                           s, 8,
+                           True, True, True, 
+                           True, False, bolo_label = 'ugh')
+        event = screen.getch() 
+        if event == ord("q"): break 
+        screen.refresh()
+
+if __name__=='__main__':
+  try:
+      # Initialize curses
+      stdscr=curses.initscr()
+      #curses.mousemask(curses.ALL_MOUSE_EVENTS)
+      curses.start_color()
+
+      # Turn off echoing of keys, and enter cbreak mode,
+      # where no buffering is performed on keyboard input
+      curses.noecho()
+      curses.cbreak()
+
+      # In keypad mode, escape sequences for special keys
+      # (like the cursor keys) will be interpreted and
+      # a special value like curses.KEY_LEFT will be returned
+      stdscr.keypad(1)
+
+      main(stdscr)                    # Enter the main loop
+      # Set everything back to normal
+      stdscr.keypad(0)
+      curses.echo()
+      curses.nocbreak()
+      curses.endwin()                 # Terminate curses
+  except:
+      # In event of error, restore terminal to sane state.
+      stdscr.keypad(0)
+      curses.echo()
+      curses.nocbreak()
+      curses.endwin()
+      traceback.print_exc()           # Print the exception
