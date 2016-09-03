@@ -33,7 +33,7 @@ class Highlighter{
   
   //code for parsing inputs
   void parse_click(glm::vec2 pos, int mod_key);
-void run_search(const char * search_str, bool no_send = false);
+	void run_search(const char * search_str, bool no_send = false, bool no_clear = false);
   void clear_hls();
 void add_hl(int index, bool no_send = false);
   void update_info_bar();

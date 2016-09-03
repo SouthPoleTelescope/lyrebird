@@ -30,9 +30,6 @@ std::string get_physical_id(int board_serial, int crate_serial, int board_slot,
 }
 
 
-
-
-
 G3FramePtr get_frame(G3NetworkReceiver & fun){
 	std::deque<G3FramePtr> out;
 	fun.Process(G3FramePtr(NULL), out);
@@ -93,7 +90,7 @@ void G3DataStreamer::uninitialize(){
 }
 
 int G3DataStreamer::get_num_hk_values(){
-	return n_boards_ * NUM_MODULES * 2 + n_boards_ * NUM_MODULES * NUM_CHANNELS * 3;
+	return n_boards_ * 1 + n_boards_ * NUM_MODULES * 10 + n_boards_ * NUM_MODULES * NUM_CHANNELS * 8;
 }
 
 int G3DataStreamer::get_num_dfmux_values(){
@@ -104,11 +101,33 @@ int G3DataStreamer::get_num_dfmux_values(){
 void G3DataStreamer::initialize_hk_values(){
 	char name_buffer[128];
 	for (auto b  = board_list_.begin(); b!=board_list_.end(); b++){
+		snprintf(name_buffer, 127, "%s:fir_stage",(*b).c_str());
+		hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+
 		for (int m=0; m < NUM_MODULES; m++){
 			snprintf(name_buffer, 127, "%s/%d:carrier_gain",(*b).c_str(),m);
 			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
-			
 			snprintf(name_buffer, 127, "%s/%d:nuller_gain",(*b).c_str(),m);
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+
+
+			snprintf(name_buffer, 127, "%s/%d:carrier_railed",(*b).c_str(),m);
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			snprintf(name_buffer, 127, "%s/%d:nuller_railed",(*b).c_str(),m);
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			snprintf(name_buffer, 127, "%s/%d:demod_railed",(*b).c_str(),m);
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+
+
+			snprintf(name_buffer, 127, "%s/%d:squid_flux_bias",(*b).c_str(),m);
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			snprintf(name_buffer, 127, "%s/%d:squid_current_bias",(*b).c_str(),m);
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			snprintf(name_buffer, 127, "%s/%d:squid_stage1_offset",(*b).c_str(),m);
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			snprintf(name_buffer, 127, "%s/%d:squid_feedback",(*b).c_str(),m);
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			snprintf(name_buffer, 127, "%s/%d:routing_type",(*b).c_str(),m);
 			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
 			
 			for (int c=0; c < NUM_CHANNELS; c++){
@@ -119,6 +138,18 @@ void G3DataStreamer::initialize_hk_values(){
 				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
 				
 				snprintf(name_buffer, 127, "%s/%d/%d:demod_frequency",(*b).c_str(),m,c);
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+
+
+				snprintf(name_buffer, 127, "%s/%d/%d:dan_accumulator_enable",(*b).c_str(),m,c);
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+				snprintf(name_buffer, 127, "%s/%d/%d:dan_feedback_enable",(*b).c_str(),m,c);
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+				snprintf(name_buffer, 127, "%s/%d/%d:dan_streaming_enable",(*b).c_str(),m,c);
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+				snprintf(name_buffer, 127, "%s/%d/%d:dan_gain",(*b).c_str(),m,c);
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+				snprintf(name_buffer, 127, "%s/%d/%d:dan_railed",(*b).c_str(),m,c);
 				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
 			}
 		}
@@ -152,13 +183,37 @@ void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
 			i += NUM_MODULES * 2 + NUM_MODULES * NUM_CHANNELS * 3;
 		}
 		const HkBoardInfo & binfo = b_map.at(ip);
+
+		dvs_->update_val(hk_path_inds_[i], binfo.fir_stage); i++;
+
 		for (int m=0; m < NUM_MODULES; m++){
 			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).carrier_gain); i++;
 			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).nuller_gain); i++;
+
+			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).carrier_railed); i++;
+			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).nuller_railed); i++;
+			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).demod_railed); i++;
+
+			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).squid_flux_bias); i++;
+			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).squid_current_bias); i++;
+			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).squid_stage1_offset); i++;
+
+			float fb = 0;
+			dvs_->update_val(hk_path_inds_[i], fb); i++;
+			float routing = 0;
+			dvs_->update_val(hk_path_inds_[i], routing); i++;
+
 			for (int c=0; c < NUM_CHANNELS; c++){
 				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).carrier_amplitude);i++;
 				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).carrier_frequency);i++;
 				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).demod_frequency);i++;
+
+
+				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).dan_accumulator_enable);i++;
+				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).dan_feedback_enable);i++;
+				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).dan_streaming_enable);i++;
+				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).dan_gain);i++;
+				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).dan_railed);i++;
 			}
 		}
 	}

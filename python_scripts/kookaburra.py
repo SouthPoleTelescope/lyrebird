@@ -100,7 +100,7 @@ class FancyScatterPlot(object):
         valid_inds = np.where( dist_perc < self.frac_screen)[0]
         self.highlight_inds(valid_inds, no_send = False)
 
-'''
+
 if __name__ == '__main__':
     #hashtag awesoem
     ndets = 14705
@@ -115,11 +115,12 @@ if __name__ == '__main__':
         y = np.array(np.random.normal(size = ndets))
         ugh.check_socket()
         ugh.update_data(x,y)
-'''
 
+'''
 import curses, traceback
 
 #need screen geometry and squid list and squid mapping
+
 def add_squid_info(screen, y, x, 
                    sq_label, sq_label_size,
                    carrier_good, nuller_good, demod_good,
@@ -206,3 +207,4 @@ if __name__=='__main__':
       curses.nocbreak()
       curses.endwin()
       traceback.print_exc()           # Print the exception
+'''

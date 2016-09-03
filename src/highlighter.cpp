@@ -117,7 +117,7 @@ void Highlighter::check_socket(){
 	if (get_string_list(listen_socket_, strs)) return;
 	for (size_t i=0; i < strs.size(); i++) {
 		if (strs[i].size() > 0) {
-			run_search(strs[i].c_str(), true);
+			run_search(strs[i].c_str(), true, true);
 		}
 	}
 }
@@ -135,14 +135,15 @@ void Highlighter::parse_click(glm::vec2 pos, int mod_key){
   fill_info_bar();
 }
 
-void Highlighter::run_search(const char * search_str, bool no_send){
-  clear_hls();
-  for (size_t i=0; i < vis_elems_->size(); i++){
-    if ((*vis_elems_)[i]->string_matches_labels(search_str) && (*vis_elems_)[i]->is_drawn()){
-	    add_hl(i, no_send);
-    }
-  }
-  fill_info_bar();
+void Highlighter::run_search(const char * search_str, bool no_send, bool no_clear){
+	if (! no_clear)
+		clear_hls();
+	for (size_t i=0; i < vis_elems_->size(); i++){
+		if ((*vis_elems_)[i]->string_matches_labels(search_str) && (*vis_elems_)[i]->is_drawn()){
+			add_hl(i, no_send);
+		}
+	}
+	fill_info_bar();
 }
 
 void Highlighter::fill_info_bar(){

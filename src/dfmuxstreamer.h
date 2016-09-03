@@ -19,6 +19,33 @@
 #define NUM_MODULES 8
 #define NUM_CHANNELS 64
 
+
+/**
+   Things to add:
+   
+   amp freq freq
+   gains
+
+   dan_accumulator_enable
+   dan_feedback_enable
+   dan_streaming_enable
+   dan_gain
+   dan_railed
+
+   bool carrier_railed;
+   bool nuller_railed;
+   bool demod_railed;
+   
+   double squid_flux_bias;
+   double squid_current_bias;
+   double squid_stage1_offset;
+   
+   std::string squid_feedback;
+   std::string routing_type;
+
+   int fir_stage;
+ **/
+
 // desc needs: ip/port to connect to.
 // list of things to report on
 class G3DataStreamer : public DataStreamer {
@@ -26,7 +53,7 @@ public:
 	//desc needs a list of board ids, ip, port
 	//
 	G3DataStreamer(Json::Value streamer_json_desc,
-		       std::string tag, DataVals * dv, int us_update_time  );
+		       std::string tag, DataVals * dv, int us_update_time);
 	void initialize(); 
 	void uninitialize();
 	void update_values(int n);
