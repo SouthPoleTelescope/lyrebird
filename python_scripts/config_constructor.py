@@ -49,7 +49,8 @@ def addDataSource(config_dic, tag, ds_type, desc, update_time=0):
                                         'desc':desc})
 
 def getEquation(eq_func, eq_color_map, eq_label, display_label, sample_rate_val):
-    return {"function":eq_func,"cmap": eq_color_map, "label": eq_label, "display_label":display_label, "sample_rate_id":sample_rate_val}
+    return {"function":eq_func,"cmap": eq_color_map, "label": eq_label, 
+            "display_label":display_label, "sample_rate_id":sample_rate_val}
 
 def addGlobalEquation(config_dic, equation):
     if not 'equations' in config_dic:

@@ -1,8 +1,28 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import socket
-import curses
+import socket, curses, json
+
+'''
+needs channel list
+squids list
+'''
+
+def generate_kookie_config_file(output_file, 
+                                squids_list,
+                                channels_list,
+                                listen_hostname = '127.0.0.1',
+                                listen_port = 8675):
+    out_d = {}
+    out_d['squids_list'] = squids_list
+    out_d['channels_list'] = channels_list
+    out_d['listen_hostname'] = listen_hostname
+    out_d['listen_port'] = listen_port
+    json.dumps(out_d, open(output_file, 'w'))
+
+def read_kookie_config_file(fn):
+    d = json.load(open(fn))
+    return d
 
 class FancyScatterPlot(object):
     def __init__(self, x, y, labels, 
@@ -101,22 +121,6 @@ class FancyScatterPlot(object):
         self.highlight_inds(valid_inds, no_send = False)
 
 
-if __name__ == '__main__':
-    #hashtag awesoem
-    ndets = 14705
-    x = np.array(np.random.rand(ndets))
-    y = np.array(np.random.normal(size = ndets))
-    labels =  ['test_label_%s'%i for i in range( len(x) )]
-    ugh = FancyScatterPlot(x,y, labels)
-    plt.show(block=False)
-    while 1:
-        plt.pause(0.002)
-        x = np.array(np.random.rand(ndets))
-        y = np.array(np.random.normal(size = ndets))
-        ugh.check_socket()
-        ugh.update_data(x,y)
-
-'''
 import curses, traceback
 
 #need screen geometry and squid list and squid mapping
@@ -177,8 +181,27 @@ def main(stdscr):
         if event == ord("q"): break 
         screen.refresh()
 
+
+
+
+
 if __name__=='__main__':
-  try:
+
+    ndets = 14705
+    x = np.array(np.random.rand(ndets))
+    y = np.array(np.random.normal(size = ndets))
+    labels =  ['test_label_%s'%i for i in range( len(x) )]
+    ugh = FancyScatterPlot(x,y, labels)
+    plt.show(block=False)
+
+    while 1:
+        plt.pause(0.002)
+        x = np.array(np.random.rand(ndets))
+        y = np.array(np.random.normal(size = ndets))
+        ugh.check_socket()
+        ugh.update_data(x,y)
+
+    try:
       # Initialize curses
       stdscr=curses.initscr()
       #curses.mousemask(curses.ALL_MOUSE_EVENTS)
@@ -200,11 +223,11 @@ if __name__=='__main__':
       curses.echo()
       curses.nocbreak()
       curses.endwin()                 # Terminate curses
-  except:
+    except:
       # In event of error, restore terminal to sane state.
       stdscr.keypad(0)
       curses.echo()
       curses.nocbreak()
       curses.endwin()
       traceback.print_exc()           # Print the exception
-'''
+
