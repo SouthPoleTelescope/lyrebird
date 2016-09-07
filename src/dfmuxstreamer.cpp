@@ -89,7 +89,7 @@ void G3DataStreamer::uninitialize(){
 }
 
 int G3DataStreamer::get_num_hk_values(){
-	return n_boards_ * 1 + n_boards_ * NUM_MODULES * 10 + n_boards_ * NUM_MODULES * NUM_CHANNELS * 8;
+	return n_boards_ * 1 + n_boards_ * NUM_MODULES * 10 + n_boards_ * NUM_MODULES * NUM_CHANNELS * 10;
 }
 
 int G3DataStreamer::get_num_dfmux_values(){
@@ -149,6 +149,12 @@ void G3DataStreamer::initialize_hk_values(){
 				snprintf(name_buffer, 127, "%s/%d/%d:dan_gain",(*b).c_str(),m,c);
 				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
 				snprintf(name_buffer, 127, "%s/%d/%d:dan_railed",(*b).c_str(),m,c);
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+
+				snprintf(name_buffer, 127, "%s/%d/%d:rnormal",(*b).c_str(),m,c);
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+
+				snprintf(name_buffer, 127, "%s/%d/%d:rlatched",(*b).c_str(),m,c);
 				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
 			}
 		}
@@ -213,6 +219,9 @@ void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
 				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).dan_streaming_enable);i++;
 				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).dan_gain);i++;
 				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).dan_railed);i++;
+
+				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).rnormal);i++;
+				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).rlatched);i++;
 			}
 		}
 	}

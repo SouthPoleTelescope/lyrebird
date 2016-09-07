@@ -197,10 +197,12 @@ class FocalPlaneStater(object):
 def add_squid_info(screen, y, x, 
                    sq_label, sq_label_size,
                    carrier_good, nuller_good, demod_good,
-                   temperature_good, max_size,
+                   temperature_good, 
+                   voltage_good,
+                   max_size,
                    bolometer_good, bolo_label = '',
                    neutral_c = 3, good_c = 2, bad_c = 1):
-    assert( (6 + sq_label_size) < max_size)
+    assert( (7 + sq_label_size) < max_size)
     col_map = {True: curses.color_pair(good_c), 
                False: curses.color_pair(bad_c) }
     current_index = x
@@ -219,12 +221,15 @@ def add_squid_info(screen, y, x,
     screen.addstr(y, current_index, 'T', col_map[temperature_good])
     current_index += 1
 
+    screen.addstr(y, current_index, 'V', col_map[voltage_good])
+    current_index += 1
+
     screen.addstr(y, current_index, 'B', col_map[bolometer_good])
     current_index += 1
 
     if (not bolometer_good):
         screen.addstr(y, 
-                      current_index, ' '+bolo_label[:(max_size - 6 - sq_label_size )], 
+                      current_index, ' '+bolo_label[:(max_size - 7 - sq_label_size )], 
                       col_map[False])
 
 def load_squid_info_from_hk( screen, y, x, 
@@ -234,7 +239,8 @@ def load_squid_info_from_hk( screen, y, x,
     carrier_good = False
     nuller_good = False 
     demod_good = False
-    tv_good = False 
+    temp_good = False 
+    volt_good = False 
     bolometer_good = False
     bolo_label = 'NoData'
 
@@ -250,15 +256,22 @@ def load_squid_info_from_hk( screen, y, x,
         demod_good = not module_info.demod_railed
 
         #need to add temperature and voltage info
-        tv_good = True
+        temp_good = False
+        volt_good = False
         #need to add bolometer info
         bolometer_good = True
         bolo_label = ''
+        if b in module_info.channels.keys():
+            chinfo = module_info.channels[b]
+            if (chinfo.dan_railed):
+                bolometer_good = False
+                bolo_label = '%d Railed'%b
 
     add_squid_info(screen, y, x, 
                    sq_label, sq_label_size,
                    carrier_good, nuller_good, demod_good,
-                   tv_good, max_size,
+                   temp_good, volt_good,
+                   max_size,
                    bolometer_good, bolo_label)
 
 

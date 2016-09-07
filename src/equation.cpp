@@ -174,6 +174,14 @@ inline void pp_func_add(PPStack<float> * pp_val_stack, float * val, int offset){
   float v1 = pop(pp_val_stack);
   push(pp_val_stack, v0+v1);
 }
+
+inline void pp_func_atan(PPStack<float> * pp_val_stack, float * val, int offset){
+  float v0 = pop(pp_val_stack);
+  float v1 = pop(pp_val_stack);
+  push(pp_val_stack, atan2f(v0, v1));
+}
+
+
 inline void pp_func_sub(PPStack<float> * pp_val_stack, float * val, int offset){
   float v0 = pop(pp_val_stack);
   float v1 = pop(pp_val_stack);
@@ -268,6 +276,9 @@ pp_func get_pp_func(char id){
   case 't':
     return pp_func_tan;
     break;
+  case 'T':
+    return pp_func_atan;
+    break;
   case 'q':
     return pp_func_sqrt;
     break;
@@ -319,6 +330,9 @@ int get_pp_func_len(char id){
     break;
   case 't':
     return 0;
+    break;
+  case 'T':
+    return 1;
     break;
   case 'q':
     return 0;

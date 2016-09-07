@@ -53,7 +53,7 @@ def get_module_vals():
 def get_channel_vals():
     return ['carrier_amplitude', 'carrier_frequency', 'demod_frequency',
             'dan_accumulator_enable', 'dan_feedback_enable', 'dan_streaming_enable', 
-            'dan_gain', 'dan_railed']
+            'dan_gain', 'dan_railed', 'rnormal', 'rlatched']
 
 
 def addDfmuxStreamer(config_dic, tag, boards_list, 
@@ -101,15 +101,18 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
             svg = svg_folder + 'medpol.svg'
             h_svg = svg_folder + 'medhighligh.svg'
             group = '150s'
+            eq_cmap = 'bolo_green_cmap'
         elif bp.band == 90:
             svg = svg_folder + 'largepol.svg'
             h_svg = svg_folder + 'largehighligh.svg'
             group = '90s'
+            eq_cmap = 'bolo_blue_cmap'
 
         elif bp.band == 220:
             svg = svg_folder + 'smallpol.svg'
             h_svg = svg_folder + 'smallhighligh.svg'
             group = '220s'
+            eq_cmap = 'bolo_purple_cmap'
 
         else:
             svg = svg_folder + 'box.svg'
@@ -125,6 +128,20 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
         for bvs in get_board_vals():
             eqs_lst.append('%s:%s_eq' % (bid, bvs))
             
+        CC.addGlobalEquation(config_dic, 
+                             CC.getEquation('/ %s/I:dfmux_samples %s:rnormal'%(cid, cid), 
+                                            eq_cmap,
+                                            '%s:Rfractional'%(cid)+'_eq',
+                                            "Rfrac",
+                                            '%s/I:dfmux_samples'%(cid)))
+
+        CC.addGlobalEquation(config_dic, 
+                             CC.getEquation('a / T %s/I:dfmux_samples %s/Q:dfmux_samples 3.14159265'%(cid, cid), 
+                                            "rainbow_cmap",
+                                            '%s:phase'%(cid)+'_eq',
+                                            "Channel Phase",
+                                            '%s/I:dfmux_samples'%(cid)))
+
         CC.addVisElem(config_dic, 
                       x_cen=bp.x_offset,   y_cen=bp.y_offset,
                       x_scale = scale_fac, y_scale=scale_fac, 
