@@ -141,19 +141,31 @@ class FancyScatterPlot(object):
 
 class FocalPlaneStater(object):
     def __init__(self, channels_lst, 
-                 noise_buffer_size = 128):
+                 noise_buffer_size = 128,
+                 update_modulo = 1
+    ):
         self.channels_lst = channels_lst
         self.channel_map = {}
         for i, ch in enumerate(channels_lst):
             self.channel_map[ch] = i
-        self.noise_buffers = [np.zeros( noise_buffer_size ) for ch in channels_lst]
-        self.current_val = [0 for ch in channels_lst]
+
+        self.noise_buffers = np.array([np.zeros( noise_buffer_size ) for ch in channels_lst])
+        self.current_val = np.array([0 for ch in channels_lst])
         self.rnorm_conv = [1 for ch in channels_lst]
 
         self.noise_buffer_ind = 0
         self.noise_buffer_size = noise_buffer_size
         self.id_ip_mapper = None
+
+        self.update_modulo = update_modulo
+        self.update_ind = 0
         
+        self.plotter = FancyScatterPlot( x = self.current_val, 
+                                         y = np.std(self.noise_buffers, axis =1),
+                                         labels = self.channels_lst, 
+                                         x_label = '$R_{frac}$',
+                                         y_label = 'Noise' )
+        plt.show(block = False)
     def __call__(self, frame):
         if frame.type == core.G3FrameType.Wiring:
             self.id_ip_mapper = IdIpMapper(frame['WiringMap'])
@@ -173,7 +185,10 @@ class FocalPlaneStater(object):
                             self.noise_buffers[ind][self.noise_buffer_ind] = sval
                             self.current_val[ind] = sval
             self.noise_buffer_ind = (self.noise_buffer_ind + 1) % self.noise_buffer_size
-        elif frame.type == coreG3FrameTYpe.Housekeeping:
+            if self.update_ind % self.update_modulo == 0:
+                self.plotter.update_data(self.current_val, np.std(self.noise_buffers, axis =1))
+            plt.pause(0.002)
+        elif frame.type == coreG3FrameType.Housekeeping:
             pass
 
 #need screen geometry and squid list and squid mapping
@@ -183,6 +198,7 @@ def add_squid_info(screen, y, x,
                    temperature_good, max_size,
                    bolometer_good, bolo_label = '',
                    neutral_c = 3, good_c = 2, bad_c = 1):
+    assert( (6 + sq_label_size) < max_size)
     col_map = {True: curses.color_pair(good_c), 
                False: curses.color_pair(bad_c) }
     current_index = x
@@ -203,11 +219,45 @@ def add_squid_info(screen, y, x,
 
     screen.addstr(y, current_index, 'B', col_map[bolometer_good])
     current_index += 1
-    if (not bolometer_good):
-        screen.addstr(y, current_index, ' '+bolo_label, col_map[False])
 
-def load_squid_info_from_hk( screen, y, x, sq_dev_id, sq_label, sq_label_size, max_size):
-    pass
+    if (not bolometer_good):
+        screen.addstr(y, 
+                      current_index, ' '+bolo_label[:(max_size - 6 - sq_label_size )], 
+                      col_map[False])
+
+def load_squid_info_from_hk( screen, y, x, 
+                             hk_map,
+                             sq_dev_id, sq_label, sq_label_size, 
+                             max_size, ip_mapper):
+    carrier_good = False
+    nuller_good = False 
+    demod_good = False
+    tv_good = False 
+    bolometer_good = False
+    bolo_label = 'NoData'
+
+    #code for loading hk info for display
+    if hk_map != None:
+        board_id, mezz_num, module_num = sq_phys_id_to_info(sq_dev_id)
+        board_ip = ip_mapper.get_ip(board_id)
+        board_info = hk_map[board_id]
+        module_info = hk_map[board_id][mezz_num][module_num]
+
+        carrier_good = not module_info.carrier_railed
+        nuller_good = not module_info.nuller_railed
+        demod_good = not module_info.demod_railed
+
+        #need to add temperature and voltage info
+        tv_good = True
+        #need to add bolometer info
+        bolometer_good = True
+        bolo_label = ''
+
+    add_squid_info(screen, y, x, 
+                   sq_label, sq_label_size,
+                   carrier_good, nuller_good, demod_good,
+                   tv_good, max_size,
+                   bolometer_good, bolo_label)
 
 
 class SquidDisplay(object):
@@ -218,7 +268,9 @@ class SquidDisplay(object):
         self.squids_per_col = squids_per_col
         self.squid_col_width = squid_col_width
         self.n_squids = len(squids_list)
-        
+
+
+        self.sq_label_size = max(map(len, squids_list))        
         ncols = int(math.ceil(float(self.n_squids)/self.squids_per_col))
 
         self.screen_size_x = ncols * squid_col_width
@@ -227,9 +279,10 @@ class SquidDisplay(object):
         self.pos_map = {}
         #assign an x, y location to each squid
 
+        self.ip_mapper = None
         for i, sq in enumerate(sorted(squids_list)):
-            x =  i % self.squids_per_col + 1
-            y = 1 + self.squid_col_width * ( i // self.squids_per_col)
+            y =  i % self.squids_per_col + 1
+            x = 1 + self.squid_col_width * ( i // self.squids_per_col)
             self.pos_map[sq] = (x,y)
         try:
             # Initialize curses
@@ -254,8 +307,7 @@ class SquidDisplay(object):
             # a special value like curses.KEY_LEFT will be returned
             self.stdscr.keypad(1)
 
-            screen = stdscr.subwin(0, self.screen_size_x, 0, 0)
-            screen.box()
+            self.screen = self.stdscr.subwin(0, self.screen_size_x, 0, 0)
 
             curses.init_pair(1, curses.COLOR_RED,   curses.COLOR_WHITE)
             curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
@@ -268,47 +320,47 @@ class SquidDisplay(object):
             curses.nocbreak()
             curses.endwin()
             traceback.print_exc()  # Print the exception
+        
 
     def __call__(self, frame):
-        if frame.type == core.G3FrameType.EndProcessing:
-            stdscr.keypad(0)
+        if frame == None or frame.type == core.G3FrameType.Housekeeping:
+            #do update
+            if frame != None:
+                hk_data = frame['DfMuxHousekeeping']
+            else:
+                hk_data = None
+            self.stdscr.clear()
+            self.screen.box()
+
+            for i, s in enumerate(self.squids_list):
+                p = self.pos_map[s]
+                load_squid_info_from_hk( self.screen, p[1], p[0], 
+                                         hk_data,
+                                         s, s, self.sq_label_size, 
+                                         self.squid_col_width, self.ip_mapper)
+            self.screen.refresh()
+        elif frame.type == core.G3FrameType.EndProcessing:
+            self.stdscr.keypad(0)
             curses.echo()
             curses.nocbreak()
             curses.endwin() 
-        elif frame.type == core.G3FrameType.Housekeeping or frame == None:
-            #do update
-            pass
-            
-
-'''
-def main(stdscr):
-    # Frame the interface area at fixed VT100 size
-    screen = stdscr.subwin(0, 160, 0, 0)
-    screen.box()
-    curses.init_pair(1, curses.COLOR_RED, curses.COLOR_WHITE)
-    curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
-    curses.init_pair(3, curses.COLOR_BLUE, curses.COLOR_BLACK)
-
-    squids = ['Sq_%d'%i for i in range(256)]
-    squids_per_col = 32
-    squid_col_width = 20
-    while 1:
-        screen.keypad(1)
-        for i, s in enumerate(squids):
-            add_squid_info(screen, 
-                           i % squids_per_col + 1, 
-                           1 + squid_col_width * ( i // squids_per_col), 
-                           s, 8,
-                           True, True, True, 
-                           True, False, bolo_label = 'ugh')
-        event = screen.getch() 
-        if event == ord("q"): break 
-        screen.refresh()
-'''
+        elif frame.type == core.G3FrameType.Wiring:
+            self.ip_mapper = IdIpMapper(frame['WiringMap'])
 
 
 if __name__=='__main__':
+    
+    try:
+        sqs = ['Sq%d'%i for i in range(256)]
+        sd = SquidDisplay(sqs)
+        sd(None)
+    finally:
+        curses.echo()
+        curses.nocbreak()
+        curses.endwin()
 
+
+    '''
     ndets = 14705
     x = np.array(np.random.rand(ndets))
     y = np.array(np.random.normal(size = ndets))
@@ -332,3 +384,4 @@ if __name__=='__main__':
       curses.nocbreak()
       curses.endwin()
       traceback.print_exc()           # Print the exception
+    '''
