@@ -72,7 +72,10 @@ VisElem::VisElem(SimpleRen * simple_ren, EquationMap * eqs,
 }
 
 void VisElem::set_eq_ind(int ind){
-  eq_ind_ = ind;
+	if (ind < equations.size())
+		eq_ind_ = ind;
+	else
+		eq_ind_ = 0;
 }
 
 int VisElem::get_num_eqs(){
