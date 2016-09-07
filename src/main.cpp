@@ -438,7 +438,6 @@ int main(int argc, char * args[])
 	     displayed_name, NULL);
 
   TwAddSeparator(main_bar, "label_sep", NULL);
-
   
   for (size_t i=0; i < command_lst.size(); i++){
 	  TwAddButton(main_bar, command_label[i].c_str(), 
