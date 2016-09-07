@@ -49,6 +49,7 @@ class FancyScatterPlot(object):
                  send_port = 5555,
                  recv_port = 5556,
                  frac_screen = 0.03):
+        plt.ion()
         self.set_labels(labels)
         self.x = x
         self.y = y
@@ -75,6 +76,7 @@ class FancyScatterPlot(object):
         self.sock_listen.bind((UDP_IP, UDP_PORT))
         self.sock_send = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         self.send_port = send_port
+        plt.show()
 
     def check_socket(self):
         labels = []
@@ -95,10 +97,10 @@ class FancyScatterPlot(object):
 
     def update_hists(self):
         ax2 = plt.subplot(self.gs[2,0:2], sharex=self.ax)
-        self.x_hist = plt.hist(x)
+        self.x_hist = plt.hist(self.x)
         plt.xlabel(self.x_label)
         ax2 = plt.subplot(self.gs[0:2,2], sharey=self.ax)
-        self.y_hist = plt.hist(y, orientation = 'horizontal')
+        self.y_hist = plt.hist(self.y, orientation = 'horizontal')
 
     def update_data(self, x,y):
         self.x = x
@@ -269,7 +271,6 @@ class SquidDisplay(object):
         self.squid_col_width = squid_col_width
         self.n_squids = len(squids_list)
 
-
         self.sq_label_size = max(map(len, squids_list))        
         ncols = int(math.ceil(float(self.n_squids)/self.squids_per_col))
 
@@ -301,11 +302,7 @@ class SquidDisplay(object):
             # where no buffering is performed on keyboard input
             curses.noecho()
             curses.cbreak()
-            
-            # In keypad mode, escape sequences for special keys
-            # (like the cursor keys) will be interpreted and
-            # a special value like curses.KEY_LEFT will be returned
-            self.stdscr.keypad(1)
+            curses.curs_set(0)
 
             self.screen = self.stdscr.subwin(0, self.screen_size_x, 0, 0)
 
@@ -315,7 +312,7 @@ class SquidDisplay(object):
 
         except:
             # In event of error, restore terminal to sane state.
-            self.stdscr.keypad(0)
+            curses.curs_set(1)
             curses.echo()
             curses.nocbreak()
             curses.endwin()
@@ -347,14 +344,17 @@ class SquidDisplay(object):
         elif frame.type == core.G3FrameType.Wiring:
             self.ip_mapper = IdIpMapper(frame['WiringMap'])
 
-
 if __name__=='__main__':
-    
     try:
+        chs = ['Ch%d'%i for i in range(256)]
         sqs = ['Sq%d'%i for i in range(256)]
         sd = SquidDisplay(sqs)
-        sd(None)
+        fp = FocalPlaneStater(chs)
+        while 1:
+            plt.pause(0.002)
+            sd(None)
     finally:
+        curses.curs_set(1)
         curses.echo()
         curses.nocbreak()
         curses.endwin()
