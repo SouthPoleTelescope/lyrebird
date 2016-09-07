@@ -216,6 +216,7 @@ int main(int argc, char * args[])
   vector<string> svg_paths;
   vector<string> svg_ids;
 
+  vector<string> displayed_eq_labels;
 
   std::vector<std::string> displayed_global_equations;
   std::vector<std::string> modifiable_data_vals;
@@ -234,7 +235,8 @@ int main(int argc, char * args[])
 		    displayed_global_equations, modifiable_data_vals,
 		    command_lst, command_label,
 		    win_x_size, win_y_size, sub_sampling, 
-		    num_layers, max_framerate, max_num_plotted
+		    num_layers, max_framerate, max_num_plotted,
+		    displayed_eq_labels
 		    );
   log_debug("done parse_config_file");
 
@@ -406,7 +408,38 @@ int main(int argc, char * args[])
 
   TwAddSeparator(main_bar, "ds_sep", NULL);
   TwAddButton(main_bar, "Pause", toggle_data_vals_pause, &is_paused, NULL);
+  TwAddSeparator(main_bar, "pasue_sep", NULL);
 
+
+  unsigned int displayed_eq = 0;
+  unsigned int prev_eq_val = 0;
+
+  int max_val;
+  if (displayed_eq_labels.size() > 0){
+	  max_val = displayed_eq_labels.size() -1;
+  } else {
+	  max_val = 0;
+  }
+  size_t display_buffer_size = 0;
+  for (size_t i=0; i < displayed_eq_labels.size(); i++) {
+	  size_t s = displayed_eq_labels[i].size() + 1;
+	  if (s > display_buffer_size) {
+		  display_buffer_size = s;
+	  }
+  }
+  char * displayed_name = new char[display_buffer_size];
+  strncpy(displayed_name, displayed_eq_labels[0].c_str(), display_buffer_size); 
+
+  TwAddVarRW(main_bar, "Displayed Equation",
+	     TW_TYPE_UINT32, &displayed_eq, " min=0") ;
+  TwSetParam(main_bar, "Displayed Equation", "max", TW_PARAM_INT32, 1, &max_val);
+
+  TwAddVarRW(main_bar, "Eq Label:", TW_TYPE_CSSTRING(display_buffer_size),
+	     displayed_name, NULL);
+
+  TwAddSeparator(main_bar, "label_sep", NULL);
+
+  
   for (size_t i=0; i < command_lst.size(); i++){
 	  TwAddButton(main_bar, command_label[i].c_str(), 
 		      run_external_command, const_cast<char*>( command_lst[i].c_str()),
@@ -469,7 +502,20 @@ int main(int argc, char * args[])
   while (!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
-    
+
+
+    //update the equations if possible
+    if (prev_eq_val != displayed_eq) {
+	    prev_eq_val = displayed_eq;
+	    for (size_t i=0; i < visual_elements.size(); i++){
+		    visual_elements[i]->set_eq_ind( prev_eq_val );
+	    }
+	    strncpy(displayed_name, 
+		    displayed_eq_labels[prev_eq_val].c_str(), 
+		    display_buffer_size); 
+    }
+
+    //other things
     
     highlight.check_socket();
     for (int i = 0; i<num_data_sources; i++){

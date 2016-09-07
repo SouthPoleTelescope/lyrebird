@@ -20,19 +20,22 @@ def convert_svg_path_to_id(p):
     convert_svg_path_to_id.paths[p] = test_id
     return test_id
 
-def addGeneralSettings(config_dic, win_x_size, win_y_size, sub_sampling, max_framerate, max_num_plotted):
+def addGeneralSettings(config_dic, win_x_size, win_y_size, sub_sampling, 
+                       max_framerate, max_num_plotted, eq_names = ['Test Sins', 
+                                                                   'Test Lins']):
     assert(win_x_size > 0)
     assert(win_y_size > 0)
     assert(sub_sampling%2==0)
     assert(sub_sampling < 18)
     assert(max_num_plotted > 0)
 
+    
     config_dic['general_settings'] =  {'win_x_size': win_x_size,
                                        'win_y_size': win_y_size,
                                        'sub_sampling': sub_sampling,
                                        'max_framerate': max_framerate,
                                        'max_num_plotted': max_num_plotted,
-    
+                                       'eq_names': eq_names
                               }    
 def addDataVal(config_dic, dv_id, init_val, is_buffered):
     if not 'data_vals' in config_dic:

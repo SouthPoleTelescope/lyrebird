@@ -61,7 +61,9 @@ void parse_config_file(string in_file,
 		       int & sub_sampling,
 		       int & num_layers,
 		       int & max_framerate,
-		       int & max_num_plotted
+		       int & max_num_plotted,
+
+		       std::vector<std::string> & displayed_eq_labels
 
 		       ){
   string read_in_file = read_file(in_file);
@@ -125,7 +127,18 @@ void parse_config_file(string in_file,
 	log_fatal("general_settings/max_num_plotted supplied but is not integer");
       }
     }      
+
+    
+    if (v.isMember("eq_names") ){
+	    displayed_eq_labels.clear();
+	    for (unsigned int i=0; i < v["eq_names"].size(); i++){
+		    displayed_eq_labels.push_back(v["eq_names"][i].asString());
+	    }
+    }
   }
+  
+
+
   
   /**
   if (root.isMember("modifiable_dvs")){

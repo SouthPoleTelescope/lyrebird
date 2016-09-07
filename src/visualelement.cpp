@@ -71,8 +71,8 @@ VisElem::VisElem(SimpleRen * simple_ren, EquationMap * eqs,
   is_highlighted_ = false;
 }
 
-void VisElem::set_eq_ind(int ind){
-	if (ind < equations.size())
+void VisElem::set_eq_ind(unsigned int ind){
+	if (ind < equation_inds_.size())
 		eq_ind_ = ind;
 	else
 		eq_ind_ = 0;

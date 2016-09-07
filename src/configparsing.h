@@ -29,6 +29,8 @@ void parse_config_file(std::string in_file,
 		       int & sub_sampling,
 		       int & num_layers,
 		       int & max_framerate,
-		       int & max_num_plotted
+		       int & max_num_plotted,
+
+		       std::vector<std::string> & displayed_eq_labels
 
 		       );

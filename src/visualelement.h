@@ -71,7 +71,7 @@ class VisElem{
 
   void animate_highlight(float tstep);
 
-  void set_eq_ind(int ind);
+  void set_eq_ind(unsigned int ind);
   int get_num_eqs();
 
   void get_all_info(std::vector<std::string> &labels, std::vector<std::string> & tags,
