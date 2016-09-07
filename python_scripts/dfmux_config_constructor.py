@@ -8,7 +8,6 @@ N_CHANNELS=64
 
 def get_physical_id(board_serial, crate_serial, board_slot,
                     module = None, channel = None):
-
     if board_slot == 0:
         s = '%d_%d' % (crate_serial, board_slot)
         
@@ -18,6 +17,13 @@ def get_physical_id(board_serial, crate_serial, board_slot,
             s += '/%d' % channel
     return s
 
+def sq_phys_id_to_info(phys_id):
+    split = phys_id.split('/')
+    board_id = split[0]
+    module_num = int(split[1])
+    mezz_num = module_num // 4
+    module_num = module_num % 4
+    return board_id, mezz_num, module_num
 
 def uniquifyList(seq):
     checked = []

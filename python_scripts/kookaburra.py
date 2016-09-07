@@ -1,7 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
-import socket, curses, json
+import socket, curses, json, traceback, math
+from dfmux_config_constructor import get_physical_id, sq_phys_id_to_info
 
 '''
 needs channel list
@@ -10,11 +11,13 @@ squids list
 
 def generate_kookie_config_file(output_file, 
                                 squids_list,
+                                squid_labels_list,
                                 channels_list,
                                 listen_hostname = '127.0.0.1',
                                 listen_port = 8675):
     out_d = {}
     out_d['squids_list'] = squids_list
+    out_d['squid_labels_list'] = squid_labels_list
     out_d['channels_list'] = channels_list
     out_d['listen_hostname'] = listen_hostname
     out_d['listen_port'] = listen_port
@@ -23,6 +26,21 @@ def generate_kookie_config_file(output_file,
 def read_kookie_config_file(fn):
     d = json.load(open(fn))
     return d
+
+class IdIpMapper(object):
+    def __init__(self, wiring_map):
+        self.mp = {}
+        for k in wiring_map.keys():
+            board_id = get_physical_id(wm.board_serial,
+                                       wm.crate_serial,
+                                       wm.board_slot)
+            self.mp[ wm.ip ] = board_id
+            self.mp_inv[board_id] = wm.ip
+    def get_id(ip):
+        return self.mp[ip]
+    def get_ip(id):
+        return self.mp_inv[id]
+
 
 class FancyScatterPlot(object):
     def __init__(self, x, y, labels, 
@@ -121,21 +139,52 @@ class FancyScatterPlot(object):
         self.highlight_inds(valid_inds, no_send = False)
 
 
-import curses, traceback
+class FocalPlaneStater(object):
+    def __init__(self, channels_lst, 
+                 noise_buffer_size = 128):
+        self.channels_lst = channels_lst
+        self.channel_map = {}
+        for i, ch in enumerate(channels_lst):
+            self.channel_map[ch] = i
+        self.noise_buffers = [np.zeros( noise_buffer_size ) for ch in channels_lst]
+        self.current_val = [0 for ch in channels_lst]
+        self.rnorm_conv = [1 for ch in channels_lst]
+
+        self.noise_buffer_ind = 0
+        self.noise_buffer_size = noise_buffer_size
+        self.id_ip_mapper = None
+        
+    def __call__(self, frame):
+        if frame.type == core.G3FrameType.Wiring:
+            self.id_ip_mapper = IdIpMapper(frame['WiringMap'])
+        elif frame.type == core.G3FrameType.Timepoint:
+            if self.id_ip_mapper == None:
+                return
+            meta_samp = frame['DfMux']
+            for ip in meta_samp.keys():
+                board_id = self.id_ip_mapper.get_id(ip)
+                for module_id in meta_samp[ip].keys():
+                    samp = meta_samp[ip][module_id]
+                    for i in range(len(samp)):
+                        cid = '%s/%d/%d' % (board_id, module_id, i)
+                        if cid in self.channel_map:
+                            ind = self.channel_map[cid]
+                            sval = samp[i*2]
+                            self.noise_buffers[ind][self.noise_buffer_ind] = sval
+                            self.current_val[ind] = sval
+            self.noise_buffer_ind = (self.noise_buffer_ind + 1) % self.noise_buffer_size
+        elif frame.type == coreG3FrameTYpe.Housekeeping:
+            pass
 
 #need screen geometry and squid list and squid mapping
-
 def add_squid_info(screen, y, x, 
                    sq_label, sq_label_size,
                    carrier_good, nuller_good, demod_good,
-                   temperature_good,
+                   temperature_good, max_size,
                    bolometer_good, bolo_label = '',
-                   neutral_c = 3,
-                   good_c = 2,
-                   bad_c = 1):
+                   neutral_c = 3, good_c = 2, bad_c = 1):
     col_map = {True: curses.color_pair(good_c), 
                False: curses.color_pair(bad_c) }
-
     current_index = x
     screen.addstr(y, current_index, sq_label, curses.color_pair(neutral_c))
     current_index += sq_label_size
@@ -157,6 +206,81 @@ def add_squid_info(screen, y, x,
     if (not bolometer_good):
         screen.addstr(y, current_index, ' '+bolo_label, col_map[False])
 
+def load_squid_info_from_hk( screen, y, x, sq_dev_id, sq_label, sq_label_size, max_size):
+    pass
+
+
+class SquidDisplay(object):
+    def __init__(self, squids_list, 
+                 squids_per_col = 32, 
+                 squid_col_width = 20):
+        self.squids_list = squids_list
+        self.squids_per_col = squids_per_col
+        self.squid_col_width = squid_col_width
+        self.n_squids = len(squids_list)
+        
+        ncols = int(math.ceil(float(self.n_squids)/self.squids_per_col))
+
+        self.screen_size_x = ncols * squid_col_width
+        self.screen_size_y = self.squids_per_col + 2
+
+        self.pos_map = {}
+        #assign an x, y location to each squid
+
+        for i, sq in enumerate(sorted(squids_list)):
+            x =  i % self.squids_per_col + 1
+            y = 1 + self.squid_col_width * ( i // self.squids_per_col)
+            self.pos_map[sq] = (x,y)
+        try:
+            # Initialize curses
+            self.stdscr = curses.initscr()
+
+            y, x = self.stdscr.getmaxyx()
+            if y < self.screen_size_y:
+                raise RuntimeError("screen is not tall enough, extend to %d", self.screen_size_y)
+            if x < self.screen_size_x:
+                raise RuntimeError("screen is not wide enough, extend to %d", self.screen_size_x)
+
+            #curses.mousemask(curses.ALL_MOUSE_EVENTS)
+            curses.start_color()
+            
+            # Turn off echoing of keys, and enter cbreak mode,
+            # where no buffering is performed on keyboard input
+            curses.noecho()
+            curses.cbreak()
+            
+            # In keypad mode, escape sequences for special keys
+            # (like the cursor keys) will be interpreted and
+            # a special value like curses.KEY_LEFT will be returned
+            self.stdscr.keypad(1)
+
+            screen = stdscr.subwin(0, self.screen_size_x, 0, 0)
+            screen.box()
+
+            curses.init_pair(1, curses.COLOR_RED,   curses.COLOR_WHITE)
+            curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+            curses.init_pair(3, curses.COLOR_BLUE,  curses.COLOR_BLACK)
+
+        except:
+            # In event of error, restore terminal to sane state.
+            self.stdscr.keypad(0)
+            curses.echo()
+            curses.nocbreak()
+            curses.endwin()
+            traceback.print_exc()  # Print the exception
+
+    def __call__(self, frame):
+        if frame.type == core.G3FrameType.EndProcessing:
+            stdscr.keypad(0)
+            curses.echo()
+            curses.nocbreak()
+            curses.endwin() 
+        elif frame.type == core.G3FrameType.Housekeeping or frame == None:
+            #do update
+            pass
+            
+
+'''
 def main(stdscr):
     # Frame the interface area at fixed VT100 size
     screen = stdscr.subwin(0, 160, 0, 0)
@@ -173,16 +297,14 @@ def main(stdscr):
         for i, s in enumerate(squids):
             add_squid_info(screen, 
                            i % squids_per_col + 1, 
-                           1 +squid_col_width * ( i // squids_per_col), 
+                           1 + squid_col_width * ( i // squids_per_col), 
                            s, 8,
                            True, True, True, 
                            True, False, bolo_label = 'ugh')
         event = screen.getch() 
         if event == ord("q"): break 
         screen.refresh()
-
-
-
+'''
 
 
 if __name__=='__main__':
@@ -194,35 +316,15 @@ if __name__=='__main__':
     ugh = FancyScatterPlot(x,y, labels)
     plt.show(block=False)
 
+
     while 1:
         plt.pause(0.002)
         x = np.array(np.random.rand(ndets))
         y = np.array(np.random.normal(size = ndets))
         ugh.check_socket()
         ugh.update_data(x,y)
-
-    try:
-      # Initialize curses
-      stdscr=curses.initscr()
-      #curses.mousemask(curses.ALL_MOUSE_EVENTS)
-      curses.start_color()
-
-      # Turn off echoing of keys, and enter cbreak mode,
-      # where no buffering is performed on keyboard input
-      curses.noecho()
-      curses.cbreak()
-
-      # In keypad mode, escape sequences for special keys
-      # (like the cursor keys) will be interpreted and
-      # a special value like curses.KEY_LEFT will be returned
-      stdscr.keypad(1)
-
       main(stdscr)                    # Enter the main loop
       # Set everything back to normal
-      stdscr.keypad(0)
-      curses.echo()
-      curses.nocbreak()
-      curses.endwin()                 # Terminate curses
     except:
       # In event of error, restore terminal to sane state.
       stdscr.keypad(0)
@@ -230,4 +332,3 @@ if __name__=='__main__':
       curses.nocbreak()
       curses.endwin()
       traceback.print_exc()           # Print the exception
-

@@ -142,8 +142,11 @@ class BirdConfigGenerator(object):
                 hostname = self.hostname,
                 port = self.port)
             CC.storeConfigFile(config_dic, self.l_fn) 
-            birdyoucantspell.generate_kookie_config_file(k_fn, module_ids, channel_ids,
+            birdyoucantspell.generate_kookie_config_file(k_fn, 
+                                                         module_ids, module_ids,
+                                                         channel_ids,
                                                          self.hostname, self.port))
+
 pipe = core.Pipeline()
 pipe.Add(networkstreamer.G3NetworkReceiver, hostname = args.hostname, port = args.port)
 pipe.Add(networkstreamer.G3NetworkSender, ip = '127.0.0.1', port = args.local_port)

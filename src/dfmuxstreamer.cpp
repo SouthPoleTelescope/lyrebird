@@ -56,7 +56,6 @@ G3DataStreamer::G3DataStreamer(Json::Value desc,
 	dvs_ = dv;
 	dv->register_data_source(get_num_dfmux_values());
 	dv->register_data_source(get_num_hk_values());
-
 }
 
 void G3DataStreamer::update_values(int n){
