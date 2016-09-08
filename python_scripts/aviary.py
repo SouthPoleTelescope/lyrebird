@@ -6,7 +6,7 @@ import dfmux_config_constructor as DCC
 import kookaburra as birdyoucantspell
 
 
-parser = argparse.ArgumentParser(description='Process some integers.')
+parser = argparse.ArgumentParser()
 parser.add_argument('hostname')
 parser.add_argument('port',type=int)
 parser.add_argument('local_port',type=int)
@@ -17,7 +17,7 @@ args = parser.parse_args()
 
 def make_square_block(n_things):
     sq = n_things**0.5
-    if sq == math.floor(sq):
+    if n_things == int(math.floor(sq))**2:
         return (sq,sq)
     else:
         sq = int(math.floor(sq))
@@ -55,12 +55,12 @@ class BoloPropertiesFaker(object):
 
                     if c > n_chans:
                         n_chans = c
-                    sq = DCC.get_physical_id(self.wm.board_serial, 
-                                             self.wm.crate_serial, 
-                                             self.wm.board_slot,
-                                             self.wm.module)
+                    sq = DCC.get_physical_id(wm.board_serial, 
+                                             wm.crate_serial, 
+                                             wm.board_slot,
+                                             wm.module)
                     squids[sq] = 1
-                n_squids = len(squid.keys())
+                n_squids = len(squids.keys())
 
                 sq_layout = make_square_block(n_squids)
                 ch_layout = make_square_block(n_chans)
@@ -79,14 +79,14 @@ class BoloPropertiesFaker(object):
                 #need nbolos per squid
                 for k in self.wiring_map.keys():
                     wm = self.wiring_map[k]
-                    sq_id = DCC.get_physical_id(self.wm.board_serial, 
-                                                self.wm.crate_serial, 
-                                                self.wm.board_slot,
-                                                self.wm.module)
+                    sq_id = DCC.get_physical_id(wm.board_serial, 
+                                                wm.crate_serial, 
+                                                wm.board_slot,
+                                                wm.module)
                     
-                    w_id = DCC.get_physical_id(self.wm.board_serial, 
-                                               self.wm.crate_serial, 
-                                               self.wm.board_slot)
+                    w_id = DCC.get_physical_id(wm.board_serial, 
+                                               wm.crate_serial, 
+                                               wm.board_slot)
 
                     sql = squids[sq_id]
                     x = sql[0] + ((wm.channel - 1) % ch_layout[0]) * ch_x_sep
@@ -120,7 +120,7 @@ class BirdConfigGenerator(object):
         self.is_written = False
         self.bolo_props = None
         self.wiring_map = None
-        self.hostname = ''
+        self.hostname = hostname
         self.port = port
 
     def __call__(self, frame):
@@ -137,17 +137,18 @@ class BirdConfigGenerator(object):
         else:
             if self.is_written or self.wiring_map == None or self.bolo_props == None:
                 return
+            self.is_written = True
             config_dic, board_ids, module_ids, channel_ids = DCC.generate_dfmux_lyrebird_config(
                 self.wiring_map, self.bolo_props, 
                 hostname = self.hostname,
                 port = self.port)
             CC.storeConfigFile(config_dic, self.l_fn) 
-            birdyoucantspell.generate_kookie_config_file(k_fn, 
+            birdyoucantspell.generate_kookie_config_file(self.k_fn, 
                                                          module_ids, module_ids,
                                                          channel_ids,
-                                                         self.hostname, self.port))
+                                                         self.hostname, self.port)
 
-pipe = core.Pipeline()
+pipe = core.G3Pipeline()
 pipe.Add(networkstreamer.G3NetworkReceiver, hostname = args.hostname, port = args.port)
 pipe.Add(networkstreamer.G3NetworkSender, ip = '127.0.0.1', port = args.local_port)
 pipe.Add(BoloPropertiesFaker)
@@ -155,5 +156,6 @@ pipe.Add(BirdConfigGenerator,
          lyrebird_output_file = args.lyrebird_output_file, 
          kookaburra_output_file = args.kookaburra_output_file, 
          hostname = '127.0.0.1', port = args.local_port)
-pipe.Add(core.Dump)
+#pipe.Add(core.Dump)
+
 pipe.Run()

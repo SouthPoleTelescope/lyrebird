@@ -21,8 +21,7 @@ def convert_svg_path_to_id(p):
     return test_id
 
 def addGeneralSettings(config_dic, win_x_size, win_y_size, sub_sampling, 
-                       max_framerate, max_num_plotted, eq_names = ['Test Sins', 
-                                                                   'Test Lins']):
+                       max_framerate, max_num_plotted, eq_names = []):
     assert(win_x_size > 0)
     assert(win_y_size > 0)
     assert(sub_sampling%2==0)
@@ -68,6 +67,10 @@ def addVisElem(config_dic,
                equations, 
                labelled_data, group
            ):
+
+    assert(len(labels))
+    assert(len(equations))
+
     if not 'visual_elements' in config_dic:
         config_dic['visual_elements'] = []
 

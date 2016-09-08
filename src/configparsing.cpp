@@ -14,13 +14,13 @@ using namespace std;
 
 //return {"function":eq_func, "eq_vars":eq_vars, "cmap": eq_color_map, "label": eq_label}
 equation_desc parse_equation_desc(Json::Value & eqjson){
-  equation_desc desc;
-  desc.eq =   eqjson["function"].asString();
-  desc.cmap_id = eqjson["cmap"].asString();
-  desc.label = eqjson["label"].asString();
-  desc.display_label = eqjson["display_label"].asString();
-  desc.sample_rate_id = eqjson["sample_rate_id"].asString();
-  return desc;
+	equation_desc desc;
+	desc.eq =   eqjson["function"].asString();
+	desc.cmap_id = eqjson["cmap"].asString();
+	desc.label = eqjson["label"].asString();
+	desc.display_label = eqjson["display_label"].asString();
+	desc.sample_rate_id = eqjson["sample_rate_id"].asString();
+	return desc;
 }
 
 dataval_desc parse_dataval_desc(Json::Value & dvjson){
@@ -87,6 +87,7 @@ void parse_config_file(string in_file,
   num_layers = 1;
 
   if (root.isMember("general_settings")){
+	  log_trace("Parsing general settings");
     Json::Value v = root["general_settings"];
     if (v.isMember("win_x_size")){
       if (v["win_x_size"].isInt()){
@@ -156,12 +157,14 @@ void parse_config_file(string in_file,
   //First parse the data streams
   ////////////////////////////////
   if (root.isMember("data_vals")){
+	  log_trace("Parsing data vals");
     for (unsigned int i=0; i < root["data_vals"].size(); i++){ 
       dataval_descs.push_back(parse_dataval_desc(root["data_vals"][i]));
     }
   } 
 
   if (root.isMember("data_sources")){
+	  log_trace("Parsing data sources");
     for (unsigned int i=0; i < root["data_sources"].size(); i++){ 
       datastream_descs.push_back(parse_datastreamer_desc(root["data_sources"][i]));
     }
@@ -169,22 +172,26 @@ void parse_config_file(string in_file,
   
   //parse the equations
   if ( root.isMember("equations")){
-    for (unsigned int i=0; i < root["equations"].size(); i++){
-      equation_descs.push_back(parse_equation_desc( root["equations"][i]));
+	  log_trace("equations");
+	  for (unsigned int i=0; i < root["equations"].size(); i++){
+		  equation_descs.push_back(parse_equation_desc( root["equations"][i]));
     }
   }
 
   if (root.isMember("displayed_global_equations")){
-    for (unsigned int i=0; i < root["displayed_global_equations"].size(); i++)
-      displayed_global_equations.push_back(root["displayed_global_equations"][i].asString());
+	  log_trace("Parsing displayed global equations");
+	  for (unsigned int i=0; i < root["displayed_global_equations"].size(); i++)
+		  displayed_global_equations.push_back(root["displayed_global_equations"][i].asString());
   }
 
   if (root.isMember("modifiable_data_vals")){
+	  log_trace("mod dvs");
     for (unsigned int i=0; i < root["modifiable_data_vals"].size(); i++)
       modifiable_data_vals.push_back(root["modifiable_data_vals"][i].asString());
   }
 
   if (root.isMember("external_commands_list")  && root.isMember("external_commands_id_list") ){
+	  log_trace("parsing external commands");
 	  if (root["external_commands_list"].size() != root["external_commands_id_list"].size()){
 		  log_fatal("all external commands need labels and vice versa");
 	  }
@@ -201,6 +208,8 @@ void parse_config_file(string in_file,
   if (!root.isMember("visual_elements")){
 	  log_warn("visual_elements needs to be in config file");
   } else {
+	  log_trace("parsing vis elems");
+
 	  Json::Value visElemsJSON = root["visual_elements"];
 	  
 	  int n_vis_elems = visElemsJSON.size();
@@ -213,6 +222,7 @@ void parse_config_file(string in_file,
 	  vector<string> full_svg_paths;
 	  vector<string> full_svg_ids;
 	  for (int i=0; i < n_vis_elems; i++){
+		  log_trace("individual");
 		  Json::Value v = visElemsJSON[i];
 		  if (!v.isMember("x_center")  ) log_fatal("x_center not found  in visual_element\n");
 		  if (!v.isMember("y_center") ) log_fatal("y_center not found  in visual_element\n");
@@ -272,6 +282,8 @@ void parse_config_file(string in_file,
 		  svg_path= v["highlight_svg_path"].asString();
 		  full_svg_ids.push_back(svg_id);
 		  full_svg_paths.push_back(svg_path);
+
+		  log_trace("laebls individual");
 		  
 		  //parse tagging information
 		  for (unsigned int j=0; j< v["labels"].size(); j++){
@@ -280,15 +292,19 @@ void parse_config_file(string in_file,
 		  
 		  vis_elems[i].group = v["group"].asString();
 		  
-		  
+		  log_trace("labeled data individual");		  
 		  for (unsigned int j=0; j < v["labelled_data"].size(); j++){
 			  vis_elems[i].labelled_data.push_back( v["labelled_data"][j][0].asString() );
 			  vis_elems[i].labelled_data_vs.push_back( v["labelled_data"][j][1].asString() );
 		  }
+
+
 		  
 		  ////////////////////////
 		  //Parse the equations //
 		  ////////////////////////
+		  log_trace("equation individaul");
+
 		  Json::Value eqv =  v["equations"];
 		  for (unsigned int j=0; j < eqv.size(); j++){
 			  vis_elems[i].equations.push_back( eqv[j].asString() );

@@ -9,8 +9,10 @@ N_CHANNELS=64
 def get_physical_id(board_serial, crate_serial, board_slot,
                     module = None, channel = None):
     if board_slot == 0:
+        s = '%d' % board_serial
+    else:
         s = '%d_%d' % (crate_serial, board_slot)
-        
+
     if module != None:
         s += '/%d'%module
         if channel != None:
@@ -35,7 +37,7 @@ def uniquifyList(seq):
 
 def generate_dfmux_eq_lazy(devid, vlabel, label = None):
     if label == None:
-        vlabel = label
+        label = vlabel
     return CC.getEquation('%s:%s'%(devid, vlabel), 
                           'white_cmap', 
                           '%s:%s'%(devid, vlabel)+'_eq',
@@ -65,11 +67,22 @@ def addDfmuxStreamer(config_dic, tag, boards_list,
     glob_eqs = []
     for b in boards_list:
         for bhv in get_board_vals():
+            print b, bhv
             CC.addGlobalEquation(config_dic, generate_dfmux_eq_lazy(b, bhv))
         for m in range(N_MODULES):
             mid = '%s/%d' %(b,m)
             for mhv in get_module_vals():
                 CC.addGlobalEquation(config_dic, generate_dfmux_eq_lazy(mid, mhv))
+
+                                            
+            CC.addGlobalEquation(config_dic, 
+                                 CC.getEquation('| %s:carrier_railed | %s:nuller_railed %s:demod_railed'%(mid, mid, mid), 
+                                                "rainbow_cmap",
+                                                '%s:SquidGood'%(mid)+'_eq',
+                                                "SQUID Be F*cked",
+                                                '%s:carrier_railed'%(mid)))
+
+
             for c in range(N_CHANNELS):
                 cid = '%s/%d/%d' %(b,m,c)
                 CC.addGlobalEquation(config_dic, 
@@ -96,31 +109,38 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                               wm.module )
         cid = get_physical_id(wm.board_serial, wm.crate_serial, wm.board_slot,
                               wm.module, wm.channel )
+        
 
         if bp.band == 150:
             svg = svg_folder + 'medpol.svg'
-            h_svg = svg_folder + 'medhighligh.svg'
+            h_svg = svg_folder + 'medhighlight.svg'
             group = '150s'
             eq_cmap = 'bolo_green_cmap'
         elif bp.band == 90:
             svg = svg_folder + 'largepol.svg'
-            h_svg = svg_folder + 'largehighligh.svg'
+            h_svg = svg_folder + 'largehighlight.svg'
             group = '90s'
             eq_cmap = 'bolo_blue_cmap'
 
         elif bp.band == 220:
             svg = svg_folder + 'smallpol.svg'
-            h_svg = svg_folder + 'smallhighligh.svg'
+            h_svg = svg_folder + 'smallhighlight.svg'
             group = '220s'
             eq_cmap = 'bolo_purple_cmap'
 
         else:
             svg = svg_folder + 'box.svg'
-            h_svg = svg_folder + 'boxhighligh.svg'
+            h_svg = svg_folder + 'boxhighlight.svg'
             group = 'Misfit Toys'
+            eq_cmap = 'white_cmap'
 
-        eqs_lst = ['%s/I:dfmux_samples_eq' % cid, 
+        eqs_lst = ['%s:Rfractional'%(cid)+'_eq',
+                   '%s:phase'%(cid)+'_eq',
+                   '%s:SquidGood'%(mid)+'_eq',
+                   '%s/I:dfmux_samples_eq' % cid, 
                    '%s/Q:dfmux_samples_eq' % cid ]
+
+
         for mvs in get_module_vals():
             eqs_lst.append('%s:%s_eq' % (mid, mvs))
         for cvs in get_channel_vals():
@@ -129,7 +149,7 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
             eqs_lst.append('%s:%s_eq' % (bid, bvs))
             
         CC.addGlobalEquation(config_dic, 
-                             CC.getEquation('/ %s/I:dfmux_samples %s:rnormal'%(cid, cid), 
+                             CC.getEquation('/ %s:res_conversion_factor * %s/I:dfmux_samples %s:rnormal'%(cid, cid, cid), 
                                             eq_cmap,
                                             '%s:Rfractional'%(cid)+'_eq',
                                             "Rfrac",
@@ -150,9 +170,9 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                       highlight_path = h_svg,
                       layer = 1, labels = [cid],
                       equations = eqs_lst, 
-                      labelled_data = ["Board", bid, 
-                                       "Module", cid,
-                                       "PhysId", bp.physical_name
+                      labelled_data = [["Board", bid],
+                                       ["Module", cid],
+                                       ["PhysId", bp.physical_name]
                                    ],
                       group = group )
 
@@ -166,7 +186,9 @@ def generate_dfmux_lyrebird_config(wiring_map, bolo_props_map,
                                    max_num_plotted  = 70,
                                    hostname = '127.0.0.1',
                                    port = 8675):
-    svg_folder = '../svgs/'
+    import os
+    creepy_path = os.path.dirname(os.path.realpath(__file__))
+    svg_folder = os.path.abspath(creepy_path+'/../svgs/') + '/'
 
 
     cell_size = 100
@@ -207,16 +229,21 @@ def generate_dfmux_lyrebird_config(wiring_map, bolo_props_map,
         if delt < max_delt and delt > min_delt:
             max_delt = delt
     special_separation = max_delt**0.5
-    scale_fac = safety_factor * special_separation / cell_size
+    scale_fac =  special_separation / (5. *float(cell_size))
+
+
+    global_display_names = ['Rfrac', 'IQ Phase', 'SQUID Be F*cked']
 
     #add the general settings
     config_dic = {}
-    addGeneralSettings(config_dic, 
+    CC.addGeneralSettings(config_dic, 
                        win_x_size = win_x_size,
                        win_y_size = win_y_size,
                        sub_sampling = sub_sampling,
                        max_framerate= max_framerate,
-                       max_num_plotted = max_num_plotted)
+                       max_num_plotted = max_num_plotted,
+                       eq_names = global_display_names
+                   )
     
     addDfmuxStreamer(config_dic, "dfmux_streamer", board_ids, 
                      sender_hostname = hostname,
@@ -224,7 +251,7 @@ def generate_dfmux_lyrebird_config(wiring_map, bolo_props_map,
 
     addDfmuxVisElems(config_dic, wiring_map, bolo_props_map, 
                      scale_fac, svg_folder)
-    return config_dic, board_ids, module_ids, channel_ids
+    return config_dic, board_ids, squid_ids, channel_ids
 
     
                            

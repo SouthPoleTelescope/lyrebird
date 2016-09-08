@@ -64,17 +64,18 @@ void G3DataStreamer::update_values(int n){
 		DfMuxWiringMapConstPtr wm = frame->Get<DfMuxWiringMap>("WiringMap");
 		for (auto b = wm->begin(); b != wm->end(); b++){
 			const DfMuxChannelMapping & cmap = b->second;
-			std::string phys_id = get_physical_id(cmap.crate_serial,
-							      cmap.board_serial,
+			std::string phys_id = get_physical_id(cmap.board_serial,
+							      cmap.crate_serial,
 							      cmap.board_slot);
-			id_to_ip_map_[phys_id] = cmap.board_ip;
+			log_debug("adding id to ip map %s %d", phys_id.c_str(), cmap.board_ip);
+			id_to_ip_map_[phys_id] = cmap.board_serial;
 		}
 		has_id_map_ = true;
 	} else if (frame->type == G3Frame::Timepoint){
 		DfMuxMetaSampleConstPtr ms = frame->Get<DfMuxMetaSample>("DfMux");
 		if (has_id_map_) update_dfmux_values(*ms);
 	} else if (frame->type == G3Frame::Housekeeping){
-		DfMuxHousekeepingMapConstPtr bi = frame->Get<DfMuxHousekeepingMap>("HkBoardInfo");
+		DfMuxHousekeepingMapConstPtr bi = frame->Get<DfMuxHousekeepingMap>("DfMuxHousekeeping");
 		if (has_id_map_) update_hk_values(*bi);
 	}
 }
@@ -89,7 +90,7 @@ void G3DataStreamer::uninitialize(){
 }
 
 int G3DataStreamer::get_num_hk_values(){
-	return n_boards_ * 1 + n_boards_ * NUM_MODULES * 10 + n_boards_ * NUM_MODULES * NUM_CHANNELS * 10;
+	return n_boards_ * 1 + n_boards_ * NUM_MODULES * 10 + n_boards_ * NUM_MODULES * NUM_CHANNELS * 11;
 }
 
 int G3DataStreamer::get_num_dfmux_values(){
@@ -108,7 +109,6 @@ void G3DataStreamer::initialize_hk_values(){
 			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
 			snprintf(name_buffer, 127, "%s/%d:nuller_gain",(*b).c_str(),m);
 			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
-
 
 			snprintf(name_buffer, 127, "%s/%d:carrier_railed",(*b).c_str(),m);
 			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
@@ -156,6 +156,10 @@ void G3DataStreamer::initialize_hk_values(){
 
 				snprintf(name_buffer, 127, "%s/%d/%d:rlatched",(*b).c_str(),m,c);
 				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+
+				snprintf(name_buffer, 127, "%s/%d/%d:res_conversion_factor",(*b).c_str(),m,c);
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+
 			}
 		}
 	}
@@ -178,6 +182,8 @@ void G3DataStreamer::initialize_dfmux_values(){
 
 
 void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
+	log_debug("update hk");
+
 	size_t i=0; 
 	for (auto b  = board_list_.begin(); b != board_list_.end(); b++){
 		if (id_to_ip_map_.find(*b) == id_to_ip_map_.end()){
@@ -185,23 +191,35 @@ void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
 		}
 		int ip = id_to_ip_map_[*b];
 		if (b_map.find(ip) == b_map.end()) {
-			i += NUM_MODULES * 2 + NUM_MODULES * NUM_CHANNELS * 3;
+			log_debug("couldn't find board %s %d", b->c_str(), ip);
+
+			for (auto it = b_map.begin(); it != b_map.end(); it++){
+				log_debug("IPs in hk %d", it->first);
+			}
+
+			i += get_num_hk_values()/n_boards_;
+			continue;
 		}
 		const HkBoardInfo & binfo = b_map.at(ip);
 
 		dvs_->update_val(hk_path_inds_[i], binfo.fir_stage); i++;
+		log_debug("boards");
 
 		for (int m=0; m < NUM_MODULES; m++){
-			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).carrier_gain); i++;
-			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).nuller_gain); i++;
+			//log_debug("mods %d %d %d", m/4, m%4, binfo.mezz.at(1 + m/4).modules.at(1 + m%4).carrier_gain);
+			
+			auto mod_info = binfo.mezz.at(1 + m/4).modules.at(1 + m%4);
+			
+			dvs_->update_val(hk_path_inds_[i], mod_info.carrier_gain); i++;
+			dvs_->update_val(hk_path_inds_[i], mod_info.nuller_gain); i++;
 
-			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).carrier_railed); i++;
-			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).nuller_railed); i++;
-			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).demod_railed); i++;
+			dvs_->update_val(hk_path_inds_[i], mod_info.carrier_railed); i++;
+			dvs_->update_val(hk_path_inds_[i], mod_info.nuller_railed); i++;
+			dvs_->update_val(hk_path_inds_[i], mod_info.demod_railed); i++;
 
-			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).squid_flux_bias); i++;
-			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).squid_current_bias); i++;
-			dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).squid_stage1_offset); i++;
+			dvs_->update_val(hk_path_inds_[i], mod_info.squid_flux_bias); i++;
+			dvs_->update_val(hk_path_inds_[i], mod_info.squid_current_bias); i++;
+			dvs_->update_val(hk_path_inds_[i], mod_info.squid_stage1_offset); i++;
 
 			float fb = 0;
 			dvs_->update_val(hk_path_inds_[i], fb); i++;
@@ -209,19 +227,23 @@ void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
 			dvs_->update_val(hk_path_inds_[i], routing); i++;
 
 			for (int c=0; c < NUM_CHANNELS; c++){
-				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).carrier_amplitude);i++;
-				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).carrier_frequency);i++;
-				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).demod_frequency);i++;
+				log_debug("chans");
+				auto chan_info = mod_info.channels.at(c+1);
+				dvs_->update_val(hk_path_inds_[i], chan_info.carrier_amplitude);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.carrier_frequency);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.demod_frequency);i++;
 
 
-				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).dan_accumulator_enable);i++;
-				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).dan_feedback_enable);i++;
-				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).dan_streaming_enable);i++;
-				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).dan_gain);i++;
-				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).dan_railed);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.dan_accumulator_enable);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.dan_feedback_enable);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.dan_streaming_enable);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.dan_gain);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.dan_railed);i++;
 
-				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).rnormal);i++;
-				dvs_->update_val(hk_path_inds_[i], binfo.mezz.at(m/4).modules.at(m%4).channels.at(c).rlatched);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.rnormal);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.rlatched);i++;
+
+				dvs_->update_val(hk_path_inds_[i], chan_info.res_conversion_factor);i++;
 			}
 		}
 	}
@@ -232,10 +254,14 @@ void G3DataStreamer::update_dfmux_values(const DfMuxMetaSample & samp){
 	for (auto board = board_list_.begin(); board != board_list_.end(); board++){
 		if (id_to_ip_map_.find(*board) == id_to_ip_map_.end()){
 			for (auto a = id_to_ip_map_.begin(); a != id_to_ip_map_.end(); a++) std::cout<< a->first << " " << a->second << std::endl;
-			log_fatal("Specified board to record data on was not in the wiring map");
+			log_fatal("Specified board to record data on was not in the wiring map %s", board->c_str());
 		}
 		int ip = id_to_ip_map_[*board];
 		if (samp.find(ip) == samp.end()) {
+			for (auto it = samp.begin(); it != samp.end(); it++){
+				log_debug("IPs in dfm %d", it->first);
+			}
+			log_debug("samp for board %s missing", board->c_str());
 			dv_ind += NUM_MODULES * NUM_CHANNELS * 2;
 			continue;
 		}

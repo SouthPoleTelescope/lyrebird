@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import socket, curses, json, traceback, math
 from dfmux_config_constructor import get_physical_id, sq_phys_id_to_info
-
+from spt3g import core, dfmux
+from spt3g.core import genericutils as GU
 '''
 needs channel list
 squids list
@@ -21,7 +22,9 @@ def generate_kookie_config_file(output_file,
     out_d['channels_list'] = channels_list
     out_d['listen_hostname'] = listen_hostname
     out_d['listen_port'] = listen_port
-    json.dumps(out_d, open(output_file, 'w'))
+    f = open(output_file, 'w')
+    json.dump(out_d, f)
+    f.close()
 
 def read_kookie_config_file(fn):
     d = json.load(open(fn))
@@ -185,14 +188,28 @@ class FocalPlaneStater(object):
                             ind = self.channel_map[cid]
                             sval = samp[i*2]
                             self.noise_buffers[ind][self.noise_buffer_ind] = sval
-                            self.current_val[ind] = sval
+                            if sval != 0:
+                                self.current_val[ind] = self.rnorm_conv[ind]/sval
+                            else:
+                                self.current_val[ind] = 0
+
             self.noise_buffer_ind = (self.noise_buffer_ind + 1) % self.noise_buffer_size
             if self.update_ind % self.update_modulo == 0:
                 self.plotter.update_data(self.current_val, np.std(self.noise_buffers, axis =1))
             plt.pause(0.002)
         elif frame.type == coreG3FrameType.Housekeeping:
-            pass
-
+            hk_data = frame['DfMuxHousekeeping']
+            for ip in hk_data.keys():
+                board_id = self.id_ip_mapper.get_id(ip)
+                for mezz in hk_data[ip].mezz:
+                    for module in hk_data[ip].mezz[mezz].module:
+                        for ch in hk_data[ip].mezz[mezz].module[module].channels:
+                            mod = mezz * 4 + module
+                            label = '%s/%d/%d' % (board_id, mod, ch)
+                            if label in self.channel_map:
+                                chk = hk_data[ip].mezz[mezz].module[module].channels[ch]
+                                ind = self.channel_map[label]
+                                self.rnorm_conv[ind] = res_conversion_factor / chk.rnormal
 #need screen geometry and squid list and squid mapping
 def add_squid_info(screen, y, x, 
                    sq_label, sq_label_size,
@@ -294,43 +311,32 @@ class SquidDisplay(object):
         #assign an x, y location to each squid
 
         self.ip_mapper = None
-        for i, sq in enumerate(sorted(squids_list)):
+        for i, sq in enumerate(sorted(squids_list, cmp = GU.str_cmp_with_numbers_sorted)):
             y =  i % self.squids_per_col + 1
             x = 1 + self.squid_col_width * ( i // self.squids_per_col)
             self.pos_map[sq] = (x,y)
-        try:
-            # Initialize curses
-            self.stdscr = curses.initscr()
 
-            y, x = self.stdscr.getmaxyx()
-            if y < self.screen_size_y:
-                raise RuntimeError("screen is not tall enough, extend to %d", self.screen_size_y)
-            if x < self.screen_size_x:
-                raise RuntimeError("screen is not wide enough, extend to %d", self.screen_size_x)
+        self.stdscr = curses.initscr()
 
-            #curses.mousemask(curses.ALL_MOUSE_EVENTS)
-            curses.start_color()
+        y, x = self.stdscr.getmaxyx()
+        if y < self.screen_size_y:
+            raise RuntimeError("screen is not tall enough, extend to %d", self.screen_size_y)
+        if x < self.screen_size_x:
+            raise RuntimeError("screen is not wide enough, extend to %d", self.screen_size_x)
+
+        curses.start_color()
             
-            # Turn off echoing of keys, and enter cbreak mode,
-            # where no buffering is performed on keyboard input
-            curses.noecho()
-            curses.cbreak()
-            curses.curs_set(0)
-
-            self.screen = self.stdscr.subwin(0, self.screen_size_x, 0, 0)
-
-            curses.init_pair(1, curses.COLOR_RED,   curses.COLOR_WHITE)
-            curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
-            curses.init_pair(3, curses.COLOR_BLUE,  curses.COLOR_BLACK)
-
-        except:
-            # In event of error, restore terminal to sane state.
-            curses.curs_set(1)
-            curses.echo()
-            curses.nocbreak()
-            curses.endwin()
-            traceback.print_exc()  # Print the exception
+        # Turn off echoing of keys, and enter cbreak mode,
+        # where no buffering is performed on keyboard input
+        curses.noecho()
+        curses.cbreak()
+        curses.curs_set(0)
         
+        self.screen = self.stdscr.subwin(0, self.screen_size_x, 0, 0)
+
+        curses.init_pair(1, curses.COLOR_RED,   curses.COLOR_WHITE)
+        curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_BLUE,  curses.COLOR_BLACK)
 
     def __call__(self, frame):
         if frame == None or frame.type == core.G3FrameType.Housekeeping:
@@ -358,6 +364,12 @@ class SquidDisplay(object):
             self.ip_mapper = IdIpMapper(frame['WiringMap'])
 
 if __name__=='__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('config_file')
+    args = parser.parse_args()
+    read_kookie_config_file(args.config_file)
+    
     try:
         chs = ['Ch%d'%i for i in range(256)]
         sqs = ['Sq%d'%i for i in range(256)]
@@ -371,30 +383,5 @@ if __name__=='__main__':
         curses.echo()
         curses.nocbreak()
         curses.endwin()
-
-
-    '''
-    ndets = 14705
-    x = np.array(np.random.rand(ndets))
-    y = np.array(np.random.normal(size = ndets))
-    labels =  ['test_label_%s'%i for i in range( len(x) )]
-    ugh = FancyScatterPlot(x,y, labels)
-    plt.show(block=False)
-
-
-    while 1:
-        plt.pause(0.002)
-        x = np.array(np.random.rand(ndets))
-        y = np.array(np.random.normal(size = ndets))
-        ugh.check_socket()
-        ugh.update_data(x,y)
-      main(stdscr)                    # Enter the main loop
-      # Set everything back to normal
-    except:
-      # In event of error, restore terminal to sane state.
-      stdscr.keypad(0)
-      curses.echo()
-      curses.nocbreak()
-      curses.endwin()
-      traceback.print_exc()           # Print the exception
-    '''
+        traceback.print_exc()  # Print the exception
+        
