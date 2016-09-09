@@ -1,5 +1,5 @@
 
 <svg height="100px" width="100">
-  <polygon points="0,0 -5,15 -5,45 5,45 5,15" style="fill:white" />
-  <polygon points="0,0 -5,-15 -5,-45 5,-45 5,-15" style="fill:white" />
+  <polygon points="0,0 -9,25 -9,45 9,45 9,25" style="fill:white" />
+  <polygon points="0,0 -9,-25 -9,-45 9,-45 9,-25" style="fill:white" />
 </svg> 

@@ -1,5 +1,6 @@
 #include "visualelement.h"
 #include <algorithm>
+#include <string.h>
 
 #include "genericutils.h"
 #include "logging.h"
@@ -158,6 +159,15 @@ bool VisElem::string_matches_labels(const char * pattern){
     if (is_glob_match(pattern, labels[i])) return true;
   }
   return false;
+}
+
+
+
+bool VisElem::string_matches_labels_quick(const char * pattern){
+	for (size_t i=0; i < labels.size(); i++){
+		if (! strcmp(pattern, labels[i].c_str())) return true;
+	}
+	return false;
 }
 
 void VisElem::get_all_info(std::vector<string> & ai_labels, std::vector<string> & ai_tags,

@@ -80,6 +80,7 @@ class VisElem{
 		    );
 
   bool string_matches_labels(const char * pattern);
+  bool string_matches_labels_quick(const char * pattern);
 
   std::string get_group();
 

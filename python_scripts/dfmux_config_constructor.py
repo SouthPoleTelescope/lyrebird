@@ -69,7 +69,7 @@ def addDfmuxStreamer(config_dic, tag, boards_list,
         for bhv in get_board_vals():
             print b, bhv
             CC.addGlobalEquation(config_dic, generate_dfmux_eq_lazy(b, bhv))
-        for m in range(N_MODULES):
+        for m in range(1, N_MODULES + 1):
             mid = '%s/%d' %(b,m)
             for mhv in get_module_vals():
                 CC.addGlobalEquation(config_dic, generate_dfmux_eq_lazy(mid, mhv))
@@ -83,7 +83,7 @@ def addDfmuxStreamer(config_dic, tag, boards_list,
                                                 '%s:carrier_railed'%(mid)))
 
 
-            for c in range(N_CHANNELS):
+            for c in range(1, N_CHANNELS + 1):
                 cid = '%s/%d/%d' %(b,m,c)
                 CC.addGlobalEquation(config_dic, 
                                      generate_dfmux_eq_lazy(cid + '/I', 
@@ -106,33 +106,33 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
 
         bid = get_physical_id(wm.board_serial, wm.crate_serial, wm.board_slot)
         mid = get_physical_id(wm.board_serial, wm.crate_serial, wm.board_slot,
-                              wm.module )
+                              wm.module + 1)
         cid = get_physical_id(wm.board_serial, wm.crate_serial, wm.board_slot,
-                              wm.module, wm.channel )
+                              wm.module + 1, wm.channel + 1 )
         
 
         if bp.band == 150:
             svg = svg_folder + 'medpol.svg'
             h_svg = svg_folder + 'medhighlight.svg'
             group = '150s'
-            eq_cmap = 'bolo_green_cmap'
+            eq_cmap = 'bolo_cyan_cmap'
         elif bp.band == 90:
             svg = svg_folder + 'largepol.svg'
             h_svg = svg_folder + 'largehighlight.svg'
             group = '90s'
-            eq_cmap = 'bolo_blue_cmap'
+            eq_cmap = 'bolo_green_cmap'
 
         elif bp.band == 220:
             svg = svg_folder + 'smallpol.svg'
             h_svg = svg_folder + 'smallhighlight.svg'
             group = '220s'
-            eq_cmap = 'bolo_purple_cmap'
+            eq_cmap = 'bolo_blue_cmap'
 
         else:
             svg = svg_folder + 'box.svg'
             h_svg = svg_folder + 'boxhighlight.svg'
             group = 'Misfit Toys'
-            eq_cmap = 'white_cmap'
+            eq_cmap = 'bolo_cyan_cmap'
 
         eqs_lst = ['%s:Rfractional'%(cid)+'_eq',
                    '%s:phase'%(cid)+'_eq',
@@ -168,22 +168,56 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                       rotation= bp.pol_angle,
                       svg_path= svg,
                       highlight_path = h_svg,
-                      layer = 1, labels = [cid],
+                      layer = 1, labels = [k, cid, bp.physical_name],
                       equations = eqs_lst, 
-                      labelled_data = [["Board", bid],
-                                       ["Module", cid],
-                                       ["PhysId", bp.physical_name]
-                                   ],
+                      labelled_data = [ 
+                          #["ID", k],
+                          ["PhysId", bp.physical_name],
+                          ["DevId", cid],
+                          ["Board", bid],
+                          ["Module", cid],
+                      ],
                       group = group )
 
+
+def generate_kookie_config_file(output_file, 
+                                squid_id_list,
+                                squid_dev_id_list,
+                                listen_hostname = '127.0.0.1',
+                                listen_port = 8675):
+    out_d = {}
+
+    out_d['squid_id_list'] = squid_id_list
+    out_d['squid_dev_id_list'] = squid_dev_id_list
+
+    out_d['listen_hostname'] = listen_hostname
+    out_d['listen_port'] = listen_port
+    f = open(output_file, 'w')
+    json.dump(out_d, f, indent = 2)
+    f.close()
         
+def generate_k_config(output_file, wiring_map, bolo_props_map, 
+                      listen_hostname, listen_port):
+    squid_ids = []
+    #need to get boards list
+    for k in wiring_map.keys():
+        wm = wiring_map[k]
+        squid_ids.append( get_physical_id(wm.board_serial, wm.crate_serial, wm.board_slot,
+                                          wm.module + 1) )
+    squid_ids = uniquifyList(squid_ids)
+    
+    generate_kookie_config_file(output_file, 
+                                squid_ids,
+                                squid_ids,
+                                listen_hostname = listen_hostname,
+                                listen_port = listen_port)
 
 def generate_dfmux_lyrebird_config(wiring_map, bolo_props_map, 
                                    win_x_size = 800,
                                    win_y_size = 800,
                                    sub_sampling = 4,
                                    max_framerate = -1,
-                                   max_num_plotted  = 70,
+                                   max_num_plotted  = 10,
                                    hostname = '127.0.0.1',
                                    port = 8675):
     import os
@@ -194,29 +228,13 @@ def generate_dfmux_lyrebird_config(wiring_map, bolo_props_map,
     cell_size = 100
     safety_factor = 1.2
     min_delt = 1e-5
+
     board_ids = []
     #need to get boards list
     for k in wiring_map.keys():
         wm = wiring_map[k]
         board_ids.append( get_physical_id(wm.board_serial, wm.crate_serial, wm.board_slot) )
     board_ids = uniquifyList(board_ids)
-    
-    squid_ids = []
-    #need to get boards list
-    for k in wiring_map.keys():
-        wm = wiring_map[k]
-        squid_ids.append( get_physical_id(wm.board_serial, wm.crate_serial, wm.board_slot,
-                                          wm.module ) )
-    squid_ids = uniquifyList(squid_ids)
-    
-    channel_ids = []
-    #need to get boards list
-    for k in wiring_map.keys():
-        wm = wiring_map[k]
-        channel_ids.append( get_physical_id(wm.board_serial, wm.crate_serial, wm.board_slot,
-                                            wm.module, wm.channel
-                                        ) )
-    channel_ids = uniquifyList(channel_ids)
     
     #need to get smallest spacing
     special_key = bolo_props_map.keys()[0]
@@ -229,7 +247,7 @@ def generate_dfmux_lyrebird_config(wiring_map, bolo_props_map,
         if delt < max_delt and delt > min_delt:
             max_delt = delt
     special_separation = max_delt**0.5
-    scale_fac =  special_separation / (5. *float(cell_size))
+    scale_fac =  special_separation / ( safety_factor * float(cell_size))
 
 
     global_display_names = ['Rfrac', 'IQ Phase', 'SQUID Be F*cked']
@@ -237,12 +255,12 @@ def generate_dfmux_lyrebird_config(wiring_map, bolo_props_map,
     #add the general settings
     config_dic = {}
     CC.addGeneralSettings(config_dic, 
-                       win_x_size = win_x_size,
-                       win_y_size = win_y_size,
-                       sub_sampling = sub_sampling,
-                       max_framerate= max_framerate,
-                       max_num_plotted = max_num_plotted,
-                       eq_names = global_display_names
+                          win_x_size = win_x_size,
+                          win_y_size = win_y_size,
+                          sub_sampling = sub_sampling,
+                          max_framerate= max_framerate,
+                          max_num_plotted = max_num_plotted,
+                          eq_names = global_display_names
                    )
     
     addDfmuxStreamer(config_dic, "dfmux_streamer", board_ids, 
@@ -251,7 +269,8 @@ def generate_dfmux_lyrebird_config(wiring_map, bolo_props_map,
 
     addDfmuxVisElems(config_dic, wiring_map, bolo_props_map, 
                      scale_fac, svg_folder)
-    return config_dic, board_ids, squid_ids, channel_ids
+
+    return config_dic
 
     
                            

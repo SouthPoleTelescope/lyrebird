@@ -72,6 +72,24 @@ glm::vec4 bolo_blue_cmap(float val){
 }
 
 
+
+glm::vec4 bolo_cyan_cmap(float val){
+  glm::vec4 base_color(0.0,1.0,1.0,1.0);
+  glm::vec4 ret_vec;
+  const float white_cutoff = 0.97;
+  const float low_cutoff = 0.3;
+  if (val < low_cutoff) ret_vec = glm::vec4(1.0,0.0,0.0,1.0);
+  else if (val >= 1.2) ret_vec = glm::vec4(1.0,0.5,0.0,1.0);
+  else if (val > white_cutoff && val < 1.0) ret_vec =  glm::vec4(1.0,1.0,1.0,1.0)*(val-white_cutoff)/(1.01f-white_cutoff) + (1.0f - (val-white_cutoff)/(1.01f-white_cutoff)) * base_color;
+  else if (val >= 1.0) ret_vec =  glm::vec4(1.0,1.0,1.0,1.0);
+  else  ret_vec =(val-low_cutoff)/(1.0f-low_cutoff) *base_color;
+  ret_vec.a = 1.0;
+  return ret_vec;
+}
+
+
+
+
 glm::vec4 bolo_purple_cmap(float val){
   glm::vec4 base_color(0.7,0.0,0.7,1.0);
   glm::vec4 ret_vec;
@@ -114,9 +132,14 @@ color_map_t get_color_map(std::string n){
     return bolo_blue_cmap;
   }else if (n=="bolo_purple_cmap"){
     return bolo_purple_cmap;
-  }else if (n=="blue_cmap"){
+  }
+  else if (n=="blue_cmap"){
     return blue_cmap;
-  }else if (n=="white_cmap"){
+  }
+  else if (n=="bolo_cyan_cmap"){
+    return bolo_cyan_cmap;
+  }
+  else if (n=="white_cmap"){
     return white_cmap;
   }else if (n=="rainbow_cmap"){
     return rainbow_cmap;

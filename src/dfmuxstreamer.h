@@ -68,7 +68,7 @@ public:
 	int get_num_dfmux_values();
 private:
 
-	std::map<std::string, int> id_to_ip_map_;
+	std::map<std::string, int> id_to_serial_map_;
 	bool has_id_map_;
 
 	std::vector<std::string>  board_list_;

@@ -274,12 +274,13 @@ int main(int argc, char * args[])
 
   
   //spawn the data streamer threads
+  log_debug("spawning streamer threads");
   for (size_t i=0; i < data_streamers.size(); i++){
     data_streamers[i]->start_recording();
   }
 
   //now we configure the window
-
+  log_debug("setting up glfw");
   glfwWindowHint(GLFW_SAMPLES, sub_sampling);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -321,18 +322,20 @@ int main(int argc, char * args[])
 
   //create the renderer
   SimpleRen sren;
-
+  log_debug("loading geometry");
   //load our geometry
   for (size_t i=0; i < svg_paths.size(); i++){
    sren.load_svg_file(svg_ids[i], svg_paths[i]);
   }
-  
+
+  log_debug("adding equations");  
   EquationMap equation_map(eq_descs.size()+1, &data_vals);
   for (size_t i=0; i < eq_descs.size(); i++){
     equation_map.add_equation(eq_descs[i]);
   }
   
 
+  log_debug("adding visual elements");  
   std::vector<VisElemPtr> visual_elements;  
   for (size_t i=0; i<vis_elems.size(); i++){
     visual_elements.emplace_back(new VisElem(&sren,  &equation_map, vis_elems[i]));
@@ -342,6 +345,8 @@ int main(int argc, char * args[])
  
   //////////////////////////////////////////////
   //create the GUI
+
+  log_debug("starting ant tweak bar thingy");  
   
   TwInit(TW_OPENGL_CORE, NULL);
 
@@ -356,6 +361,8 @@ int main(int argc, char * args[])
   double last_time = current_time;
   
   //load the click geometry
+
+  log_debug("setting up highlighter");  
   Highlighter highlight(info_bar, &visual_elements, max_num_plotted);
   for (size_t i=0; i < svg_paths.size(); i++){
     highlight.add_shape_definition(svg_ids[i], svg_paths[i]);
@@ -373,18 +380,29 @@ int main(int argc, char * args[])
   glm::vec2 minAABB, maxAABB;
   highlight.get_AABB(minAABB, maxAABB);
 
-  CameraControl camera(width, height, minAABB.x, maxAABB.x, minAABB.y, maxAABB.y);  
+
+  float x_slop = 0.3 * ( maxAABB.x - minAABB.x);
+  float y_slop = 0.3 * ( maxAABB.y - minAABB.y);
+  log_debug("setting up camera");  
+  CameraControl camera(width, height, 
+		       minAABB.x - x_slop, maxAABB.x + x_slop, 
+		       minAABB.y - y_slop, maxAABB.y + y_slop);  
   global_camera = &camera;
   
+  log_debug("setting up plotter");  
   Plotter p = Plotter(dv_buffer_size);
   PlotBundler plotBundler( max_num_plotted, dv_buffer_size, &visual_elements);
 
   //adds the search bar
+
+
+  log_debug("more ant tweak bar thing");
   TwBar * main_bar = TwNewBar("Main");
   TwDefine(" GLOBAL contained=true ");
   TwDefine("'Main' alpha=220 position='0 0' size='200 300'");
 
   //make the global equations
+  log_debug("global eqs");
   for (size_t i=0; i < displayed_global_equations.size(); i++){
     Equation & eq = equation_map.get_eq(equation_map.get_eq_index( displayed_global_equations[i] ));
     TwAddVarRO(main_bar, eq.get_label().c_str(),
@@ -396,9 +414,8 @@ int main(int argc, char * args[])
   vector<int> ds_index_variables_prev_state(num_data_sources, 0);
 
 
-
   ///Initialize a menu
-
+  log_debug("search");
   char prev_search_str[SEARCH_STR_LEN] = ""; // sizeof(search_str) is 64
   char search_str[SEARCH_STR_LEN] = ""; // sizeof(search_str) is 64
   TwAddVarRW(main_bar, "Search:", TW_TYPE_CSSTRING(sizeof(search_str)), search_str, NULL); // must pass search_str (not &search_str)
@@ -410,35 +427,37 @@ int main(int argc, char * args[])
   TwAddButton(main_bar, "Pause", toggle_data_vals_pause, &is_paused, NULL);
   TwAddSeparator(main_bar, "pasue_sep", NULL);
 
+  log_debug("displayed eqs");
 
   unsigned int displayed_eq = 0;
   unsigned int prev_eq_val = 0;
-
   int max_val;
+  size_t display_buffer_size = 0;
+  char * displayed_name;
   if (displayed_eq_labels.size() > 0){
 	  max_val = displayed_eq_labels.size() -1;
-  } else {
-	  max_val = 0;
-  }
-  size_t display_buffer_size = 0;
-  for (size_t i=0; i < displayed_eq_labels.size(); i++) {
-	  size_t s = displayed_eq_labels[i].size() + 1;
-	  if (s > display_buffer_size) {
-		  display_buffer_size = s;
+	  for (size_t i=0; i < displayed_eq_labels.size(); i++) {
+		  size_t s = displayed_eq_labels[i].size() + 1;
+		  if (s > display_buffer_size) {
+			  display_buffer_size = s;
+		  }
 	  }
-  }
-  char * displayed_name = new char[display_buffer_size];
-  strncpy(displayed_name, displayed_eq_labels[0].c_str(), display_buffer_size); 
-
-  TwAddVarRW(main_bar, "Displayed Equation",
-	     TW_TYPE_UINT32, &displayed_eq, " min=0") ;
-  TwSetParam(main_bar, "Displayed Equation", "max", TW_PARAM_INT32, 1, &max_val);
-
-  TwAddVarRW(main_bar, "Eq Label:", TW_TYPE_CSSTRING(display_buffer_size),
-	     displayed_name, NULL);
-
-  TwAddSeparator(main_bar, "label_sep", NULL);
+	  displayed_name = new char[display_buffer_size];
+	  strncpy(displayed_name, displayed_eq_labels[0].c_str(), display_buffer_size); 
+	  
+	  TwAddVarRW(main_bar, "Displayed Equation",
+		     TW_TYPE_UINT32, &displayed_eq, " min=0") ;
+	  TwSetParam(main_bar, "Displayed Equation", "max", TW_PARAM_INT32, 1, &max_val);
+	  
+	  TwAddVarRW(main_bar, "Eq Label:", TW_TYPE_CSSTRING(display_buffer_size),
+		     displayed_name, NULL);
+	  
+	  TwAddSeparator(main_bar, "label_sep", NULL);
   
+  }
+
+
+  log_debug("external commands");
   for (size_t i=0; i < command_lst.size(); i++){
 	  TwAddButton(main_bar, command_label[i].c_str(), 
 		      run_external_command, const_cast<char*>( command_lst[i].c_str()),
@@ -451,6 +470,8 @@ int main(int argc, char * args[])
   //char test_command[] = "echo hello";
   //TwAddButton(main_bar, "Run", run_external_command, test_command, NULL);
 
+
+  log_debug("streamer buttons");
   for (size_t i=0; i < data_streamers.size(); i++){
     int dataStreamerReqType = data_streamers[i]->get_request_type();
     if (dataStreamerReqType == DSRT_STREAMING) continue;
@@ -496,12 +517,13 @@ int main(int argc, char * args[])
     visibility_index++;
   }
 
-
+  log_debug("starting loop");
   //actual loop//
   while (!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT);
     glClear(GL_DEPTH_BUFFER_BIT);
 
+    usleep(10);
 
     //update the equations if possible
     if (prev_eq_val != displayed_eq) {
@@ -668,7 +690,9 @@ int main(int argc, char * args[])
   for (size_t i=0; i < data_streamers.size(); i++){
     data_streamers[i]->bury_body();
   }
-  
+  if (displayed_eq_labels.size() > 0) {
+	  delete [] displayed_name;
+  }  
   log_debug("Cleaning graphics card memory");
   sren.clean_out_buffers();
   exit(EXIT_SUCCESS);

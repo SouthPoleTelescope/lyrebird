@@ -42,7 +42,7 @@ def addDataVal(config_dic, dv_id, init_val, is_buffered):
     config_dic['data_vals'].append( (str(dv_id), float(init_val), bool(is_buffered)))
 
 
-def addDataSource(config_dic, tag, ds_type, desc, update_time=0):
+def addDataSource(config_dic, tag, ds_type, desc, update_time=1):
     if not 'data_sources' in config_dic:
         config_dic['data_sources'] = []
     config_dic['data_sources'].append( {'tag':tag,
@@ -117,7 +117,7 @@ if __name__ == '__main__':
 
     scale_factor = 0.008
 
-    color_maps = ['bolo_purple_cmap', 'bolo_green_cmap','bolo_blue_cmap','white_cmap']
+    color_maps = ['bolo_cyan_cmap', 'bolo_green_cmap','bolo_blue_cmap','white_cmap']
     
     #addDataSource(config_dic, "test_ds_file_2", "test_ds_2_global", "test_global_id", "test_streamer", "streaming", False)
 

@@ -6,7 +6,7 @@
 #include "genericutils.h"
 #include <unistd.h>
 #include <assert.h>
-
+#include "logging.h"
 using namespace std;
 using namespace glm;
 
@@ -107,6 +107,7 @@ Highlighter::Highlighter(TwBar * info_bar, std::vector<VisElemPtr> * vis_elems, 
   }
   send_socket_ = socket(AF_INET, SOCK_DGRAM, 0);
   if ( fill_addr("127.0.0.1", 5556, send_addr_) ){
+	  log_debug("issue with filling address");
 	  send_socket_ = -1;
   }
 }
@@ -115,11 +116,16 @@ void Highlighter::check_socket(){
 	if (listen_socket_ < 0) return;
 	std::vector<std::string> strs;
 	if (get_string_list(listen_socket_, strs)) return;
+	bool fill_info = false;
 	for (size_t i=0; i < strs.size(); i++) {
 		if (strs[i].size() > 0) {
-			run_search(strs[i].c_str(), true, true);
+			run_search(strs[i].c_str(), true, true, true);
+			fill_info = true;
 		}
 	}
+	if (fill_info)
+		fill_info_bar();
+
 }
 
 //parsing inputs
@@ -135,19 +141,30 @@ void Highlighter::parse_click(glm::vec2 pos, int mod_key){
   fill_info_bar();
 }
 
-void Highlighter::run_search(const char * search_str, bool no_send, bool no_clear){
+void Highlighter::run_search(const char * search_str, bool no_send, bool no_clear, 
+			     bool quick){
 	if (! no_clear)
 		clear_hls();
-	for (size_t i=0; i < vis_elems_->size(); i++){
-		if ((*vis_elems_)[i]->string_matches_labels(search_str) && (*vis_elems_)[i]->is_drawn()){
-			add_hl(i, no_send);
+
+	if (quick) {
+		for (size_t i=0; i < vis_elems_->size(); i++){
+			if ((*vis_elems_)[i]->string_matches_labels_quick(search_str) && (*vis_elems_)[i]->is_drawn()){
+				add_hl(i, no_send);
+				break;
+			}
 		}
+	} else {
+		for (size_t i=0; i < vis_elems_->size(); i++){
+			if ((*vis_elems_)[i]->string_matches_labels(search_str) && (*vis_elems_)[i]->is_drawn()){
+				add_hl(i, no_send);
+			}
+		}
+		fill_info_bar();
 	}
-	fill_info_bar();
 }
 
 void Highlighter::fill_info_bar(){
-  
+	log_debug("fill info bar");
   if (hl_inds_.size() < num_info_bar_elems_ && hl_inds_.size() > 0){
     TwRemoveAllVars(info_bar_);
     TwRefreshBar(info_bar_);
@@ -233,6 +250,7 @@ void Highlighter::add_hl(int index, bool no_send){
   if (! no_send || send_socket_ < 0) {
 	  if ((*vis_elems_)[index]->labels.size()== 0) return;
 	  std::string s( (*vis_elems_)[index]->labels[0] );
+	  log_debug("sending %s\n", s.c_str());
 	  sendto(send_socket_, 
 		 s.c_str(), s.size()+1,
 		 0, (struct sockaddr *)&send_addr_,

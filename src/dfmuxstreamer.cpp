@@ -67,8 +67,7 @@ void G3DataStreamer::update_values(int n){
 			std::string phys_id = get_physical_id(cmap.board_serial,
 							      cmap.crate_serial,
 							      cmap.board_slot);
-			log_debug("adding id to ip map %s %d", phys_id.c_str(), cmap.board_ip);
-			id_to_ip_map_[phys_id] = cmap.board_serial;
+			id_to_serial_map_[phys_id] = cmap.board_serial;
 		}
 		has_id_map_ = true;
 	} else if (frame->type == G3Frame::Timepoint){
@@ -104,7 +103,7 @@ void G3DataStreamer::initialize_hk_values(){
 		snprintf(name_buffer, 127, "%s:fir_stage",(*b).c_str());
 		hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
 
-		for (int m=0; m < NUM_MODULES; m++){
+		for (int m=1; m < NUM_MODULES+1; m++){
 			snprintf(name_buffer, 127, "%s/%d:carrier_gain",(*b).c_str(),m);
 			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
 			snprintf(name_buffer, 127, "%s/%d:nuller_gain",(*b).c_str(),m);
@@ -129,7 +128,7 @@ void G3DataStreamer::initialize_hk_values(){
 			snprintf(name_buffer, 127, "%s/%d:routing_type",(*b).c_str(),m);
 			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
 			
-			for (int c=0; c < NUM_CHANNELS; c++){
+			for (int c=1; c < NUM_CHANNELS+1; c++){
 				snprintf(name_buffer, 127, "%s/%d/%d:carrier_amplitude",(*b).c_str(),m,c);
 				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
 				
@@ -168,8 +167,8 @@ void G3DataStreamer::initialize_hk_values(){
 void G3DataStreamer::initialize_dfmux_values(){
 	char name_buffer[128];
 	for (auto b  = board_list_.begin(); b != board_list_.end(); b++){
-		for (int m=0; m < NUM_MODULES; m++){
-			for (int c=0; c < NUM_CHANNELS; c++){
+		for (int m=1; m < NUM_MODULES + 1; m++){
+			for (int c=1; c < NUM_CHANNELS + 1; c++){
 				snprintf(name_buffer, 127, "%s/%d/%d/I:dfmux_samples",(*b).c_str(),m, c);
 				dfmux_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, true));
 		
@@ -182,32 +181,28 @@ void G3DataStreamer::initialize_dfmux_values(){
 
 
 void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
-	log_debug("update hk");
+	//log_debug("update hk");
 
 	size_t i=0; 
 	for (auto b  = board_list_.begin(); b != board_list_.end(); b++){
-		if (id_to_ip_map_.find(*b) == id_to_ip_map_.end()){
+		if (id_to_serial_map_.find(*b) == id_to_serial_map_.end()){
 			log_fatal("Specified board to record data on was not in the wiring map");
 		}
-		int ip = id_to_ip_map_[*b];
-		if (b_map.find(ip) == b_map.end()) {
-			log_debug("couldn't find board %s %d", b->c_str(), ip);
-
-			for (auto it = b_map.begin(); it != b_map.end(); it++){
-				log_debug("IPs in hk %d", it->first);
-			}
+		int serial = id_to_serial_map_[*b];
+		if (b_map.find(serial) == b_map.end()) {
+			//log_debug("couldn't find board %s %d", b->c_str(), serial);
+			//for (auto it = b_map.begin(); it != b_map.end(); it++)log_debug("SERIALs in hk %d", it->first);
+		       
 
 			i += get_num_hk_values()/n_boards_;
 			continue;
 		}
-		const HkBoardInfo & binfo = b_map.at(ip);
+		const HkBoardInfo & binfo = b_map.at(serial);
 
 		dvs_->update_val(hk_path_inds_[i], binfo.fir_stage); i++;
-		log_debug("boards");
+		//log_debug("boards");
 
 		for (int m=0; m < NUM_MODULES; m++){
-			//log_debug("mods %d %d %d", m/4, m%4, binfo.mezz.at(1 + m/4).modules.at(1 + m%4).carrier_gain);
-			
 			auto mod_info = binfo.mezz.at(1 + m/4).modules.at(1 + m%4);
 			
 			dvs_->update_val(hk_path_inds_[i], mod_info.carrier_gain); i++;
@@ -227,7 +222,7 @@ void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
 			dvs_->update_val(hk_path_inds_[i], routing); i++;
 
 			for (int c=0; c < NUM_CHANNELS; c++){
-				log_debug("chans");
+				//log_debug("chans");
 				auto chan_info = mod_info.channels.at(c+1);
 				dvs_->update_val(hk_path_inds_[i], chan_info.carrier_amplitude);i++;
 				dvs_->update_val(hk_path_inds_[i], chan_info.carrier_frequency);i++;
@@ -252,27 +247,26 @@ void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
 void G3DataStreamer::update_dfmux_values(const DfMuxMetaSample & samp){
 	int dv_ind = 0;
 	for (auto board = board_list_.begin(); board != board_list_.end(); board++){
-		if (id_to_ip_map_.find(*board) == id_to_ip_map_.end()){
-			for (auto a = id_to_ip_map_.begin(); a != id_to_ip_map_.end(); a++) std::cout<< a->first << " " << a->second << std::endl;
+		if (id_to_serial_map_.find(*board) == id_to_serial_map_.end()){
+			for (auto a = id_to_serial_map_.begin(); a != id_to_serial_map_.end(); a++) std::cout<< a->first << " " << a->second << std::endl;
 			log_fatal("Specified board to record data on was not in the wiring map %s", board->c_str());
 		}
-		int ip = id_to_ip_map_[*board];
-		if (samp.find(ip) == samp.end()) {
-			for (auto it = samp.begin(); it != samp.end(); it++){
-				log_debug("IPs in dfm %d", it->first);
-			}
-			log_debug("samp for board %s missing", board->c_str());
+		int serial = id_to_serial_map_[*board];
+		if (samp.find(serial) == samp.end()) {
+			//for (auto it = samp.begin(); it != samp.end(); it++)log_debug("SERIALs in dfm %d", it->first);
+			
+			//log_debug("samp for board %s missing", board->c_str());
 			dv_ind += NUM_MODULES * NUM_CHANNELS * 2;
 			continue;
 		}
-		const DfMuxBoardSamples & board_sample = samp.at(ip);
+		const DfMuxBoardSamples & board_sample = samp.at(serial);
 		for (int m = 0; m < NUM_MODULES; m++){
 			if (board_sample.find(m) == board_sample.end()){ 
 				dv_ind += NUM_CHANNELS * 2;
 				continue;
 			}
 			DfMuxSampleConstPtr mod_ptr = board_sample.at(m);
-			for (int c =0; c < NUM_CHANNELS; c++){
+			for (int c = 0; c < NUM_CHANNELS; c++){
 				dvs_->update_val(dfmux_path_inds_[dv_ind], (float) mod_ptr->at(c*2)); dv_ind++;
 				dvs_->update_val(dfmux_path_inds_[dv_ind], (float) mod_ptr->at(c*2+1)); dv_ind++;
 			}
