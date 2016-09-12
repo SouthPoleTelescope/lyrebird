@@ -30,7 +30,8 @@ class IdSerialMapper(object):
 ###########################
 ## Squid display portion ##
 ###########################
-
+def add_timestamp_info(screen, y, x, ts, col_index):
+    screen.addstr(y, x, ts.Description(), curses.color_pair(col_index))
 
 #need screen geometry and squid list and squid mapping
 def add_squid_info(screen, y, x, 
@@ -83,11 +84,16 @@ def load_squid_info_from_hk( screen, y, x,
     bolometer_good = False
     bolo_label = 'NoData'
 
+
+    board_id, mezz_num, module_num = sq_phys_id_to_info(sq_dev_id)
+    board_serial = serial_mapper.get_serial(board_id)
+
+
     #code for loading hk info for display
-    if hk_map != None:
-        board_id, mezz_num, module_num = sq_phys_id_to_info(sq_dev_id)
-        board_serial = serial_mapper.get_serial(board_id)
+    if hk_map != None and board_serial in hk_map:
         board_info = hk_map[board_serial]
+
+        #raise RuntimeError(str(hk_map[board_serial].mezz.keys()))
         module_info = hk_map[board_serial].mezz[mezz_num].modules[module_num]
 
         carrier_good = not module_info.carrier_railed
@@ -117,13 +123,13 @@ def load_squid_info_from_hk( screen, y, x,
 class SquidDisplay(object):
     def __init__(self, squids_list, 
                  squids_per_col = 32, 
-                 squid_col_width = 20):
+                 squid_col_width = 30):
         self.squids_list = squids_list
         self.squids_per_col = squids_per_col
         self.squid_col_width = squid_col_width
         self.n_squids = len(squids_list)
 
-        self.sq_label_size = max(map(len, squids_list))        
+        self.sq_label_size = max(map(len, squids_list)) + 3        
         ncols = int(math.ceil(float(self.n_squids)/self.squids_per_col))
 
         self.screen_size_x = ncols * squid_col_width
@@ -175,6 +181,10 @@ class SquidDisplay(object):
             self.stdscr.clear()
             self.screen.clear()
             self.screen.box()
+
+            if hk_data != None:
+                add_timestamp_info(self.screen, 0,0, hk_data[hk_data.keys()[0]].timestamp,
+                                   3)
 
             for i, s in enumerate(self.squids_list):
                 p = self.pos_map[s]

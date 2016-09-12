@@ -8,7 +8,7 @@ N_CHANNELS=64
 
 def get_physical_id(board_serial, crate_serial, board_slot,
                     module = None, channel = None):
-    if board_slot == 0:
+    if board_slot <= 0:
         s = '%d' % board_serial
     else:
         s = '%d_%d' % (crate_serial, board_slot)
@@ -23,8 +23,8 @@ def sq_phys_id_to_info(phys_id):
     split = phys_id.split('/')
     board_id = split[0]
     module_num = int(split[1])
-    mezz_num = module_num // 4
-    module_num = module_num % 4
+    mezz_num = module_num // 4 + 1
+    module_num = module_num % 4 + 1
     return board_id, mezz_num, module_num
 
 def uniquifyList(seq):
@@ -97,7 +97,7 @@ def addDfmuxStreamer(config_dic, tag, boards_list,
     return glob_eqs
 
 def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map, 
-                     scale_fac, svg_folder):
+                     scale_fac, svg_folder, max_freq = 6e6):
     for k in bolo_props_map.keys():
         if (not k in wiring_map):
             continue
@@ -136,6 +136,7 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
 
         eqs_lst = ['%s:Rfractional'%(cid)+'_eq',
                    '%s:phase'%(cid)+'_eq',
+                   '%s:freq'%(cid)+'_eq',
                    '%s:SquidGood'%(mid)+'_eq',
                    '%s/I:dfmux_samples_eq' % cid, 
                    '%s/Q:dfmux_samples_eq' % cid ]
@@ -147,13 +148,25 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
             eqs_lst.append('%s:%s_eq' % (cid, cvs))
         for bvs in get_board_vals():
             eqs_lst.append('%s:%s_eq' % (bid, bvs))
-            
+
+        '''
         CC.addGlobalEquation(config_dic, 
                              CC.getEquation('/ %s:res_conversion_factor * %s/I:dfmux_samples %s:rnormal'%(cid, cid, cid), 
                                             eq_cmap,
                                             '%s:Rfractional'%(cid)+'_eq',
                                             "Rfrac",
                                             '%s/I:dfmux_samples'%(cid)))
+        '''
+
+        CC.addGlobalEquation(config_dic, 
+                             CC.getEquation(('/ %s:res_conversion_factor * %s:rnormal q + * %s/I:dfmux_samples %s/I:dfmux_samples * %s/Q:dfmux_samples %s/Q:dfmux_samples' % 
+                                             (cid, cid, cid, cid, cid, cid)), 
+                                            eq_cmap,
+                                            '%s:Rfractional'%(cid)+'_eq',
+                                            "Rfrac",
+                                            '%s/I:dfmux_samples'%(cid)))
+
+
 
         CC.addGlobalEquation(config_dic, 
                              CC.getEquation('a / T %s/I:dfmux_samples %s/Q:dfmux_samples 3.14159265'%(cid, cid), 
@@ -162,6 +175,13 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                                             "Channel Phase",
                                             '%s/I:dfmux_samples'%(cid)))
 
+        CC.addGlobalEquation(config_dic, 
+                             CC.getEquation('/ * %s:carrier_frequency = %s:carrier_frequency %s:demod_frequency %f'%(cid, cid, cid, max_freq), 
+                                            "rainbow_cmap",
+                                            '%s:freq'%(cid)+'_eq',
+                                            "Frequency Settings",
+                                            '%s:carrier_frequency'%(cid)))
+        
         CC.addVisElem(config_dic, 
                       x_cen=bp.x_offset,   y_cen=bp.y_offset,
                       x_scale = scale_fac, y_scale=scale_fac, 
@@ -171,7 +191,6 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                       layer = 1, labels = [k, cid, bp.physical_name],
                       equations = eqs_lst, 
                       labelled_data = [ 
-                          #["ID", k],
                           ["PhysId", bp.physical_name],
                           ["DevId", cid],
                           ["Board", bid],
@@ -250,7 +269,7 @@ def generate_dfmux_lyrebird_config(wiring_map, bolo_props_map,
     scale_fac =  special_separation / ( safety_factor * float(cell_size))
 
 
-    global_display_names = ['Rfrac', 'IQ Phase', 'SQUID Be F*cked']
+    global_display_names = ['Rfrac', 'IQ Phase', 'Freq Settings', 'SQUID Be F*cked']
 
     #add the general settings
     config_dic = {}

@@ -187,6 +187,14 @@ inline void pp_func_or(PPStack<float> * pp_val_stack, float * val, int offset){
   float v1 = pop(pp_val_stack);
   push(pp_val_stack, v0 || v1 ? 1.0f : 0.0f);
 }
+
+inline void pp_func_eq(PPStack<float> * pp_val_stack, float * val, int offset){
+  float v0 = pop(pp_val_stack);
+  float v1 = pop(pp_val_stack);
+  push(pp_val_stack, v0 == v1 ? 1.0f : 0.0f);
+}
+
+
 inline void pp_func_not(PPStack<float> * pp_val_stack, float * val, int offset){
   float v0 = pop(pp_val_stack);
   push(pp_val_stack, !v0 ? 1.0f : 0.0f);
@@ -231,16 +239,18 @@ inline void pp_func_abs(PPStack<float> * pp_val_stack, float * val, int offset){
 inline void pp_func_cos(PPStack<float> * pp_val_stack, float * val, int offset){
   push(pp_val_stack, (float)cos(pop(pp_val_stack) ));
 }
-inline void pp_func_sqrt(PPStack<float> * pp_val_stack, float * val, int offset){
-  push(pp_val_stack, (float)sqrt(pop(pp_val_stack) ));
-}
-
 inline void pp_func_sin(PPStack<float> * pp_val_stack, float * val, int offset){
   push(pp_val_stack, (float)sin(pop(pp_val_stack) ));
 }
 inline void pp_func_tan(PPStack<float> * pp_val_stack, float * val, int offset){
   push(pp_val_stack, (float)tan(pop(pp_val_stack) ));
 }
+
+inline void pp_func_sqrt(PPStack<float> * pp_val_stack, float * val, int offset){
+  push(pp_val_stack, (float)sqrt(pop(pp_val_stack) ));
+}
+
+
 
 
 inline void pp_func_res(PPStack<float> * pp_val_stack, float * val, int offset){
@@ -265,6 +275,9 @@ pp_func get_pp_func(char id){
   switch(id){
   case '|':
     return pp_func_or;
+    break;
+  case '=':
+    return pp_func_eq;
     break;
   case '!':
     return pp_func_not;
@@ -319,6 +332,9 @@ pp_func get_pp_func(char id){
 int get_pp_func_len(char id){
   switch(id){
   case '|':
+    return 1;
+    break;
+  case '=':
     return 1;
     break;
   case '!':
@@ -378,7 +394,7 @@ int is_pp_func(char id){
 	   (id == 't') || (id == 'r') ||
 	   (id == '&') || (id == '|') ||
 	   (id == '!') || (id == 'T') ||
-	   (id == 'q') 
+	   (id == 'q') || (id == '=')
 
 	   );
 }

@@ -20,7 +20,7 @@
 std::string get_physical_id(int board_serial, int crate_serial, int board_slot,
                             int module = 0, int channel = 0) {
 	std::stringstream ss;
-	if (board_slot == 0) ss << board_serial;
+	if (board_slot <= 0) ss << board_serial;
         else ss << crate_serial << "_" << board_slot;
         if (module > 0) {
                 ss << "/" << module;
@@ -200,7 +200,6 @@ void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
 		const HkBoardInfo & binfo = b_map.at(serial);
 
 		dvs_->update_val(hk_path_inds_[i], binfo.fir_stage); i++;
-		//log_debug("boards");
 
 		for (int m=0; m < NUM_MODULES; m++){
 			auto mod_info = binfo.mezz.at(1 + m/4).modules.at(1 + m%4);
@@ -208,9 +207,10 @@ void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
 			dvs_->update_val(hk_path_inds_[i], mod_info.carrier_gain); i++;
 			dvs_->update_val(hk_path_inds_[i], mod_info.nuller_gain); i++;
 
-			dvs_->update_val(hk_path_inds_[i], mod_info.carrier_railed); i++;
-			dvs_->update_val(hk_path_inds_[i], mod_info.nuller_railed); i++;
-			dvs_->update_val(hk_path_inds_[i], mod_info.demod_railed); i++;
+			dvs_->update_val(hk_path_inds_[i], mod_info.carrier_railed ? 1 : 0); i++;
+			dvs_->update_val(hk_path_inds_[i], mod_info.nuller_railed ? 1 : 0); i++;
+			dvs_->update_val(hk_path_inds_[i], mod_info.demod_railed ? 1 : 0); i++;
+
 
 			dvs_->update_val(hk_path_inds_[i], mod_info.squid_flux_bias); i++;
 			dvs_->update_val(hk_path_inds_[i], mod_info.squid_current_bias); i++;
@@ -229,11 +229,11 @@ void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
 				dvs_->update_val(hk_path_inds_[i], chan_info.demod_frequency);i++;
 
 
-				dvs_->update_val(hk_path_inds_[i], chan_info.dan_accumulator_enable);i++;
-				dvs_->update_val(hk_path_inds_[i], chan_info.dan_feedback_enable);i++;
-				dvs_->update_val(hk_path_inds_[i], chan_info.dan_streaming_enable);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.dan_accumulator_enable ?1:0);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.dan_feedback_enable ?1:0);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.dan_streaming_enable ?1:0);i++;
 				dvs_->update_val(hk_path_inds_[i], chan_info.dan_gain);i++;
-				dvs_->update_val(hk_path_inds_[i], chan_info.dan_railed);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.dan_railed ? 1 : 0);i++;
 
 				dvs_->update_val(hk_path_inds_[i], chan_info.rnormal);i++;
 				dvs_->update_val(hk_path_inds_[i], chan_info.rlatched);i++;

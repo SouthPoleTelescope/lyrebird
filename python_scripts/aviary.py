@@ -73,7 +73,7 @@ class BoloPropertiesFaker(object):
                 for i, sq in enumerate( sorted(squids.keys()) ):
                     x = i % sq_layout[0]
                     y = i // sq_layout[0]
-                    squids[sq] = (x * ch_layout[0], y * ch_layout[1])
+                    squids[sq] = (1.2 * x * ch_layout[0], 1.2* y * ch_layout[1])
 
                 #need nsquids
                 #need nbolos per squid

@@ -110,20 +110,25 @@ void PlotBundler::update_plots(std::list<int> & pis, std::list<glm::vec3> & cis)
       //cout<<"updating i "<<i<<endl;
       //update the fft
 	    
-      for (int j=0; j<buffer_size_; j++) psd_tmp_buffer[j] = psd_hann_buffer[j] * plot_vals[i * buffer_size_ + j];
-      fftw_execute(fft_plan);
-      for (int j=1; j < psd_buffer_size; j++){
-	psd_vals[i*psd_buffer_size + j - 1] = sqrt( fft_out[j][0]*fft_out[j][0] + 
-						fft_out[j][1]*fft_out[j][1]);
-      }
-      //zeros the lowest bins because fuck it
-      for (int j=0; j < 1; j++)
-      	psd_vals[i*psd_buffer_size+j] = 0;
-      psd_vals[i*psd_buffer_size+psd_buffer_size-1]  = 0;
-	      
-      last_updated[i] = 0;
+	    float mean_val = 0;
+	    for (int j=0; j<buffer_size_; j++) mean_val += plot_vals[i * buffer_size_ + j];
+	    mean_val /= (float) buffer_size_;
+
+
+	    for (int j=0; j<buffer_size_; j++) psd_tmp_buffer[j] = psd_hann_buffer[j] * (plot_vals[i * buffer_size_ + j] - mean_val);
+	    fftw_execute(fft_plan);
+	    for (int j=1; j < psd_buffer_size; j++){
+		    psd_vals[i*psd_buffer_size + j - 1] = sqrt( fft_out[j][0]*fft_out[j][0] + 
+								fft_out[j][1]*fft_out[j][1]);
+	    }
+	    //zeros the lowest bins because fuck it
+	    for (int j=0; j < 1; j++)
+		    psd_vals[i*psd_buffer_size+j] = 0;
+	    psd_vals[i*psd_buffer_size+psd_buffer_size-1]  = 0;
+	    
+	    last_updated[i] = 0;
     }else{
-      last_updated[i]++;
+	    last_updated[i]++;
     }
   }
   
