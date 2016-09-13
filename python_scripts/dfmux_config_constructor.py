@@ -22,7 +22,7 @@ def get_physical_id(board_serial, crate_serial, board_slot,
 def sq_phys_id_to_info(phys_id):
     split = phys_id.split('/')
     board_id = split[0]
-    module_num = int(split[1])
+    module_num = int(split[1]) - 1
     mezz_num = module_num // 4 + 1
     module_num = module_num % 4 + 1
     return board_id, mezz_num, module_num
@@ -278,6 +278,10 @@ def generate_dfmux_lyrebird_config(fn,
 
     addDfmuxVisElems(config_dic, wiring_map, bolo_props_map, 
                      scale_fac, svg_folder)
+
+
+    config_dic['external_commands_id_list'] = ['Get Housekeeping']
+    config_dic['external_commands_list'] = ['nc %s 9989' % hostname]
 
     CC.storeConfigFile(config_dic, fn) 
 

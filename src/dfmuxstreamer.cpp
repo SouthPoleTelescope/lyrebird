@@ -93,6 +93,7 @@ void G3DataStreamer::update_values(int n){
 		if (has_id_map_) update_dfmux_values(*ms);
 	} else if (frame->type == G3Frame::Housekeeping){
 		if (! do_hk_) return;
+		log_debug("updating hk");
 		DfMuxHousekeepingMapConstPtr bi = frame->Get<DfMuxHousekeepingMap>("DfMuxHousekeeping");
 		if (has_id_map_) update_hk_values(*bi);
 	}

@@ -272,7 +272,6 @@ int main(int argc, char * args[])
 			   dataval_descs[i].is_buffered);
   }
   global_data_vals = &data_vals;
-
   
   //spawn the data streamer threads
   log_debug("spawning streamer threads");
