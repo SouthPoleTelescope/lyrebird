@@ -97,6 +97,11 @@ void PlotBundler::update_plots(std::list<int> & pis, std::list<glm::vec3> & cis)
     if (num_plots >= max_num_plots_) break;
   }
 
+  /**
+  for (int i=0; i < num_plots * buffer_size_; i++){
+	  plot_vals[i] = isfinite(plot_vals[i]) ? plot_vals[i] : 0.0f;
+  }
+  **/
   plot_min = 1e23;
   plot_max = -1e23;
   for (int i=0; i < num_plots * buffer_size_; i++){
@@ -109,7 +114,6 @@ void PlotBundler::update_plots(std::list<int> & pis, std::list<glm::vec3> & cis)
     if (last_updated[i] < 0 || last_updated[i] > max_num_plots_){
       //cout<<"updating i "<<i<<endl;
       //update the fft
-	    
 	    float mean_val = 0;
 	    for (int j=0; j<buffer_size_; j++) mean_val += plot_vals[i * buffer_size_ + j];
 	    mean_val /= (float) buffer_size_;

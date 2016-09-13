@@ -56,7 +56,7 @@ def get_module_vals():
 def get_channel_vals():
     return ['carrier_amplitude', 'carrier_frequency', 'demod_frequency',
             'dan_accumulator_enable', 'dan_feedback_enable', 'dan_streaming_enable', 
-            'dan_gain', 'dan_railed', 'rnormal', 'rlatched']
+            'dan_gain', 'dan_railed', 'rnormal', 'rlatched', 'res_conversion_factor']
 
 
 def addDfmuxStreamer(config_dic, tag, boards_list, 

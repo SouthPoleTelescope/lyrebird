@@ -163,6 +163,14 @@ void Plotter::plot(float * vals, int n_elems,
 	){
 	assert(n_elems <= max_num_points_);
 
+	#ifdef DEBUG_LIKE_MAD
+	if (! is_log_scale) {
+		for (int i=0; i < n_elems; i++) {
+			printf("%d %f\n", i, vals[i]);
+		}
+	}
+	#endif
+
 	int low_val = ceilf(logf(x_start)/logf(10));
 	int high_val = ceilf(logf(x_start + x_sep * n_elems)/logf(10));
 	int n_mags = high_val - low_val + 1;

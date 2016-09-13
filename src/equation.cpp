@@ -529,7 +529,12 @@ void tokenize_equation_or_die(const char * eq, PPStack<PPToken> * out_stack, Dat
       } else if ( data_vals->get_ind(  string(eqt)   ) != -1){
 	tok.arg_num = -1;
 	tok.val = -1;
-	tok.func = pp_func_push_offset;
+
+	if (data_vals->is_buffered( data_vals->get_ind(  string(eqt) ))) {
+		tok.func = pp_func_push_offset;
+	} else {
+		tok.func = pp_func_push;
+	}
 	tok.dv_index = data_vals->get_ind(string(eqt));
 	tok.val_addr = data_vals->get_addr( tok.dv_index );
       }

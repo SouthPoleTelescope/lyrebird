@@ -111,7 +111,7 @@ void DataVals::update_val(int index, float val){
 	  ring_buffers_[buffer_size_full_ * index +  ring_indices_[index] + 1] = val;
 	  ring_indices_[index]++;
 	  ring_indices_[index] = ring_indices_[index] % buffer_size_;
-  }
+  } 
   pthread_rwlock_unlock (&rwlock_);
 }
 
@@ -160,10 +160,19 @@ void DataVals::apply_bulk_func(PPStack<PPToken> * token_stack, float * vals){
   for (int j = 0; j < buffer_size_; j++){
     eval_stack.size = 0;
     //does the pp calculation
+
+    /**
+       val_addr is the address fo the data val
+       val is the value stored in the token if it is storing a numeric val
+     **/
     for (int i = token_stack->size-1; i >= 0; i--){
       token_stack->items[i].func(&eval_stack, 
-				 token_stack->items[i].val_addr == NULL ? &(token_stack->items[i].val) : token_stack->items[i].val_addr, //value to plug in
-				 ((ring_indices_[token_stack->items[i].dv_index] + j)%buffer_size_) + 1 );//offset
+				 token_stack->items[i].val_addr == NULL ? 
+  				   &(token_stack->items[i].val) : 
+				   token_stack->items[i].val_addr, //value to plug in
+				 ((ring_indices_[token_stack->items[i].dv_index] + j) % buffer_size_ + 1));
+                                //offset (the buffer are all the values after the 0'th one so we need the +1.
+      
     }
     //stores the value
     vals[j] = eval_stack.items[0];

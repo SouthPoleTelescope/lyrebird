@@ -1,5 +1,5 @@
 import numpy as np
-import socket, curses, json, traceback, math, argparse, math, sys, os
+import socket, curses, json, traceback, math, argparse, math, sys, os, stat
 from operator import itemgetter, attrgetter
 from dfmux_config_constructor import get_physical_id, sq_phys_id_to_info
 from dfmux_config_constructor import uniquifyList, generate_dfmux_lyrebird_config
@@ -19,6 +19,17 @@ def make_square_block(n_things):
     else:
         sq = int(math.floor(sq))
         return (sq, sq+1)
+
+def write_get_hk_script(fn, hostname):
+    script = '''#!/bin/bash
+nc %s 9989
+''' % hostname
+    print fn
+    f = open(fn, 'w')
+    f.write(script)
+    f.close()
+    st = os.stat(fn)
+    os.chmod(fn, st.st_mode | stat.S_IXUSR)
 
 
 class BoloPropertiesFaker(object):
@@ -111,10 +122,12 @@ class BoloPropertiesFaker(object):
 class BirdConfigGenerator(object):
     def __init__(self, 
                  lyrebird_output_file = '',
+                 get_hk_script_name= '',
                  hostname = '', hk_hostname = '',
                  port = 3, hk_port = 3
     ):
         self.l_fn = lyrebird_output_file
+        self.get_hk_script_name = get_hk_script_name
         self.is_written = False
         self.bolo_props = None
         self.wiring_map = None
@@ -146,6 +159,9 @@ class BirdConfigGenerator(object):
             port = self.port,
             hk_port = self.hk_port
         )
+        write_get_hk_script(self.get_hk_script_name, 
+                            self.hostname)
+
 
 class IdSerialMapper(object):
     def __init__(self, wiring_map):
@@ -415,7 +431,9 @@ if __name__=='__main__':
     parser.add_argument('hostname')
     parser.add_argument('--port',type=int, default=8675)
     parser.add_argument('--hk_port',type=int, default=8676)
+    parser.add_argument('--local_hk_port',type=int, default=8677)
     parser.add_argument('--lyrebird_output_file', default = 'lyrebird_config_file.json')
+    parser.add_argument('--get_hk_script', default = 'get_hk.sh')
 
     args = parser.parse_args()
     #core.set_log_level(core.G3LogLevel.LOG_DEBUG)
@@ -426,20 +444,23 @@ if __name__=='__main__':
     pipe.Add(BirdConfigGenerator, 
              lyrebird_output_file = args.lyrebird_output_file, 
              hostname = args.hostname, 
+             get_hk_script_name = args.get_hk_script,
              hk_hostname = '127.0.0.1',
              port = args.port, 
-             hk_port = args.hk_port)
+             hk_port = args.local_hk_port)
 
     pipe.Add(GetHousekeepingMessenger, hostname = args.hostname)
     pipe.Add(networkstreamer.G3NetworkSender,
-             port = args.hk_port,
+             port = args.local_hk_port,
              maxsize = 10,
              max_connections = 10,
              frame_decimation = {core.G3FrameType.Timepoint: 0}
           )
+
     pipe.Add(SquidDisplay)
     try:
         pipe.Run()
+        
     finally:
         curses.curs_set(1)
         curses.echo()

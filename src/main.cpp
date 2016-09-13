@@ -556,6 +556,7 @@ int main(int argc, char * args[])
 
     list<int> plot_inds = highlight.get_plot_inds();
     list<glm::vec3> color_inds = highlight.get_plot_colors();
+
     if (plot_inds.size() > 0){
       plotBundler.update_plots(plot_inds, color_inds);
       int num_plots = plotBundler.get_num_plots();
