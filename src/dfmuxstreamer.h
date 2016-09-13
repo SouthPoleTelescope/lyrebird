@@ -50,6 +50,11 @@
 // list of things to report on
 class G3DataStreamer : public DataStreamer {
 public:
+	enum DfmuxType {
+		BOTH = 0,
+		HK = 1,
+		TP = 2,
+	};
 	//desc needs a list of board ids, ip, port
 	//
 	G3DataStreamer(Json::Value streamer_json_desc,
@@ -82,6 +87,10 @@ private:
 	
 	std::vector<int> hk_path_inds_;
 	std::vector<int> dfmux_path_inds_;
+
+	int streamer_type_;
+	bool do_hk_;
+	bool do_tp_;
 };
 
 

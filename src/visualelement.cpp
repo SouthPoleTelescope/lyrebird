@@ -183,13 +183,17 @@ void VisElem::get_all_info(std::vector<string> & ai_labels, std::vector<string> 
     ai_tag_vals[i] = &(l_data_vals[i]);
   }
   
-  ai_eq_labels = std::vector<string>(equation_inds_.size(), "");
-  ai_eq_addrs = std::vector<float*>(equation_inds_.size(), NULL);
+  //ai_eq_labels = std::vector<string>(equation_inds_.size(), "");
+  //ai_eq_addrs = std::vector<float*>(equation_inds_.size(), NULL);
+  ai_eq_labels.clear();
+  ai_eq_addrs.clear();
   for (size_t i=0; i < equation_inds_.size(); i++){
     Equation & cur_eq = equation_map_->get_eq(equation_inds_[i]);
     if (cur_eq.display_in_info_bar()) {
-	    ai_eq_labels[i] = cur_eq.get_display_label();
-	    ai_eq_addrs[i] = cur_eq.get_value_address();
+	    //ai_eq_labels[i] = cur_eq.get_display_label();
+	    //ai_eq_addrs[i] = cur_eq.get_value_address();
+	    ai_eq_labels.push_back( cur_eq.get_display_label() );
+	    ai_eq_addrs.push_back(cur_eq.get_value_address());
     }
   }
 }

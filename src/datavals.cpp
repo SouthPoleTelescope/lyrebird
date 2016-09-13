@@ -35,7 +35,7 @@ void DataVals::initialize(){
   for (int i=0; i < array_size_; i++){
     //vals[i] = 0;
     ring_buffers_[ i * buffer_size_full_] = 0;
-    ring_indices_[i] = 0;
+    ring_indices_[i] = -1;
     is_buffered_[i] = 0;
     n_vals_[i] = 0;
     start_times_[i] = 0;
@@ -102,9 +102,15 @@ void DataVals::update_val(int index, float val){
   if (start_times_[index] == 0) start_times_[index] = glfwGetTime();
 
   if (is_buffered_[index]){
-    ring_buffers_[buffer_size_full_ * index +  ring_indices_[index] + 1] = val;
-    ring_indices_[index]++;
-    ring_indices_[index] = ring_indices_[index] % buffer_size_;
+	  if (ring_indices_[index] < 0) {
+		  ring_indices_[index] = 0;
+		  for (int i=0; i < buffer_size_full_; i++){
+			  ring_buffers_[buffer_size_full_ * index + i] = val;
+		  }
+	  }
+	  ring_buffers_[buffer_size_full_ * index +  ring_indices_[index] + 1] = val;
+	  ring_indices_[index]++;
+	  ring_indices_[index] = ring_indices_[index] % buffer_size_;
   }
   pthread_rwlock_unlock (&rwlock_);
 }

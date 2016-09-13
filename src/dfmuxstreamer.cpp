@@ -54,10 +54,25 @@ G3DataStreamer::G3DataStreamer(Json::Value desc,
 	}
 	hostname_ = desc["network_streamer_hostname"].asString();
 	port_ = desc["network_streamer_port"].asInt();
+	streamer_type_ = desc["streamer_type"].asInt();
+
+	log_debug("streamer type %d", streamer_type_);
+
+	if (streamer_type_ == G3DataStreamer::HK) {
+		do_hk_ = true;
+		do_tp_ = false;
+	} else if (streamer_type_ == G3DataStreamer::TP) {
+		do_hk_ = false;
+		do_tp_ = true;
+	} else {
+		do_hk_ = true;
+		do_tp_ = true;
+	}
 
 	dvs_ = dv;
-	dv->register_data_source(get_num_dfmux_values());
-	dv->register_data_source(get_num_hk_values());
+
+	if (do_tp_) dv->register_data_source(get_num_dfmux_values());
+	if (do_hk_) dv->register_data_source(get_num_hk_values());
 }
 
 void G3DataStreamer::update_values(int n){
@@ -73,17 +88,19 @@ void G3DataStreamer::update_values(int n){
 		}
 		has_id_map_ = true;
 	} else if (frame->type == G3Frame::Timepoint){
+		if (! do_tp_) return;
 		DfMuxMetaSampleConstPtr ms = frame->Get<DfMuxMetaSample>("DfMux");
 		if (has_id_map_) update_dfmux_values(*ms);
 	} else if (frame->type == G3Frame::Housekeeping){
+		if (! do_hk_) return;
 		DfMuxHousekeepingMapConstPtr bi = frame->Get<DfMuxHousekeepingMap>("DfMuxHousekeeping");
 		if (has_id_map_) update_hk_values(*bi);
 	}
 }
 
 void G3DataStreamer::initialize(){
-	initialize_hk_values();
-	initialize_dfmux_values();
+	if (do_hk_) initialize_hk_values();
+	if (do_tp_) initialize_dfmux_values();
 }
 
 void G3DataStreamer::uninitialize(){

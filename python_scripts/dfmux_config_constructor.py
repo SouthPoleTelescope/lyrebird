@@ -60,15 +60,25 @@ def get_channel_vals():
 
 
 def addDfmuxStreamer(config_dic, tag, boards_list, 
-                    sender_hostname = 'laphroaig.berkeley.edu',
-                    sender_port = 8675):
-    desc = {'board_list':boards_list,
-            'network_streamer_hostname': sender_hostname, 
-            'network_streamer_port': sender_port }
+                     sender_hostname = 'laphroaig.berkeley.edu',
+                     sender_port = 8675,
+                     hk_hostname = 'laphroaig.berkeley.edu',
+                     hk_port = 8676):
+    hk_desc = {'board_list':boards_list,
+               'network_streamer_hostname': hk_hostname, 
+               'network_streamer_port': hk_port,
+               'streamer_type': 1
+              }
+
+    tp_desc = {'board_list':boards_list,
+               'network_streamer_hostname': sender_hostname, 
+               'network_streamer_port': sender_port,
+               'streamer_type': 2
+              }
+
     glob_eqs = []
     for b in boards_list:
         for bhv in get_board_vals():
-            print b, bhv
             CC.addGlobalEquation(config_dic, generate_dfmux_eq_lazy(b, bhv))
         for m in range(1, N_MODULES + 1):
             mid = '%s/%d' %(b,m)
@@ -94,7 +104,8 @@ def addDfmuxStreamer(config_dic, tag, boards_list,
                                                             "dfmux_samples", 'Q_Samples'))
                 for chv in get_channel_vals():
                     CC.addGlobalEquation(config_dic, generate_dfmux_eq_lazy(cid,chv))
-    CC.addDataSource(config_dic, tag, 'dfmux',  desc)
+    CC.addDataSource(config_dic, 'tp_' + tag, 'dfmux',  tp_desc)
+    CC.addDataSource(config_dic, 'hk_' + tag, 'dfmux',  hk_desc)
     return glob_eqs
 
 def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map, 
@@ -204,46 +215,16 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                       group = group )
 
 
-def generate_kookie_config_file(output_file, 
-                                squid_id_list,
-                                squid_dev_id_list,
-                                listen_hostname = '127.0.0.1',
-                                listen_port = 8675):
-    out_d = {}
-
-    out_d['squid_id_list'] = squid_id_list
-    out_d['squid_dev_id_list'] = squid_dev_id_list
-
-    out_d['listen_hostname'] = listen_hostname
-    out_d['listen_port'] = listen_port
-    f = open(output_file, 'w')
-    json.dump(out_d, f, indent = 2)
-    f.close()
-        
-def generate_k_config(output_file, wiring_map, bolo_props_map, 
-                      listen_hostname, listen_port):
-    squid_ids = []
-    #need to get boards list
-    for k in wiring_map.keys():
-        wm = wiring_map[k]
-        squid_ids.append( get_physical_id(wm.board_serial, wm.crate_serial, wm.board_slot,
-                                          wm.module + 1) )
-    squid_ids = uniquifyList(squid_ids)
-    
-    generate_kookie_config_file(output_file, 
-                                squid_ids,
-                                squid_ids,
-                                listen_hostname = listen_hostname,
-                                listen_port = listen_port)
-
-def generate_dfmux_lyrebird_config(wiring_map, bolo_props_map, 
+def generate_dfmux_lyrebird_config(fn, 
+                                   wiring_map, bolo_props_map, 
                                    win_x_size = 800,
                                    win_y_size = 800,
                                    sub_sampling = 4,
                                    max_framerate = -1,
                                    max_num_plotted  = 10,
                                    hostname = '127.0.0.1',
-                                   port = 8675):
+                                   port = 8675, 
+                                   hk_port = 8676):
     import os
     creepy_path = os.path.dirname(os.path.realpath(__file__))
     svg_folder = os.path.abspath(creepy_path+'/../svgs/') + '/'
@@ -284,17 +265,20 @@ def generate_dfmux_lyrebird_config(wiring_map, bolo_props_map,
                           sub_sampling = sub_sampling,
                           max_framerate= max_framerate,
                           max_num_plotted = max_num_plotted,
-                          eq_names = global_display_names
+                          eq_names = global_display_names,
+                          dv_buffer_size = 128
                    )
     
     addDfmuxStreamer(config_dic, "dfmux_streamer", board_ids, 
                      sender_hostname = hostname,
-                     sender_port = port)
+                     sender_port = port,
+                     hk_hostname = hostname,
+                     hk_port = hk_port  )
 
     addDfmuxVisElems(config_dic, wiring_map, bolo_props_map, 
                      scale_fac, svg_folder)
 
-    return config_dic
+    CC.storeConfigFile(config_dic, fn) 
 
     
                            
