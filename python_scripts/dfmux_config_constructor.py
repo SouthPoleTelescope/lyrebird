@@ -223,6 +223,7 @@ def generate_dfmux_lyrebird_config(fn,
                                    max_framerate = -1,
                                    max_num_plotted  = 10,
                                    hostname = '127.0.0.1',
+                                   hk_hostname = '127.0.0.1',
                                    port = 8675, 
                                    hk_port = 8676):
     import os
@@ -272,7 +273,7 @@ def generate_dfmux_lyrebird_config(fn,
     addDfmuxStreamer(config_dic, "dfmux_streamer", board_ids, 
                      sender_hostname = hostname,
                      sender_port = port,
-                     hk_hostname = hostname,
+                     hk_hostname = hk_hostname,
                      hk_port = hk_port  )
 
     addDfmuxVisElems(config_dic, wiring_map, bolo_props_map, 

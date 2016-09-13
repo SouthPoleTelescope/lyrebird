@@ -36,8 +36,8 @@ class BoloPropertiesFaker(object):
                 self.bolo_props = frame['BolometerProperties']
             elif 'NominalBolometerProperties' in frame:
                 self.bolo_props = frame['NominalBolometerProperties']
-        elif frame.type == core.G3FrameType.Timepoint:
-            if not self.sent_off:
+        else:
+            if not self.sent_off and self.wiring_map != None:
                 self.sent_off = True
                 if self.bolo_props != None:
                     return
@@ -138,7 +138,7 @@ class BirdConfigGenerator(object):
             self.is_written = True
             config_dic = generate_dfmux_lyrebird_config(
                 self.l_fn,
-            self.wiring_map, self.bolo_props, 
+                self.wiring_map, self.bolo_props, 
                 hostname = self.hostname,
                 hk_hostname = self.hk_hostname,
                 port = self.port,
@@ -414,20 +414,25 @@ if __name__=='__main__':
 
     pipe = core.G3Pipeline()
     pipe.Add(networkstreamer.G3NetworkReceiver, hostname = args.hostname, port = args.hk_port)
+
     pipe.Add(BoloPropertiesFaker)
+
     pipe.Add(BirdConfigGenerator, 
              lyrebird_output_file = args.lyrebird_output_file, 
-             hostname = args.hostname, hk_hostname = 'localhost', 
-             port = args.port, hk_port = args.hk_port)
+             hostname = args.hostname, 
+             hk_hostname = '127.0.0.1',
+             port = args.port, 
+             hk_port = args.hk_port)
+
     pipe.Add(networkstreamer.G3NetworkSender,
-             port = 8675,
+             port = args.hk_port,
              maxsize = 10,
              max_connections = 1
           )
-
+    pipe.Add(SquidDisplay)
     try:
-        pipe.Add(SquidDisplay)
         pipe.Run()
+
 
     finally:
         curses.curs_set(1)
