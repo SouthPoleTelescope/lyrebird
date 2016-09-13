@@ -212,7 +212,6 @@ inline void pp_func_atan(PPStack<float> * pp_val_stack, float * val, int offset)
   push(pp_val_stack, atan2f(v0, v1));
 }
 
-
 inline void pp_func_sub(PPStack<float> * pp_val_stack, float * val, int offset){
   float v0 = pop(pp_val_stack);
   float v1 = pop(pp_val_stack);
@@ -228,6 +227,14 @@ inline void pp_func_div(PPStack<float> * pp_val_stack, float * val, int offset){
   float v1 = pop(pp_val_stack);
   push(pp_val_stack, v0/v1);
 }
+
+inline void pp_func_fmod(PPStack<float> * pp_val_stack, float * val, int offset){
+  float v0 = pop(pp_val_stack);
+  float v1 = pop(pp_val_stack);
+  push(pp_val_stack, fmod(v0, v1));
+}
+
+
 inline void pp_func_exp(PPStack<float> * pp_val_stack, float * val, int offset){
   float v0 = pop(pp_val_stack);
   float v1 = pop(pp_val_stack);
@@ -297,6 +304,9 @@ pp_func get_pp_func(char id){
   case '/':
     return pp_func_div;
     break;
+  case '%':
+    return pp_func_fmod;
+    break;
   case 'a':
     return pp_func_abs;
     break;
@@ -355,6 +365,9 @@ int get_pp_func_len(char id){
   case '/':
     return 1;
     break;
+  case '%':
+    return 1;
+    break;
   case 'a':
     return 0;
     break;
@@ -394,9 +407,9 @@ int is_pp_func(char id){
 	   (id == 't') || (id == 'r') ||
 	   (id == '&') || (id == '|') ||
 	   (id == '!') || (id == 'T') ||
-	   (id == 'q') || (id == '=')
-
-	   );
+	   (id == 'q') || (id == '=') ||
+	   (id == '%')
+	  );
 }
 
 //////////////////////////////////////
