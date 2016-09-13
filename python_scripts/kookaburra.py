@@ -413,9 +413,9 @@ class SquidDisplay(object):
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('hostname')
-    parser.add_argument('port',type=int)
-    parser.add_argument('hk_port',type=int)
-    parser.add_argument('lyrebird_output_file')
+    parser.add_argument('--port',type=int, default=8675)
+    parser.add_argument('--hk_port',type=int, default=8676)
+    parser.add_argument('--lyrebird_output_file', default = 'lyrebird_config_file.json')
 
     args = parser.parse_args()
     #core.set_log_level(core.G3LogLevel.LOG_DEBUG)
