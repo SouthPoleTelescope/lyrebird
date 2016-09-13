@@ -33,6 +33,7 @@ struct equation_desc{
 	std::string label;
 	std::string display_label;
 	std::string sample_rate_id;
+	bool display_in_info_bar;
 };
 typedef struct equation_desc equation_desc;
 
@@ -52,6 +53,8 @@ public:
 	float * get_value_address();
 
 	float get_sample_rate();
+
+	bool display_in_info_bar() const {return display_in_info_bar_;}
 private:
 	const Equation& operator=( const Equation& );
 	
@@ -71,4 +74,6 @@ private:
 	float cached_value;
 
 	int sample_rate_index;
+	
+	bool display_in_info_bar_;
 };

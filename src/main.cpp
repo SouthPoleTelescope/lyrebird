@@ -191,7 +191,7 @@ int main(int argc, char * args[])
 {
   GetRootLogger()->SetLogLevel(L3LOG_DEBUG);
 
-  int dv_buffer_size = 2048;
+  int dv_buffer_size = 512;
 
   if (argc != 2){
     cout<<"Config file needs to be supplied and only that."<<endl;
@@ -236,6 +236,7 @@ int main(int argc, char * args[])
 		    command_lst, command_label,
 		    win_x_size, win_y_size, sub_sampling, 
 		    num_layers, max_framerate, max_num_plotted,
+		    dv_buffer_size,
 		    displayed_eq_labels
 		    );
   log_debug("done parse_config_file");

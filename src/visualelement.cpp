@@ -187,8 +187,10 @@ void VisElem::get_all_info(std::vector<string> & ai_labels, std::vector<string> 
   ai_eq_addrs = std::vector<float*>(equation_inds_.size(), NULL);
   for (size_t i=0; i < equation_inds_.size(); i++){
     Equation & cur_eq = equation_map_->get_eq(equation_inds_[i]);
-    ai_eq_labels[i] = cur_eq.get_display_label();
-    ai_eq_addrs[i] = cur_eq.get_value_address();
+    if (cur_eq.display_in_info_bar()) {
+	    ai_eq_labels[i] = cur_eq.get_display_label();
+	    ai_eq_addrs[i] = cur_eq.get_value_address();
+    }
   }
 }
 

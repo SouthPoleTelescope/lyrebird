@@ -17,6 +17,8 @@
 #include <deque>
 
 
+#include <core/G3Units.h>
+
 std::string get_physical_id(int board_serial, int crate_serial, int board_slot,
                             int module = 0, int channel = 0) {
 	std::stringstream ss;
@@ -225,8 +227,8 @@ void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
 				//log_debug("chans");
 				auto chan_info = mod_info.channels.at(c+1);
 				dvs_->update_val(hk_path_inds_[i], chan_info.carrier_amplitude);i++;
-				dvs_->update_val(hk_path_inds_[i], chan_info.carrier_frequency);i++;
-				dvs_->update_val(hk_path_inds_[i], chan_info.demod_frequency);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.carrier_frequency / G3Units::Hz);i++;
+				dvs_->update_val(hk_path_inds_[i], chan_info.demod_frequency / G3Units::Hz);i++;
 
 
 				dvs_->update_val(hk_path_inds_[i], chan_info.dan_accumulator_enable ?1:0);i++;

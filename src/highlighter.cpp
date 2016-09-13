@@ -204,10 +204,10 @@ void Highlighter::fill_info_bar(){
 
 
       for (size_t i=0; i < ai_eq_labels.size(); i++){
-	std::string eq_name = ai_labels[0] + ai_eq_labels[i];
-	std::string atb_opts = group_label + std::string(" label='") + ai_eq_labels[i] + std::string("' ");
-	TwAddVarRO(info_bar_, eq_name.c_str(), TW_TYPE_FLOAT,
-		   ai_eq_addrs[i],atb_opts.c_str());
+	      std::string eq_name = ai_labels[0] + ai_eq_labels[i];
+	      std::string atb_opts = group_label + std::string(" label='") + ai_eq_labels[i] + std::string("' ");
+	      TwAddVarRO(info_bar_, eq_name.c_str(), TW_TYPE_FLOAT,
+			 ai_eq_addrs[i],atb_opts.c_str());
       }
     }
   }

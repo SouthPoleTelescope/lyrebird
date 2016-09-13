@@ -82,7 +82,7 @@ def load_squid_info_from_hk( screen, y, x,
     temp_good = False 
     volt_good = False 
     bolometer_good = False
-    bolo_label = 'NoData'
+    full_label = 'NoData'
 
 
     board_id, mezz_num, module_num = sq_phys_id_to_info(sq_dev_id)
@@ -92,33 +92,76 @@ def load_squid_info_from_hk( screen, y, x,
     #code for loading hk info for display
     if hk_map != None and board_serial in hk_map:
         board_info = hk_map[board_serial]
-
-        #raise RuntimeError(str(hk_map[board_serial].mezz.keys()))
+        mezz_info = hk_map[board_serial].mezz[mezz_num]
         module_info = hk_map[board_serial].mezz[mezz_num].modules[module_num]
 
         carrier_good = not module_info.carrier_railed
         nuller_good = not module_info.nuller_railed
         demod_good = not module_info.demod_railed
 
-        #need to add temperature and voltage info
-        temp_good = False
-        volt_good = False
-        #need to add bolometer info
+        def dic_range_check(dr, dv):
+            for k in dv.keys():
+                assert(k in dr)
+                rng = dr[k]
+                v = dv[k]
+                if v < rng[0] or v > rng[1]:
+                    return False
+            return True
+
+        voltage_range = {'MOTHERBOARD_RAIL_VCC5V5': (5,6),
+                         'MOTHERBOARD_RAIL_VADJ': (2,3),
+                         'MOTHERBOARD_RAIL_VCC3V3': (3,3.6),
+                         'MOTHERBOARD_RAIL_VCC1V0': (0.8, 1.2),
+                         'MOTHERBOARD_RAIL_VCC1V2': (1, 1.5), 
+                         'MOTHERBOARD_RAIL_VCC12V0': (11, 13), 
+                         'MOTHERBOARD_RAIL_VCC1V8': (1.6, 2), 
+                         'MOTHERBOARD_RAIL_VCC1V5': (1.3, 1.7), 
+                         'MOTHERBOARD_RAIL_VCC1V0_GTX': (0.7, 1.3)}
+
+        temp_range = {'MOTHERBOARD_TEMPERATURE_FPGA': (0,80), 
+                      'MOTHERBOARD_TEMPERATURE_POWER': (0,80),
+                      'MOTHERBOARD_TEMPERATURE_ARM': (0,80),
+                      'MOTHERBOARD_TEMPERATURE_PHY': (0,80)}
+        
+        #mezz voltages
+        mezz_voltage_range = {'MEZZANINE_RAIL_VCC12V0': (11,13), 
+                               'MEZZANINE_RAIL_VADJ': (2,3), 
+                               'MEZZANINE_RAIL_VCC3V3': (3,4) }
+
+        temp_good = dic_range_check( temp_range, board_info.temperatures)
+
+        volt_good = ( dic_range_check( voltage_range, board_info.voltages) or
+                      dic_range_check( mezz_voltage_range, mezz_info.voltages)
+                  )
+
         bolometer_good = True
         bolo_label = ''
+        n_bad_bolo = 0
+
+        #check for carrier demod same frequency
+        #check if dan is on
+        #squid routing
+        #squid feedback
+        #fir 
+        #timestamp port
+        #serial
+
+        #valid routing types of the module
+
         for b in module_info.channels.keys():
             chinfo = module_info.channels[b]
             if (chinfo.dan_railed):
+                n_bad_bolo += 1
                 bolometer_good = False
-                bolo_label = '%d Railed'%b
+                bolo_label = 'Railed'
+        full_label = "%d:%s"%(n_bad_bolo, bolo_label)
 
     add_squid_info(screen, y, x, 
                    sq_label, sq_label_size,
                    carrier_good, nuller_good, demod_good,
                    temp_good, volt_good,
                    max_size,
-                   bolometer_good, bolo_label)
-
+                   bolometer_good, full_label)
 
 class SquidDisplay(object):
     def __init__(self, squids_list, 
@@ -162,9 +205,10 @@ class SquidDisplay(object):
         
         self.screen = self.stdscr.subwin(0, self.screen_size_x, 0, 0)
 
-        curses.init_pair(1, curses.COLOR_RED,   curses.COLOR_WHITE)
-        curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
-        curses.init_pair(3, curses.COLOR_BLUE,  curses.COLOR_BLACK)
+        curses.init_pair(1, curses.COLOR_RED,     curses.COLOR_WHITE)
+        curses.init_pair(2, curses.COLOR_GREEN,   curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_BLUE,    curses.COLOR_BLACK)
+        curses.init_pair(4, curses.COLOR_YELLOW,  curses.COLOR_BLACK)
 
 
         self.stdscr.clear()

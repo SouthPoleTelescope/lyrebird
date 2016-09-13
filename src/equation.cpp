@@ -571,6 +571,7 @@ float evaluate_tokenized_equation_or_die(PPStack<PPToken> * token_stack){
 
 Equation::Equation(){
   is_set = false;
+  display_in_info_bar_ = true;
 }
 
 
@@ -587,6 +588,7 @@ void Equation::set_equation(DataVals * dvs,
   label_ = desc.label;
   display_label_ = desc.display_label;
   sample_rate_index = data_vals->get_ind(desc.sample_rate_id);
+  display_in_info_bar_ = desc.display_in_info_bar;
 }
 
 

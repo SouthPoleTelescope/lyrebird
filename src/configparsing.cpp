@@ -20,6 +20,7 @@ equation_desc parse_equation_desc(Json::Value & eqjson){
 	desc.label = eqjson["label"].asString();
 	desc.display_label = eqjson["display_label"].asString();
 	desc.sample_rate_id = eqjson["sample_rate_id"].asString();
+	desc.display_in_info_bar = eqjson["display_in_info_bar"].asBool();
 	return desc;
 }
 
@@ -62,6 +63,7 @@ void parse_config_file(string in_file,
 		       int & num_layers,
 		       int & max_framerate,
 		       int & max_num_plotted,
+		       int & dv_buffer_size,
 
 		       std::vector<std::string> & displayed_eq_labels
 
@@ -83,6 +85,8 @@ void parse_config_file(string in_file,
   win_y_size = 480;
   sub_sampling = 2;
   max_framerate = -1;
+
+  dv_buffer_size = 128;
 
   num_layers = 1;
 
@@ -118,6 +122,16 @@ void parse_config_file(string in_file,
 	max_framerate = v["max_framerate"].asInt();
       }else {
 	log_fatal("general_settings/max_framerate supplied but is not integer");
+      }
+    }      
+
+
+
+    if (v.isMember("dv_buffer_size")){
+      if (v["dv_buffer_size"].isInt()){
+	dv_buffer_size = v["dv_buffer_size"].asInt();
+      }else {
+	log_fatal("general_settings/dv_buffer_size supplied but is not integer");
       }
     }      
 

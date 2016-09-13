@@ -48,7 +48,8 @@ def get_board_vals():
     return ['fir_stage']
 
 def get_module_vals():
-    return ['carrier_railed', 'nuller_railed', 'demod_railed', 'squid_flux_bias',
+    return ['carrier_gain', 'nuller_gain',
+            'carrier_railed', 'nuller_railed', 'demod_railed', 'squid_flux_bias',
             'squid_current_bias', 'squid_stage1_offset', 'squid_feedback',
             'routing_type']
 
@@ -173,14 +174,18 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                                             "rainbow_cmap",
                                             '%s:phase'%(cid)+'_eq',
                                             "Channel Phase",
-                                            '%s/I:dfmux_samples'%(cid)))
+                                            '%s/I:dfmux_samples'%(cid),
+                                            display_in_info_bar = False,
+                                        ))
 
         CC.addGlobalEquation(config_dic, 
                              CC.getEquation('/ * %s:carrier_frequency = %s:carrier_frequency %s:demod_frequency %f'%(cid, cid, cid, max_freq), 
                                             "rainbow_cmap",
                                             '%s:freq'%(cid)+'_eq',
                                             "Frequency Settings",
-                                            '%s:carrier_frequency'%(cid)))
+                                            '%s:carrier_frequency'%(cid),
+                                            display_in_info_bar = False,
+                                        ))
         
         CC.addVisElem(config_dic, 
                       x_cen=bp.x_offset,   y_cen=bp.y_offset,

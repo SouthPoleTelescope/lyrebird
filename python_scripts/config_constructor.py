@@ -50,9 +50,11 @@ def addDataSource(config_dic, tag, ds_type, desc, update_time=1):
                                         'update_time':update_time,
                                         'desc':desc})
 
-def getEquation(eq_func, eq_color_map, eq_label, display_label, sample_rate_val):
+def getEquation(eq_func, eq_color_map, eq_label, display_label, sample_rate_val, display_in_info_bar = True):
     return {"function":eq_func,"cmap": eq_color_map, "label": eq_label, 
-            "display_label":display_label, "sample_rate_id":sample_rate_val}
+            "display_label":display_label, "sample_rate_id":sample_rate_val,
+            "display_in_info_bar":display_in_info_bar
+    }
 
 def addGlobalEquation(config_dic, equation):
     if not 'equations' in config_dic:
@@ -147,7 +149,7 @@ if __name__ == '__main__':
                     test_ds_lst.append("test_%d"%ds_id_num)
 
                     addGlobalEquation(config_dic, getEquation('/ + 1 c test_%d 2'%ds_id_num, cmap, "dummyEqLabel_test_%d"%ds_id_num, "TestSins", 'test_%d'%ds_id_num))
-                    addGlobalEquation(config_dic, getEquation('test_%d'%ds_id_num, cmap, "dummyLinearEq_test_%d"%ds_id_num, "TestLins", 'test_%d'%ds_id_num,))
+                    addGlobalEquation(config_dic, getEquation('test_%d'%ds_id_num, cmap, "dummyLinearEq_test_%d"%ds_id_num, "TestLins", 'test_%d'%ds_id_num, display_in_info_bar = False))
 
                     if f ==0:
                         svg_name = svg_folder + 'smallpol.svg'
