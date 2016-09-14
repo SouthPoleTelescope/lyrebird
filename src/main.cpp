@@ -258,18 +258,18 @@ int main(int argc, char * args[])
 
   log_debug("creating data_streamers");
   for (size_t i = 0; i < datastream_descs.size(); i++){
-    std::shared_ptr< DataStreamer> ds_tmp  = NULL;
-    ds_tmp = build_data_streamer(datastream_descs[i], &data_vals);
-    if (ds_tmp == NULL) print_and_exit("data streamer type not recognized");
-    data_streamers.push_back(ds_tmp);
+	  std::shared_ptr< DataStreamer> ds_tmp  = NULL;
+	  ds_tmp = build_data_streamer(datastream_descs[i], &data_vals);
+	  if (ds_tmp == NULL) print_and_exit("data streamer type not recognized");
+	  data_streamers.push_back(ds_tmp);
   }
   
   data_vals.initialize();
 
   for (size_t i=0; i < dataval_descs.size(); i++){
-    data_vals.add_data_val(dataval_descs[i].id,
-			   dataval_descs[i].init_val, 
-			   dataval_descs[i].is_buffered);
+	  data_vals.add_data_val(dataval_descs[i].id,
+				 dataval_descs[i].init_val, 
+				 dataval_descs[i].is_buffered);
   }
   global_data_vals = &data_vals;
   

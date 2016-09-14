@@ -13,37 +13,36 @@ using namespace std;
 
 
 DataVals::DataVals(int n_vals, int buffer_size){
-  //vals = new float[n_vals];
-  buffer_size_ = buffer_size;
-  buffer_size_full_ = buffer_size_ + 1;
-  array_size_ = n_vals;
+	//vals = new float[n_vals];
+	buffer_size_ = buffer_size;
+	buffer_size_full_ = buffer_size_ + 1;
+	array_size_ = n_vals;
 }
 
 
 
 void DataVals::initialize(){
-  ring_indices_ = new int[array_size_];
-  ring_buffers_ = new float[array_size_ * (buffer_size_full_)];
-  is_buffered_ = new int[array_size_];
-
-  n_vals_ = new int[array_size_];
-  start_times_ = new float[array_size_];
-
-  
-
-  n_current_ = 0;
-  for (int i=0; i < array_size_; i++){
-    //vals[i] = 0;
-    ring_buffers_[ i * buffer_size_full_] = 0;
-    ring_indices_[i] = -1;
-    is_buffered_[i] = 0;
-    n_vals_[i] = 0;
-    start_times_[i] = 0;
-    
-  }
-  //create read write lock
-  if( pthread_rwlock_init( &rwlock_, NULL)) log_fatal("rwlock_ init failed");
-  is_paused_ = false;
+	ring_indices_ = new int[array_size_];
+	ring_buffers_ = std::vector< std::vector<float> >( array_size_, std::vector<float> (1, 0));;//new float[array_size_ * (buffer_size_full_)];
+	
+	is_buffered_ = new int[array_size_];
+	
+	n_vals_ = new int[array_size_];
+	start_times_ = new float[array_size_];
+	
+	n_current_ = 0;
+	for (int i=0; i < array_size_; i++){
+		//vals[i] = 0;
+		ring_buffers_[ i ][0] = 0;
+		ring_indices_[i] = -1;
+		is_buffered_[i] = 0;
+		n_vals_[i] = 0;
+		start_times_[i] = 0;
+		
+	}
+	//create read write lock
+	if( pthread_rwlock_init( &rwlock_, NULL)) log_fatal("rwlock_ init failed");
+	is_paused_ = false;
 }
 
 
@@ -55,7 +54,6 @@ void DataVals::register_data_source(int n_vals){
 DataVals::~DataVals(){
   //delete [] vals;
   delete [] ring_indices_;
-  delete [] ring_buffers_;
   delete [] is_buffered_;
   delete [] n_vals_;
   delete [] start_times_;
@@ -77,14 +75,21 @@ bool DataVals::has_id(std::string id){
 
 
 int DataVals::add_data_val(std::string id, float val, int is_buffered){
-  if (n_current_ >= array_size_) log_fatal("Adding too many datavals.");
-  int index = n_current_;
-  if ( id_mapping_.find(id) != id_mapping_.end() ) log_fatal( "%s already in DataVals when adding", id.c_str() );
-  for (int j=0; j < buffer_size_full_; j++) ring_buffers_[j+index*buffer_size_full_] = val;
-  n_current_++;
-  id_mapping_[id] = index;
-  is_buffered_[index] = is_buffered;
-  return index;
+	if (n_current_ >= array_size_) 
+		log_fatal("Adding too many datavals.");
+
+	int index = n_current_;
+	if ( id_mapping_.find(id) != id_mapping_.end() ) {
+		log_fatal( "%s already in DataVals when adding", id.c_str() );
+	}
+	
+	if (is_buffered) {
+		ring_buffers_[index] = std::vector<float>(buffer_size_full_, val);
+	}
+	n_current_++;
+	id_mapping_[id] = index;
+	is_buffered_[index] = is_buffered;
+	return index;
 }
 
 
@@ -96,7 +101,7 @@ void DataVals::update_val(int index, float val){
   //grab read lock
   pthread_rwlock_rdlock (&rwlock_);
   //vals[index] = val;
-  ring_buffers_[buffer_size_full_ * index] = val;
+  ring_buffers_[index][0] = val;
 
   n_vals_[index] += 1;
   if (start_times_[index] == 0) start_times_[index] = glfwGetTime();
@@ -105,10 +110,10 @@ void DataVals::update_val(int index, float val){
 	  if (ring_indices_[index] < 0) {
 		  ring_indices_[index] = 0;
 		  for (int i=0; i < buffer_size_full_; i++){
-			  ring_buffers_[buffer_size_full_ * index + i] = val;
+			  ring_buffers_[index][i] = val;
 		  }
 	  }
-	  ring_buffers_[buffer_size_full_ * index +  ring_indices_[index] + 1] = val;
+	  ring_buffers_[index][ ring_indices_[index] + 1] = val;
 	  ring_indices_[index]++;
 	  ring_indices_[index] = ring_indices_[index] % buffer_size_;
   } 
@@ -125,10 +130,10 @@ double DataVals::get_sample_rate(int index) {
 
 
 float * DataVals::get_addr(int index){
-  if (index < 0 || index >= n_current_){
-    print_and_exit("attempting to get non existent index from DataVals");
-  }
-  return ring_buffers_ + buffer_size_full_ * index;
+	if (index < 0 || index >= n_current_){
+		print_and_exit("attempting to get non existent index from DataVals");
+	}
+	return &(ring_buffers_[index][0]);
 }
 
 

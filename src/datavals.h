@@ -63,7 +63,8 @@ class DataVals {
   
   int * is_buffered_;
   int * ring_indices_;
-  float * ring_buffers_;
+
+	std::vector<std::vector<float> > ring_buffers_;
 
 
   int * n_vals_;

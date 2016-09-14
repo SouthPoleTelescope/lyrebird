@@ -36,15 +36,15 @@ std::shared_ptr<DataStreamer> build_data_streamer(datastreamer_desc dd , DataVal
 DataStreamer::DataStreamer(std::string tag, 
 			   DataVals * dv, int us_update_time,
 			   int data_source_request_type  ){
-  s_tag = tag;
-  
-  should_live = false;
-  sleep_time = us_update_time;
-  
-  data_vals = dv;
-  
-  ds_req_type = data_source_request_type;
-  request_index = -1;
+	s_tag = tag;
+	
+	should_live = false;
+	sleep_time = us_update_time;
+	
+	data_vals = dv;
+	
+	ds_req_type = data_source_request_type;
+	request_index = -1;
 }
 
 
