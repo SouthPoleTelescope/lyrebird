@@ -45,6 +45,17 @@ glm::vec4 blue_cmap(float val){
 }
 
 
+glm::vec4 phase_cmap(float val){
+	// -pi to pi
+	val /= 3.14159265;
+	return glm::vec4(fabs(val), 
+			 0, 
+			 1.0f - fabs(val), 
+			 1.0);
+}
+
+
+
 glm::vec4 rainbow_cmap(float val){
   val = val > 1.0 ? 1.0 : val;
   val = val < 0.0 ? 0.0 : val;
@@ -136,6 +147,11 @@ color_map_t get_color_map(std::string n){
   else if (n=="blue_cmap"){
     return blue_cmap;
   }
+
+  else if (n=="phase_cmap"){
+    return phase_cmap;
+  }
+
   else if (n=="bolo_cyan_cmap"){
     return bolo_cyan_cmap;
   }
