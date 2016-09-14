@@ -182,7 +182,7 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
 
         CC.addGlobalEquation(config_dic, 
                              CC.getEquation('T %s/Q:dfmux_samples %s/I:dfmux_samples'%(cid, cid), 
-                                            "rainbow_cmap",
+                                            "phase_cmap",
                                             '%s:phase'%(cid)+'_eq',
                                             "Channel Phase",
                                             '%s/I:dfmux_samples'%(cid),

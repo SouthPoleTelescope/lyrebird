@@ -162,7 +162,6 @@ class BirdConfigGenerator(object):
         write_get_hk_script(self.get_hk_script_name, 
                             self.hostname)
 
-
 class IdSerialMapper(object):
     def __init__(self, wiring_map):
         self.mp = {}
@@ -191,10 +190,13 @@ def add_squid_info(screen, y, x,
                    carrier_good, nuller_good, demod_good,
                    temperature_good, 
                    voltage_good,
-                   max_size,
-                   bolometer_good, bolo_label = '',
+                   max_size, 
+                   bolometer_good, 
+                   fir_stage,
+                   #routing_good,
+                   feedback_on,
+                   bolo_label = '',
                    neutral_c = 3, good_c = 2, bad_c = 1):
-    assert( (7 + sq_label_size) < max_size)
     col_map = {True: curses.color_pair(good_c), 
                False: curses.color_pair(bad_c) }
     current_index = x
@@ -216,7 +218,13 @@ def add_squid_info(screen, y, x,
     screen.addstr(y, current_index, 'V', col_map[voltage_good])
     current_index += 1
 
-    screen.addstr(y, current_index, 'B', col_map[bolometer_good])
+    screen.addstr(y, current_index, '%d'%fir_stage, col_map[fir_stage == 6])
+    current_index += 1
+
+    #screen.addstr(y, current_index, 'R', col_map[routing_good])
+    #current_index += 1
+
+    screen.addstr(y, current_index, 'F', col_map[feedback_on])
     current_index += 1
 
     if (not bolometer_good):
@@ -235,6 +243,10 @@ def load_squid_info_from_hk( screen, y, x,
     volt_good = False 
     bolometer_good = False
     full_label = 'NoData'
+    fir_stage = 0
+    routing_good = False
+
+    feedback_on = False
 
 
     board_id, mezz_num, module_num = sq_phys_id_to_info(sq_dev_id)
@@ -245,6 +257,14 @@ def load_squid_info_from_hk( screen, y, x,
         board_info = hk_map[board_serial]
         mezz_info = hk_map[board_serial].mezz[mezz_num]
         module_info = hk_map[board_serial].mezz[mezz_num].modules[module_num]
+
+        
+        fir_stage = int(board_info.fir_stage)
+
+
+
+        routing_good = module_info.routing_type.lower() == 'routing_nul'
+        feedback_on = module_info.squid_feedback.lower() == 'squid_lowpass'
 
         carrier_good = not module_info.carrier_railed
         nuller_good = not module_info.nuller_railed
@@ -287,39 +307,49 @@ def load_squid_info_from_hk( screen, y, x,
 
         bolometer_good = True
         bolo_label = ''
-        n_bad_bolo = 0
 
 
-        '''
-        check for carrier demod same frequency
-
-        #check for carrier demod same frequency
-        #check if dan is on
-        #squid routing
-        #squid feedback
-        #fir 
-        #timestamp port
-        #serial
-
-        #valid routing types of the module
-        carrier
-        '''
-
-
+        n_railed = 0
+        n_diff_freq = 0
+        n_dan_off = 0
         for b in module_info.channels.keys():
             chinfo = module_info.channels[b]
             if (chinfo.dan_railed):
-                n_bad_bolo += 1
-                bolometer_good = False
-                bolo_label = 'Railed'
-        full_label = "%d:%s"%(n_bad_bolo, bolo_label)
+                n_railed += 1
+            elif (chinfo.carrier_frequency != chinfo.demod_frequency):
+                n_diff_freq += 1
+            elif ( (not (chinfo.dan_accumulator_enable and
+                         chinfo.dan_feedback_enable and
+                         chinfo.dan_streaming_enable ) )
+                   and (chinfo.carrier_frequency > 0) ):
+                n_dan_off += 1
+                      
+                
+        bolometer_good = not (n_railed or n_diff_freq or n_dan_off)
+        
+        if not bolometer_good:
+            if n_railed:
+                full_label = "DanRail:%s"%(n_railed)
+            elif n_diff_freq:
+                full_label = "CDDiffFreq:%s"%(n_diff_freq)
+            elif n_dan_off:
+                full_label = "DanOff:%s"%(n_dan_off)
+        else:
+            full_label = ''
+
+
 
     add_squid_info(screen, y, x, 
                    sq_label, sq_label_size,
                    carrier_good, nuller_good, demod_good,
                    temp_good, volt_good,
                    max_size,
-                   bolometer_good, full_label)
+                   bolometer_good, 
+                   fir_stage,
+                   #routing_good,
+                   feedback_on,
+                   bolo_label = full_label,
+    )
 
 def GetHousekeepingMessenger(frame, hostname):
     print 'gethk', frame.type
@@ -376,6 +406,7 @@ class SquidDisplay(object):
         curses.init_pair(2, curses.COLOR_GREEN,   curses.COLOR_BLACK)
         curses.init_pair(3, curses.COLOR_BLUE,    curses.COLOR_BLACK)
         curses.init_pair(4, curses.COLOR_YELLOW,  curses.COLOR_BLACK)
+        curses.init_pair(5, curses.COLOR_BLUE,  curses.COLOR_WHITE)
 
 
         self.stdscr.clear()
@@ -409,8 +440,7 @@ class SquidDisplay(object):
             self.screen.box()
 
             if hk_data != None:
-                add_timestamp_info(self.screen, 0,0, hk_data[hk_data.keys()[0]].timestamp,
-                                   3)
+                add_timestamp_info(self.screen, 0,0, hk_data[hk_data.keys()[0]].timestamp, 5)
 
             for i, s in enumerate(self.squids_list):
                 p = self.pos_map[s]
@@ -438,13 +468,19 @@ if __name__=='__main__':
     args = parser.parse_args()
     #core.set_log_level(core.G3LogLevel.LOG_DEBUG)
 
+    script_path = os.path.dirname(os.path.realpath(__file__))
+    script_path = script_path + '/../bin/'
+
+    lyrebird_output_file = script_path + args.lyrebird_output_file
+    get_hk_script = script_path + args.get_hk_script
+
     pipe = core.G3Pipeline()
     pipe.Add(networkstreamer.G3NetworkReceiver, hostname = args.hostname, port = args.hk_port)
     pipe.Add(BoloPropertiesFaker)
     pipe.Add(BirdConfigGenerator, 
-             lyrebird_output_file = args.lyrebird_output_file, 
+             lyrebird_output_file = lyrebird_output_file, 
              hostname = args.hostname, 
-             get_hk_script_name = args.get_hk_script,
+             get_hk_script_name = get_hk_script,
              hk_hostname = '127.0.0.1',
              port = args.port, 
              hk_port = args.local_hk_port)
@@ -458,12 +494,14 @@ if __name__=='__main__':
           )
 
     pipe.Add(SquidDisplay)
-    try:
-        pipe.Run()
-        
+    #try:
+    pipe.Run()
+    
+    '''
     finally:
         curses.curs_set(1)
         curses.echo()
         curses.nocbreak()
         curses.endwin()
         traceback.print_exc()  # Print the exception
+    '''

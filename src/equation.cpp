@@ -45,17 +45,6 @@ glm::vec4 blue_cmap(float val){
 }
 
 
-glm::vec4 phase_cmap(float val){
-	// -pi to pi
-	val /= 3.14159265;
-	return glm::vec4(fabs(val), 
-			 0, 
-			 1.0f - fabs(val), 
-			 1.0);
-}
-
-
-
 glm::vec4 rainbow_cmap(float val){
   val = val > 1.0 ? 1.0 : val;
   val = val < 0.0 ? 0.0 : val;
@@ -65,6 +54,15 @@ glm::vec4 rainbow_cmap(float val){
   hsv_col[2] = 1;
 return glm::vec4(glm::rgbColor(hsv_col),1.0);
 }
+
+
+
+glm::vec4 phase_cmap(float val){
+	// -pi to pi
+	return rainbow_cmap(fabsf(val) / 3.14159265);
+}
+
+
 
 
 
