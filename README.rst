@@ -77,3 +77,24 @@ Instead of:
 Testing
 -------
 
+cd to the bin directory.
+
+.. code:: bash
+
+ ./lyrebird configutils/test_config.json
+
+At this point trippy patterns should show up on screen.  Enjoy!
+
+
+
+Running With A Cryostat
+=======================
+
+Lyrebird needs to get the data from somewhere.  
+
+On your control computer you need to have an istance of spt3g_software/examples/data_relay.py running.  This is the server for the data that lyrebird needs.
+
+.. code:: bash
+ spt3g_software/examples/data_relay.py ${PATH_TO_PYDFMUX_HWM_YAML_FILE}
+
+

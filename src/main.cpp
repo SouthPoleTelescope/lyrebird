@@ -193,16 +193,21 @@ int main(int argc, char * args[])
 
   int dv_buffer_size = 512;
 
-  if (argc != 2){
-    cout<<"Config file needs to be supplied and only that."<<endl;
+  std::string config_file;
+  if (argc == 1) {
+	  config_file = "lyrebird_config_file.json";
+  }else if (argc == 2){
+	  config_file = args[1];
+  } else if (argc > 2){
+    cout<<"Too many arguments to lyrebird"<<endl;
     exit(1);
   }
 
-  if ( !file_exists(string(args[1]))){
-    cout<<"Config file: "<<args[1]<<" does not exist"<<endl;
+  if ( !file_exists( config_file )){
+    cout<<"Config file: "<< config_file <<" does not exist"<<endl;
     exit(1);
   }
-  cout<<"Using config file: "<<args[1]<<endl;
+  cout<<"Using config file: "<< config_file <<endl;
   
   //init config file variables
   int win_x_size;
@@ -230,7 +235,7 @@ int main(int argc, char * args[])
   std::vector<std::string> command_label;
 
   //parse the config file
-  parse_config_file(args[1], dataval_descs, datastream_descs, eq_descs, 
+  parse_config_file(config_file.c_str(), dataval_descs, datastream_descs, eq_descs, 
 		    vis_elems, svg_paths, svg_ids,
 		    displayed_global_equations, modifiable_data_vals,
 		    command_lst, command_label,
