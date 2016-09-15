@@ -132,7 +132,7 @@ if __name__ == '__main__':
     npol = 2
     nfre = 3
 
-    svg_folder = os.path.abspath('../svgs')+'/'
+    svg_folder = '../svgs/'
 
     test_ds_lst = []
     for p in range(npol):
