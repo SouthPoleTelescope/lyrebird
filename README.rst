@@ -119,7 +119,7 @@ To run kookaburra.py in the lyrebird/bin directory:
 
 .. code:: bash
 
-./kookaburra.py ${SERVER_RUNNING_DATA_RELAY_HOSTNAME}
+ ./kookaburra.py ${SERVER_RUNNING_DATA_RELAY_HOSTNAME}
 
 
 lyrebird
@@ -128,4 +128,25 @@ At this point just run lyrebird.  In the bin directory:
 
 .. code:: bash
 
-./lyrebird
+ ./lyrebird lyrebird_config_file.json
+
+- lyrebird gets the housekeeping information from kookaburra so that needs to be running.
+- kookaburra is used to write the lyrebird config file.  Because infinite speed computers/networks don't exist yet, kookaburra.py takes a little bit of time to make the config file which it will tell you about.
+
+General Note
+------------
+
+Because of latent parnoia about the act of collecting housekeeping injecting noise in the system, housekeeping collection isn't automatic with the data_relay.py script.  There is a button in lyrebird, but if you are just running kookaburra you will need to use a script to request housekeeping data.  A script to do this is generated when you run kookaburra.  It's called get_hk.sh
+
+
+
+FAQ
+---
+- Can you add X feature?
+  
+  - Probably not.  Adding things requires a lot of work.
+
+- Can you write another tool for displaying X/Y/Z information?
+ 
+  - No. You can do that and fuck you for asking.
+

@@ -168,6 +168,7 @@ class BirdConfigGenerator(object):
         )
         write_get_hk_script(self.get_hk_script_name, 
                             self.hostname)
+        print("Done writing config file")
 
 class IdSerialMapper(object):
     def __init__(self, wiring_map):
