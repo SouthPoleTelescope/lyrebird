@@ -89,14 +89,43 @@ At this point trippy patterns should show up on screen.  Enjoy!
 
 Running With Real Data
 ======================
+There are actually three processes that you need to spawn.  A server, kookaburra.py and lyrebird
+
+misc server <- kookaburra.py <- lyrebird
 
 
+Server Process
+--------------
 
 Lyrebird needs to get the data from somewhere.  The computer running lyrebird does *not* need to be the computer collecting the data.
 
 On your control computer you need to have an istance of spt3g_software/examples/data_relay.py running.  This is the server for the data that lyrebird needs.
 
 .. code:: bash
+
  spt3g_software/examples/data_relay.py ${PATH_TO_PYDFMUX_HWM_YAML_FILE}
 
 
+kookaburra.py
+-------------
+
+kookaburra.py does 3 things.  
+
+- Displays the state of the SQUIDs
+- Generates the lyrebird config file
+- Relays the housekeeping frames to lyrebird
+
+To run kookaburra.py in the lyrebird/bin directory:
+
+.. code:: bash
+
+./kookaburra.py ${SERVER_RUNNING_DATA_RELAY_HOSTNAME}
+
+
+lyrebird
+--------
+At this point just run lyrebird.  In the bin directory:
+
+.. code:: bash
+
+./lyrebird
