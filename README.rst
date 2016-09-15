@@ -87,10 +87,12 @@ At this point trippy patterns should show up on screen.  Enjoy!
 
 
 
-Running With A Cryostat
-=======================
+Running With Real Data
+======================
 
-Lyrebird needs to get the data from somewhere.  
+
+
+Lyrebird needs to get the data from somewhere.  The computer running lyrebird does *not* need to be the computer collecting the data.
 
 On your control computer you need to have an istance of spt3g_software/examples/data_relay.py running.  This is the server for the data that lyrebird needs.
 

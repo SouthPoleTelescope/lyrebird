@@ -5,8 +5,8 @@ import socket, curses, json, traceback, math, argparse, math, sys, os, stat
 from operator import itemgetter, attrgetter
 
 
-from dfmux_config_constructor import get_physical_id, sq_phys_id_to_info
-from dfmux_config_constructor import uniquifyList, generate_dfmux_lyrebird_config
+from configutils.dfmux_config_constructor import get_physical_id, sq_phys_id_to_info
+from configutils.dfmux_config_constructor import uniquifyList, generate_dfmux_lyrebird_config
 
 
 from spt3g import core, dfmux, networkstreamer
@@ -525,14 +525,11 @@ if __name__=='__main__':
           )
 
     pipe.Add(SquidDisplay)
-    #try:
-    pipe.Run()
-    
-    '''
+    try:
+        pipe.Run()
     finally:
         curses.curs_set(1)
         curses.echo()
         curses.nocbreak()
         curses.endwin()
         traceback.print_exc()  # Print the exception
-    '''
