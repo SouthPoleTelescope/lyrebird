@@ -34,9 +34,4 @@ target_link_libraries(lyrebird lyrebirdvis AntTweakBar
   ${GLFW_LIBRARY} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${GLEW_LIBRARY} ${X11_LIBRARIES}
   ${FFTW_LIBRARIES} ${SPT3G_LIBRARIES} )
 
-add_executable(testsocket sockettest.cpp)
-target_link_libraries(testsocket lyrebirdvis AntTweakBar
-  ${GLFW_LIBRARY} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${GLEW_LIBRARY} ${X11_LIBRARIES}
-  ${FFTW_LIBRARIES} ${SPT3G_LIBRARIES} )
-
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
