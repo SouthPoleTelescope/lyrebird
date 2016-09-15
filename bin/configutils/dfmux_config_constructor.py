@@ -228,7 +228,7 @@ def generate_dfmux_lyrebird_config(fn,
                                    hk_port = 8676):
     import os
     creepy_path = os.path.dirname(os.path.realpath(__file__))
-    svg_folder = os.path.abspath(creepy_path+'/../svgs/') + '/'
+    svg_folder = os.path.abspath(creepy_path+'/../../svgs/') + '/'
 
 
     cell_size = 100
