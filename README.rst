@@ -21,21 +21,25 @@ Program dependencies
 
 Library dependencies
 ---------------------
+Mainly it needs:
+
+- libfftw3
+- libpthread
+- libglfw3
+
+glfw3 has a bunch of dependencies on *nix.
 
 - libGL
 - libGLU
 - libGLEW
-- libfftw3
-- libpthread
 - libXi 
 - libXxf86vm
 - libXrandr
 - libX11
 - libXinerama 
 - libXcursor
-- libglfw3
 
-I know that's a lot so just type:
+I know that's a lot so if you are on a debian system just type:
 
 .. code:: bash
 
@@ -44,6 +48,9 @@ I know that's a lot so just type:
  sudo apt-get install libglew-dev
  sudo apt-get install libfftw3-dev
  sudo apt-get install libglfw3-dev
+
+
+If you are on a different system, just make certain that you have the big three installed.
 
 The code also depends on *spt3g_software*.  You will need an up-to-date version of that library.
 
