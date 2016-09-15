@@ -197,7 +197,7 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                                             '%s:carrier_frequency'%(cid),
                                             display_in_info_bar = False,
                                         ))
-        
+
         CC.addVisElem(config_dic, 
                       x_cen=bp.x_offset,   y_cen=bp.y_offset,
                       x_scale = scale_fac, y_scale=scale_fac, 
@@ -256,7 +256,10 @@ def generate_dfmux_lyrebird_config(fn,
     scale_fac =  special_separation / ( safety_factor * float(cell_size))
 
 
-    global_display_names = ['Rfrac', 'IQ Phase', 'Freq Settings', 'SQUID Be F*cked']
+    global_display_names = ['Rfrac', 
+                            'IQ Phase', 
+                            'Freq Settings', 
+                            'SQUID Be F*cked']
 
     #add the general settings
     config_dic = {}

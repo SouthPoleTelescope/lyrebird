@@ -182,7 +182,8 @@ class IdSerialMapper(object):
 ## Squid display portion ##
 ###########################
 def add_timestamp_info(screen, y, x, ts, col_index):
-    screen.addstr(y, x, ts.Description(), curses.color_pair(col_index))
+    s = ts.Description()
+    screen.addstr(y, x, s[:s.rfind('.')], curses.color_pair(col_index))
 
 #need screen geometry and squid list and squid mapping
 def add_squid_info(screen, y, x, 
@@ -197,6 +198,7 @@ def add_squid_info(screen, y, x,
                    feedback_on,
                    bolo_label = '',
                    neutral_c = 3, good_c = 2, bad_c = 1):
+
     col_map = {True: curses.color_pair(good_c), 
                False: curses.color_pair(bad_c) }
     current_index = x
@@ -365,10 +367,20 @@ class SquidDisplay(object):
         self.squids_per_col = squids_per_col
         self.squid_col_width = squid_col_width
         self.serial_mapper = None
+        self.str_id_lst = ["       Carrier",
+                           "       Nuller",
+                           "       Demod",
+                           "       Temp",
+                           "       Voltage",
+                           "    fir#",
+                           " squid Feedback"
+        ]
+        self.highlight_index = [7 for s in self.str_id_lst]
+        
 
     def init_squids(self, squids_list) :
+        self.n_squids = len(squids_list) + len(self.str_id_lst) + 1
         self.squids_list = squids_list
-        self.n_squids = len(squids_list)
 
         self.sq_label_size = max(map(len, squids_list)) + 3        
         ncols = int(math.ceil(float(self.n_squids)/self.squids_per_col))
@@ -379,7 +391,8 @@ class SquidDisplay(object):
         self.pos_map = {}
         #assign an x, y location to each squid
 
-        for i, sq in enumerate(sorted(squids_list, cmp = GU.str_cmp_with_numbers_sorted)):
+        for j, sq in enumerate(sorted(squids_list, cmp = GU.str_cmp_with_numbers_sorted)):
+            i = j + len(self.str_id_lst) + 1
             y =  i % self.squids_per_col + 1
             x = 1 + self.squid_col_width * ( i // self.squids_per_col)
             self.pos_map[sq] = (x,y)
@@ -437,10 +450,21 @@ class SquidDisplay(object):
                 hk_data = None
             self.stdscr.clear()
             self.screen.clear()
-            self.screen.box()
+            #self.screen.box()
 
+            #CNDTV6F
             if hk_data != None:
-                add_timestamp_info(self.screen, 0,0, hk_data[hk_data.keys()[0]].timestamp, 5)
+                add_timestamp_info(self.screen, 0,2, hk_data[hk_data.keys()[0]].timestamp, 5)
+                for i, s in enumerate(self.str_id_lst):
+                    offset = 4
+                    self.screen.addstr(i+1, offset, s, curses.color_pair(2))
+                    self.screen.addstr(i+1, offset + self.highlight_index[i], 
+                                       s[self.highlight_index[i]], curses.color_pair(3))
+                    
+                self.screen.hline(len(self.str_id_lst) + 1, 0, 
+                                  '-', self.squid_col_width)
+                self.screen.vline(0, self.squid_col_width-1, 
+                                  '|', len(self.str_id_lst)+1)
 
             for i, s in enumerate(self.squids_list):
                 p = self.pos_map[s]
