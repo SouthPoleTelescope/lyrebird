@@ -323,7 +323,7 @@ def load_squid_info_from_hk( screen, y, x,
             elif ( (not (chinfo.dan_accumulator_enable and
                          chinfo.dan_feedback_enable and
                          chinfo.dan_streaming_enable ) )
-                   and (chinfo.carrier_frequency > 0) ):
+                   and (chinfo.carrier_frequency > 0  and chinfo.carrier_amplitude > 0) ):
                 n_dan_off += 1
                       
                 

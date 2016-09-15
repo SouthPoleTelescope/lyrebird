@@ -12,6 +12,7 @@
 using namespace std;
 
 
+
 DataVals::DataVals(int n_vals, int buffer_size){
 	//vals = new float[n_vals];
 	buffer_size_ = buffer_size;
@@ -41,6 +42,7 @@ void DataVals::initialize(){
 		
 	}
 	//create read write lock
+
 	if( pthread_rwlock_init( &rwlock_, NULL)) log_fatal("rwlock_ init failed");
 	is_paused_ = false;
 }

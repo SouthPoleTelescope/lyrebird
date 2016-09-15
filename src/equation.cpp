@@ -69,7 +69,7 @@ glm::vec4 phase_cmap(float val){
 glm::vec4 bolo_blue_cmap(float val){
 	glm::vec4 base_color(0.0,0.0,1.0,1.0);
 	glm::vec4 ret_vec;
-	const float white_cutoff = 0.97;
+	const float white_cutoff = 0.95;
 	const float low_cutoff = 0.3;
 	if (val < low_cutoff) ret_vec = glm::vec4(1.0,0.0,0.0,1.0);
 	else if (val >= 1.2) ret_vec = glm::vec4(1.0,0.5,0.0,1.0);
@@ -85,7 +85,7 @@ glm::vec4 bolo_blue_cmap(float val){
 glm::vec4 bolo_cyan_cmap(float val){
   glm::vec4 base_color(0.0,1.0,1.0,1.0);
   glm::vec4 ret_vec;
-  const float white_cutoff = 0.97;
+  const float white_cutoff = 0.95;
   const float low_cutoff = 0.3;
   if (val < low_cutoff) ret_vec = glm::vec4(1.0,0.0,0.0,1.0);
   else if (val >= 1.2) ret_vec = glm::vec4(1.0,0.5,0.0,1.0);
@@ -102,7 +102,7 @@ glm::vec4 bolo_cyan_cmap(float val){
 glm::vec4 bolo_purple_cmap(float val){
   glm::vec4 base_color(0.7,0.0,0.7,1.0);
   glm::vec4 ret_vec;
-  const float white_cutoff = 0.97;
+  const float white_cutoff = 0.95;
   const float low_cutoff = 0.3;
   if (val < low_cutoff) ret_vec = glm::vec4(1.0,0.0,0.0,1.0);
   else if (val >= 1.2) ret_vec = glm::vec4(1.0,0.5,0.0,1.0);
@@ -116,7 +116,7 @@ glm::vec4 bolo_purple_cmap(float val){
 glm::vec4 bolo_green_cmap(float val){
   glm::vec4 base_color(0.0,1.0,0.0,1.0);
   glm::vec4 ret_vec;
-  const float white_cutoff = 0.97;
+  const float white_cutoff = 0.95;
   const float low_cutoff = 0.3;
   if (val < low_cutoff) ret_vec = glm::vec4(1.0,0.0,0.0,1.0);
   else if (val >= 1.2) ret_vec = glm::vec4(1.0,0.5,0.0,1.0);
