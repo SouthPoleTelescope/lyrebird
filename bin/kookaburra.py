@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import numpy as np
 import socket, curses, json, traceback, math, argparse, math, sys, os, stat
 from operator import itemgetter, attrgetter
