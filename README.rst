@@ -155,5 +155,5 @@ FAQ
 
 - Can you write another tool for displaying X/Y/Z information?
  
-  - No. You can do that; and fuck you for asking.
+  - No. You can do that; and . you for asking.
 
