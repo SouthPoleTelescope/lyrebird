@@ -66,7 +66,7 @@ glm::vec4 bolo_cmap(float val, glm::vec4 base_color){
 	glm::vec4 ret_vec;
 	const float white_cutoff = 0.95;
 	const float low_cutoff = 0.3;
-	if (val == -1) {
+	if (val == 0 || ! isfinite(val)) {
 		return glm::vec4(0.8, 0.8, 0.8, 0.4);
 	}else if (val < low_cutoff) 
 		ret_vec = glm::vec4(1.0,0.0,0.0,1.0);

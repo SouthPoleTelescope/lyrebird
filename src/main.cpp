@@ -323,7 +323,7 @@ int main(int argc, char * args[])
   glfwSetScrollCallback(window, (GLFWscrollfun) EventScrollWheel);
 
 
-  glClearColor( 0.2,0.2,0.2,1.0);
+  glClearColor( 0.1,0.1,0.1,1.0);
 
   //create the renderer
   SimpleRen sren;

@@ -146,22 +146,6 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
             group = 'Misfit Toys'
             eq_cmap = 'bolo_cyan_cmap'
 
-        eqs_lst = ['%s:Rfractional'%(cid)+'_eq',
-                   '%s:phase'%(cid)+'_eq',
-                   '%s:freq'%(cid)+'_eq',
-                   '%s:SquidGood'%(mid)+'_eq',
-                   '%s/I:dfmux_samples_eq' % cid, 
-                   '%s/Q:dfmux_samples_eq' % cid ]
-
-
-        eqs_lst.append('%s:Resistance_eq'%cid)
-
-        for mvs in get_module_vals():
-            eqs_lst.append('%s:%s_eq' % (mid, mvs))
-        for cvs in get_channel_vals():
-            eqs_lst.append('%s:%s_eq' % (cid, cvs))
-        for bvs in get_board_vals():
-            eqs_lst.append('%s:%s_eq' % (bid, bvs))
 
         '''
         CC.addGlobalEquation(config_dic, 
@@ -171,10 +155,11 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                                             "Rfrac",
                                             '%s/I:dfmux_samples'%(cid)))
         '''
-
         CC.addGlobalEquation(config_dic, 
-                             CC.getEquation(('/ %s:res_conversion_factor * %s:rnormal q + * %s/I:dfmux_samples %s/I:dfmux_samples * %s/Q:dfmux_samples %s/Q:dfmux_samples' % 
-                                             (cid, cid, cid, cid, cid, cid)), 
+                             CC.getEquation((
+                                 '* ! = %s:carrier_amplitude 0 ' +
+                                 '/ %s:res_conversion_factor * %s:rnormal q + * %s/I:dfmux_samples %s/I:dfmux_samples * %s/Q:dfmux_samples %s/Q:dfmux_samples') % 
+                                             ((cid, )*7),
                                             eq_cmap,
                                             '%s:Rfractional'%(cid)+'_eq',
                                             "Rfrac",
@@ -183,12 +168,11 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
 
         CC.addGlobalEquation(config_dic, 
                              CC.getEquation(('/ %s:res_conversion_factor q + * %s/I:dfmux_samples %s/I:dfmux_samples * %s/Q:dfmux_samples %s/Q:dfmux_samples' % 
-                                             (cid, cid, cid, cid, cid, cid)), 
+                                             (cid, cid, cid, cid, cid)), 
                                             eq_cmap,
                                             '%s:Resistance'%(cid)+'_eq',
                                             "Res",
                                             '%s/I:dfmux_samples'%(cid)))
-
         CC.addGlobalEquation(config_dic, 
                              CC.getEquation('T %s/Q:dfmux_samples %s/I:dfmux_samples'%(cid, cid), 
                                             "phase_cmap",
@@ -206,6 +190,27 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                                             '%s:carrier_frequency'%(cid),
                                             display_in_info_bar = False,
                                         ))
+
+
+        eqs_lst = ['%s:Rfractional'%(cid)+'_eq',
+                   '%s:phase'%(cid)+'_eq',
+                   '%s:freq'%(cid)+'_eq',
+                   '%s:SquidGood'%(mid)+'_eq',
+                   '%s/I:dfmux_samples_eq' % cid, 
+                   '%s/Q:dfmux_samples_eq' % cid,
+                   '%s:Resistance_eq' % cid ]
+
+
+        #eqs_lst.append('%s:Resistance_eq'%cid)
+
+        for mvs in get_module_vals():
+            eqs_lst.append('%s:%s_eq' % (mid, mvs))
+        for cvs in get_channel_vals():
+            eqs_lst.append('%s:%s_eq' % (cid, cvs))
+        for bvs in get_board_vals():
+            eqs_lst.append('%s:%s_eq' % (bid, bvs))
+
+
 
         CC.addVisElem(config_dic, 
                       x_cen=bp.x_offset,   y_cen=bp.y_offset,

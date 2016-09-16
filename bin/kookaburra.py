@@ -529,12 +529,14 @@ if __name__=='__main__':
 
     pipe.Add(SquidDisplay)
 
-
     try:
         pipe.Run()
     finally:
-        curses.curs_set(1)
-        curses.echo()
-        curses.nocbreak()
-        curses.endwin()
         traceback.print_exc()  # Print the exception
+        try:
+            curses.curs_set(1)
+            curses.echo()
+            curses.nocbreak()
+            curses.endwin()
+        except:
+            pass
