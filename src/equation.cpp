@@ -62,69 +62,47 @@ glm::vec4 phase_cmap(float val){
 	return rainbow_cmap(fabsf(val) / 3.14159265);
 }
 
-
-
-
-
-glm::vec4 bolo_blue_cmap(float val){
-	glm::vec4 base_color(0.0,0.0,1.0,1.0);
+glm::vec4 bolo_cmap(float val, glm::vec4 base_color){
 	glm::vec4 ret_vec;
 	const float white_cutoff = 0.95;
 	const float low_cutoff = 0.3;
-	if (val < low_cutoff) ret_vec = glm::vec4(1.0,0.0,0.0,1.0);
-	else if (val >= 1.2) ret_vec = glm::vec4(1.0,0.5,0.0,1.0);
-	else if (val > white_cutoff && val < 1.0) ret_vec =  glm::vec4(1.0,1.0,1.0,1.0)*(val-white_cutoff)/(1.01f-white_cutoff) + (1.0f - (val-white_cutoff)/(1.01f-white_cutoff)) * base_color;
-	else if (val >= 1.0) ret_vec =  glm::vec4(1.0,1.0,1.0,1.0);
-	else  ret_vec =(val-low_cutoff)/(1.0f-low_cutoff) *base_color;
+	if (val == -1) {
+		return glm::vec4(0.8, 0.8, 0.8, 0.4);
+	}else if (val < low_cutoff) 
+		ret_vec = glm::vec4(1.0,0.0,0.0,1.0);
+	else if (val >= 1.2) 
+		ret_vec = glm::vec4(1.0,0.5,0.0,1.0);
+	else if (val > white_cutoff && val < 1.0) 
+		ret_vec =  glm::vec4(1.0,1.0,1.0,1.0)*(val-white_cutoff)/(1.01f-white_cutoff) + 
+			   (1.0f - (val-white_cutoff)/(1.01f-white_cutoff)) * base_color;
+	else if (val >= 1.0) 
+		ret_vec =  glm::vec4(1.0,1.0,1.0,1.0);
+	else  
+		ret_vec =(val-low_cutoff)/(1.0f-low_cutoff) *base_color;
 	ret_vec.a = 1.0;
 	return ret_vec;
 }
 
 
 
-glm::vec4 bolo_cyan_cmap(float val){
-  glm::vec4 base_color(0.0,1.0,1.0,1.0);
-  glm::vec4 ret_vec;
-  const float white_cutoff = 0.95;
-  const float low_cutoff = 0.3;
-  if (val < low_cutoff) ret_vec = glm::vec4(1.0,0.0,0.0,1.0);
-  else if (val >= 1.2) ret_vec = glm::vec4(1.0,0.5,0.0,1.0);
-  else if (val > white_cutoff && val < 1.0) ret_vec =  glm::vec4(1.0,1.0,1.0,1.0)*(val-white_cutoff)/(1.01f-white_cutoff) + (1.0f - (val-white_cutoff)/(1.01f-white_cutoff)) * base_color;
-  else if (val >= 1.0) ret_vec =  glm::vec4(1.0,1.0,1.0,1.0);
-  else  ret_vec =(val-low_cutoff)/(1.0f-low_cutoff) *base_color;
-  ret_vec.a = 1.0;
-  return ret_vec;
+glm::vec4 bolo_blue_cmap(float val){
+	glm::vec4 base_color(0.0,0.0,1.0,1.0);
+	return bolo_cmap(val,  base_color );
 }
 
-
-
+glm::vec4 bolo_cyan_cmap(float val){
+	glm::vec4 base_color(0.0,1.0,1.0,1.0);
+	return bolo_cmap(val,  base_color );
+}
 
 glm::vec4 bolo_purple_cmap(float val){
-  glm::vec4 base_color(0.7,0.0,0.7,1.0);
-  glm::vec4 ret_vec;
-  const float white_cutoff = 0.95;
-  const float low_cutoff = 0.3;
-  if (val < low_cutoff) ret_vec = glm::vec4(1.0,0.0,0.0,1.0);
-  else if (val >= 1.2) ret_vec = glm::vec4(1.0,0.5,0.0,1.0);
-  else if (val > white_cutoff && val < 1.0) ret_vec =  glm::vec4(1.0,1.0,1.0,1.0)*(val-white_cutoff)/(1.01f-white_cutoff) + (1.0f - (val-white_cutoff)/(1.01f-white_cutoff)) * base_color;
-  else if (val >= 1.0) ret_vec =  glm::vec4(1.0,1.0,1.0,1.0);
-  else  ret_vec =(val-low_cutoff)/(1.0f-low_cutoff) *base_color;
-  ret_vec.a = 1.0;
-  return ret_vec;
+	glm::vec4 base_color(0.7,0.0,0.7,1.0);
+	return bolo_cmap(val,  base_color );
 }
 
 glm::vec4 bolo_green_cmap(float val){
-  glm::vec4 base_color(0.0,1.0,0.0,1.0);
-  glm::vec4 ret_vec;
-  const float white_cutoff = 0.95;
-  const float low_cutoff = 0.3;
-  if (val < low_cutoff) ret_vec = glm::vec4(1.0,0.0,0.0,1.0);
-  else if (val >= 1.2) ret_vec = glm::vec4(1.0,0.5,0.0,1.0);
-  else if (val > white_cutoff && val < 1.0) ret_vec =  glm::vec4(1.0,1.0,1.0,1.0)*(val-white_cutoff)/(1.01f-white_cutoff) + (1.0f - (val-white_cutoff)/(1.01f-white_cutoff)) * base_color;
-  else if (val >= 1.0) ret_vec =  glm::vec4(1.0,1.0,1.0,1.0);
-  else  ret_vec =(val-low_cutoff)/(1.0f-low_cutoff) *base_color;
-  ret_vec.a = 1.0;
-  return ret_vec;
+	glm::vec4 base_color(0.0,1.0,0.0,1.0);
+	return bolo_cmap(val,  base_color );
 }
 
 

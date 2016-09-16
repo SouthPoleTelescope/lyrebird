@@ -154,6 +154,8 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                    '%s/Q:dfmux_samples_eq' % cid ]
 
 
+        eqs_lst.append('%s:Resistance_eq'%cid)
+
         for mvs in get_module_vals():
             eqs_lst.append('%s:%s_eq' % (mid, mvs))
         for cvs in get_channel_vals():
@@ -179,6 +181,13 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                                             '%s/I:dfmux_samples'%(cid)))
 
 
+        CC.addGlobalEquation(config_dic, 
+                             CC.getEquation(('/ %s:res_conversion_factor q + * %s/I:dfmux_samples %s/I:dfmux_samples * %s/Q:dfmux_samples %s/Q:dfmux_samples' % 
+                                             (cid, cid, cid, cid, cid, cid)), 
+                                            eq_cmap,
+                                            '%s:Resistance'%(cid)+'_eq',
+                                            "Res",
+                                            '%s/I:dfmux_samples'%(cid)))
 
         CC.addGlobalEquation(config_dic, 
                              CC.getEquation('T %s/Q:dfmux_samples %s/I:dfmux_samples'%(cid, cid), 

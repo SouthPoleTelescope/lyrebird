@@ -407,12 +407,6 @@ class SquidDisplay(object):
 
         self.stdscr = curses.initscr()
 
-        y, x = self.stdscr.getmaxyx()
-        if y < self.screen_size_y:
-            raise RuntimeError("Your terminal window is not tall enough, extend to %d", self.screen_size_y)
-        if x < self.screen_size_x:
-            raise RuntimeError("Your terminal window is not wide enough, extend to %d", self.screen_size_x)
-        
         curses.start_color()
             
         # Turn off echoing of keys, and enter cbreak mode,
@@ -459,6 +453,12 @@ class SquidDisplay(object):
             self.stdscr.clear()
             self.screen.clear()
             #self.screen.box()
+
+            y, x = self.stdscr.getmaxyx()
+            if y < self.screen_size_y or x < self.screen_size_x:
+                self.screen.addstr(0,0, 'Make your terminal %d wide x %d tall', 
+                                   curses.color_pair(1))
+                return
 
             #CNDTV6F
             if hk_data != None:
