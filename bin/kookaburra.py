@@ -409,10 +409,10 @@ class SquidDisplay(object):
 
         y, x = self.stdscr.getmaxyx()
         if y < self.screen_size_y:
-            raise RuntimeError("screen is not tall enough, extend to %d", self.screen_size_y)
+            raise RuntimeError("Your terminal window is not tall enough, extend to %d", self.screen_size_y)
         if x < self.screen_size_x:
-            raise RuntimeError("screen is not wide enough, extend to %d", self.screen_size_x)
-
+            raise RuntimeError("Your terminal window is not wide enough, extend to %d", self.screen_size_x)
+        
         curses.start_color()
             
         # Turn off echoing of keys, and enter cbreak mode,
@@ -422,14 +422,14 @@ class SquidDisplay(object):
         curses.curs_set(0)
         
         self.screen = self.stdscr.subwin(0, self.screen_size_x, 0, 0)
-
+        
         curses.init_pair(1, curses.COLOR_RED,     curses.COLOR_WHITE)
         curses.init_pair(2, curses.COLOR_GREEN,   curses.COLOR_BLACK)
         curses.init_pair(3, curses.COLOR_BLUE,    curses.COLOR_BLACK)
         curses.init_pair(4, curses.COLOR_YELLOW,  curses.COLOR_BLACK)
-        curses.init_pair(5, curses.COLOR_BLUE,  curses.COLOR_WHITE)
-
-
+        curses.init_pair(5, curses.COLOR_BLUE,    curses.COLOR_WHITE)
+        
+        
         self.stdscr.clear()
         self.screen.clear()
         self.screen.refresh()
@@ -525,7 +525,11 @@ if __name__=='__main__':
              frame_decimation = {core.G3FrameType.Timepoint: 0}
           )
 
+
+
     pipe.Add(SquidDisplay)
+
+
     try:
         pipe.Run()
     finally:
