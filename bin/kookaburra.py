@@ -14,7 +14,7 @@ from spt3g.core import genericutils as GU
 from spt3g import core, dfmux, networkstreamer, auxdata
 
 
-
+import signal 
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -384,7 +384,26 @@ class SquidDisplay(object):
                            " squid Feedback"
         ]
         self.highlight_index = [7 for s in self.str_id_lst]
+
+        self.stdscr = curses.initscr()
         
+        curses.start_color()
+            
+        # Turn off echoing of keys, and enter cbreak mode,
+        # where no buffering is performed on keyboard input
+        curses.noecho()
+        curses.cbreak()
+        curses.curs_set(0)
+        
+        curses.init_pair(1, curses.COLOR_RED,     curses.COLOR_WHITE)
+        curses.init_pair(2, curses.COLOR_GREEN,   curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_BLUE,    curses.COLOR_BLACK)
+        curses.init_pair(4, curses.COLOR_YELLOW,  curses.COLOR_BLACK)
+        curses.init_pair(5, curses.COLOR_BLUE,    curses.COLOR_WHITE)
+        
+        self.stdscr.clear()
+
+        signal.signal(signal.SIGWINCH, self.resize)
 
     def init_squids(self, squids_list) :
         self.n_squids = len(squids_list) + len(self.str_id_lst) + 1
@@ -405,28 +424,9 @@ class SquidDisplay(object):
             x = 1 + self.squid_col_width * ( i // self.squids_per_col)
             self.pos_map[sq] = (x,y)
 
-        self.stdscr = curses.initscr()
-
-        curses.start_color()
-            
-        # Turn off echoing of keys, and enter cbreak mode,
-        # where no buffering is performed on keyboard input
-        curses.noecho()
-        curses.cbreak()
-        curses.curs_set(0)
-        
-        self.screen = self.stdscr.subwin(0, self.screen_size_x, 0, 0)
-        
-        curses.init_pair(1, curses.COLOR_RED,     curses.COLOR_WHITE)
-        curses.init_pair(2, curses.COLOR_GREEN,   curses.COLOR_BLACK)
-        curses.init_pair(3, curses.COLOR_BLUE,    curses.COLOR_BLACK)
-        curses.init_pair(4, curses.COLOR_YELLOW,  curses.COLOR_BLACK)
-        curses.init_pair(5, curses.COLOR_BLUE,    curses.COLOR_WHITE)
-        
-        
-        self.stdscr.clear()
-        self.screen.clear()
-        self.screen.refresh()
+    def resize(self, signum, frame):
+        y, x = self.stdscr.getmaxyx()
+        curses.resizeterm(y, x)
 
     def __call__(self, frame):
         if frame.type == core.G3FrameType.Wiring:
@@ -451,15 +451,19 @@ class SquidDisplay(object):
             else:
                 hk_data = None
             self.stdscr.clear()
+
+
+            self.screen = self.stdscr.subwin(0, self.screen_size_x, 0, 0)
             self.screen.clear()
-            #self.screen.box()
+
+
 
             y, x = self.stdscr.getmaxyx()
             if y < self.screen_size_y or x < self.screen_size_x:
-                self.screen.addstr(0,0, 'Make your terminal %d wide x %d tall', 
-                                   curses.color_pair(1))
-                return
+                self.screen.addstr(0,0, 'Terminal is too mall', curses.color_pair(1))
 
+
+            #self.screen.box()
             #CNDTV6F
             if hk_data != None:
                 add_timestamp_info(self.screen, 0,2, hk_data[hk_data.keys()[0]].timestamp, 5)
@@ -529,14 +533,12 @@ if __name__=='__main__':
 
     pipe.Add(SquidDisplay)
 
+
     try:
         pipe.Run()
     finally:
+        curses.curs_set(1)
+        curses.echo()
+        curses.nocbreak()
+        curses.endwin()
         traceback.print_exc()  # Print the exception
-        try:
-            curses.curs_set(1)
-            curses.echo()
-            curses.nocbreak()
-            curses.endwin()
-        except:
-            pass
