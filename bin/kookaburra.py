@@ -31,7 +31,6 @@ def write_get_hk_script(fn, hostname):
     script = '''#!/bin/bash
 nc %s 9989
 ''' % hostname
-    print fn
     f = open(fn, 'w')
     f.write(script)
     f.close()
@@ -362,9 +361,7 @@ def load_squid_info_from_hk( screen, y, x,
     )
 
 def GetHousekeepingMessenger(frame, hostname):
-    print 'gethk', frame.type
     if frame.type == core.G3FrameType.Wiring:
-        print 'should be getting hk'
         os.system( "nc %s 9989" % hostname )
 
 class SquidDisplay(object):
@@ -385,25 +382,7 @@ class SquidDisplay(object):
         ]
         self.highlight_index = [7 for s in self.str_id_lst]
 
-        self.stdscr = curses.initscr()
-        
-        curses.start_color()
-            
-        # Turn off echoing of keys, and enter cbreak mode,
-        # where no buffering is performed on keyboard input
-        curses.noecho()
-        curses.cbreak()
-        curses.curs_set(0)
-        
-        curses.init_pair(1, curses.COLOR_RED,     curses.COLOR_WHITE)
-        curses.init_pair(2, curses.COLOR_GREEN,   curses.COLOR_BLACK)
-        curses.init_pair(3, curses.COLOR_BLUE,    curses.COLOR_BLACK)
-        curses.init_pair(4, curses.COLOR_YELLOW,  curses.COLOR_BLACK)
-        curses.init_pair(5, curses.COLOR_BLUE,    curses.COLOR_WHITE)
-        
-        self.stdscr.clear()
 
-        signal.signal(signal.SIGWINCH, self.resize)
 
     def init_squids(self, squids_list) :
         self.n_squids = len(squids_list) + len(self.str_id_lst) + 1
@@ -424,9 +403,23 @@ class SquidDisplay(object):
             x = 1 + self.squid_col_width * ( i // self.squids_per_col)
             self.pos_map[sq] = (x,y)
 
-    def resize(self, signum, frame):
-        y, x = self.stdscr.getmaxyx()
-        curses.resizeterm(y, x)
+        self.stdscr = curses.initscr()
+        
+        curses.start_color()
+            
+        # Turn off echoing of keys, and enter cbreak mode,
+        # where no buffering is performed on keyboard input
+        curses.noecho()
+        curses.cbreak()
+        curses.curs_set(0)
+        
+        curses.init_pair(1, curses.COLOR_RED,     curses.COLOR_WHITE)
+        curses.init_pair(2, curses.COLOR_GREEN,   curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_BLUE,    curses.COLOR_BLACK)
+        curses.init_pair(4, curses.COLOR_YELLOW,  curses.COLOR_BLACK)
+        curses.init_pair(5, curses.COLOR_BLUE,    curses.COLOR_WHITE)
+        
+        self.stdscr.clear()
 
     def __call__(self, frame):
         if frame.type == core.G3FrameType.Wiring:
@@ -452,45 +445,46 @@ class SquidDisplay(object):
                 hk_data = None
             self.stdscr.clear()
 
-
-            self.screen = self.stdscr.subwin(0, self.screen_size_x, 0, 0)
-            self.screen.clear()
-
-
-
             y, x = self.stdscr.getmaxyx()
             if y < self.screen_size_y or x < self.screen_size_x:
-                self.screen.addstr(0,0, 'Terminal is too mall', curses.color_pair(1))
+                screen = self.stdscr.subwin(0, x, 0, 0)
+                screen.addstr(0,0, 'Terminal is too small %d %d'%(y,x), curses.color_pair(1))
+                screen.refresh()
+                return
+
+            screen = self.stdscr.subwin(0, self.screen_size_x, 0, 0)
+            screen.clear()
 
 
-            #self.screen.box()
+            #screen.box()
             #CNDTV6F
             if hk_data != None:
-                add_timestamp_info(self.screen, 0,2, hk_data[hk_data.keys()[0]].timestamp, 5)
+                add_timestamp_info(screen, 0,2, hk_data[hk_data.keys()[0]].timestamp, 5)
                 for i, s in enumerate(self.str_id_lst):
                     offset = 4
-                    self.screen.addstr(i+1, offset, s, curses.color_pair(2))
-                    self.screen.addstr(i+1, offset + self.highlight_index[i], 
+                    screen.addstr(i+1, offset, s, curses.color_pair(2))
+                    screen.addstr(i+1, offset + self.highlight_index[i], 
                                        s[self.highlight_index[i]], curses.color_pair(3))
                     
-                self.screen.hline(len(self.str_id_lst) + 1, 0, 
+                screen.hline(len(self.str_id_lst) + 1, 0, 
                                   '-', self.squid_col_width)
-                self.screen.vline(0, self.squid_col_width-1, 
+                screen.vline(0, self.squid_col_width-1, 
                                   '|', len(self.str_id_lst)+1)
 
             for i, s in enumerate(self.squids_list):
                 p = self.pos_map[s]
-                load_squid_info_from_hk( self.screen, p[1], p[0], 
+                load_squid_info_from_hk( screen, p[1], p[0], 
                                          hk_data,
                                          s, s, self.sq_label_size, 
                                          self.squid_col_width, self.serial_mapper)
-            self.screen.refresh()
+            screen.refresh()
         elif frame.type == core.G3FrameType.EndProcessing:
             if self.squids_list != None:
                 self.stdscr.keypad(0)
                 curses.echo()
                 curses.nocbreak()
                 curses.endwin() 
+
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser()
@@ -512,6 +506,7 @@ if __name__=='__main__':
 
     pipe = core.G3Pipeline()
     pipe.Add(networkstreamer.G3NetworkReceiver, hostname = args.hostname, port = args.hk_port)
+
     pipe.Add(BoloPropertiesFaker)
     pipe.Add(BirdConfigGenerator, 
              lyrebird_output_file = lyrebird_output_file, 
@@ -525,20 +520,16 @@ if __name__=='__main__':
     pipe.Add(networkstreamer.G3NetworkSender,
              port = args.local_hk_port,
              maxsize = 10,
-             max_connections = 10,
+             max_connections = 0,
              frame_decimation = {core.G3FrameType.Timepoint: 0}
           )
 
-
-
     pipe.Add(SquidDisplay)
-
-
     try:
         pipe.Run()
     finally:
+        traceback.print_exc()  # Print the exception
         curses.curs_set(1)
         curses.echo()
         curses.nocbreak()
         curses.endwin()
-        traceback.print_exc()  # Print the exception
