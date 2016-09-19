@@ -15,41 +15,41 @@ template <class T> struct PPStack;
 struct PPToken;
 
 class DataVals {
- public:
-  DataVals(int n_vals, int buffer_size);
-  ~DataVals();
-
-
-  void initialize();
-  void register_data_source(int n_vals);
-
-  //get the index of a variable with name id
-  // if not found returns -1
-  int get_ind(std::string id); 
-
-  bool has_id(std::string id); 
-
-  //adds a data val.  Exits if you have too many
-  int add_data_val(std::string id, float val, int is_buffered); 
-
-  //returns null if not found
-  float * get_addr(int index); 
-
-  //update index with val
-  void update_val(int index, float val);
-  
-  //return a buffer of values for data val at index
-  std::vector<float> get_buffer_vals(int index);  
-  
-  void apply_bulk_func(PPStack<PPToken> * pp_stack, float * vals);  
-  
-  void toggle_pause();
-  
-  int get_buffer_size();
-  int is_buffered(int index);
-
+public:
+	DataVals(int n_vals, int buffer_size);
+	~DataVals();
+	
+	
+	void initialize();
+	void register_data_source(int n_vals);
+	
+	//get the index of a variable with name id
+	// if not found returns -1
+	int get_ind(std::string id); 
+	
+	bool has_id(std::string id); 
+	
+	//adds a data val.  Exits if you have too many
+	int add_data_val(std::string id, float val, int is_buffered); 
+	
+	//returns null if not found
+	float * get_addr(int index); 
+	
+	//update index with val
+	void update_val(int index, float val);
+	
+	//return a buffer of values for data val at index
+	std::vector<float> get_buffer_vals(int index);  
+	
+	void apply_bulk_func(PPStack<PPToken> * pp_stack, float * vals);  
+	
+	void toggle_pause();
+	
+	int get_buffer_size();
+	int is_buffered(int index);
+	
 	double get_sample_rate(int index);
-
+	int get_n_vals() {return array_size_;}
   
  private:
   DataVals(const DataVals&); //prevent copy construction      

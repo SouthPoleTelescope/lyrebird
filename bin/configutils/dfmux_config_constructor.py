@@ -288,7 +288,7 @@ def generate_dfmux_lyrebird_config(fn,
                    )
     
     addDfmuxStreamer(config_dic, "dfmux_streamer", board_ids, 
-                     sender_hostname = hostname,
+                     sender_hostname = hk_hostname,
                      sender_port = port,
                      hk_hostname = hk_hostname,
                      hk_port = hk_port  )

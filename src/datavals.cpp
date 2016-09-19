@@ -101,14 +101,15 @@ void DataVals::update_val(int index, float val){
   if (index < 0) return;
 
   //grab read lock
-  pthread_rwlock_rdlock (&rwlock_);
   //vals[index] = val;
   ring_buffers_[index][0] = val;
 
   n_vals_[index] += 1;
-  if (start_times_[index] == 0) start_times_[index] = glfwGetTime();
+  if (start_times_[index] == 0) 
+	  start_times_[index] = glfwGetTime();
 
   if (is_buffered_[index]){
+	  pthread_rwlock_rdlock (&rwlock_);
 	  if (ring_indices_[index] < 0) {
 		  ring_indices_[index] = 0;
 		  for (int i=0; i < buffer_size_full_; i++){
@@ -118,8 +119,8 @@ void DataVals::update_val(int index, float val){
 	  ring_buffers_[index][ ring_indices_[index] + 1] = val;
 	  ring_indices_[index]++;
 	  ring_indices_[index] = ring_indices_[index] % buffer_size_;
+	  pthread_rwlock_unlock (&rwlock_);
   } 
-  pthread_rwlock_unlock (&rwlock_);
 }
 
 

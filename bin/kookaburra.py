@@ -490,7 +490,7 @@ if __name__=='__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('hostname')
     parser.add_argument('--port',type=int, default=8675)
-    parser.add_argument('--hk_port',type=int, default=8676)
+    parser.add_argument('--local_ts_port',type=int, default=8676)
     parser.add_argument('--local_hk_port',type=int, default=8677)
     parser.add_argument('--lyrebird_output_file', default = 'lyrebird_config_file.json')
     parser.add_argument('--get_hk_script', default = 'get_hk.sh')
@@ -505,7 +505,8 @@ if __name__=='__main__':
     get_hk_script = script_path + args.get_hk_script
 
     pipe = core.G3Pipeline()
-    pipe.Add(networkstreamer.G3NetworkReceiver, hostname = args.hostname, port = args.hk_port)
+    pipe.Add(networkstreamer.G3NetworkReceiver, 
+             hostname = args.hostname, port = args.port)
 
     pipe.Add(BoloPropertiesFaker)
     pipe.Add(BirdConfigGenerator, 
@@ -513,15 +514,23 @@ if __name__=='__main__':
              hostname = args.hostname, 
              get_hk_script_name = get_hk_script,
              hk_hostname = '127.0.0.1',
-             port = args.port, 
+             port = args.local_ts_port, 
              hk_port = args.local_hk_port)
 
     pipe.Add(GetHousekeepingMessenger, hostname = args.hostname)
+
     pipe.Add(networkstreamer.G3NetworkSender,
              port = args.local_hk_port,
              maxsize = 10,
              max_connections = 0,
              frame_decimation = {core.G3FrameType.Timepoint: 0}
+          )
+
+    pipe.Add(networkstreamer.G3NetworkSender,
+             port = args.local_ts_port,
+             maxsize = 10,
+             max_connections = 0,
+             frame_decimation = {core.G3FrameType.Housekeeping: 0}
           )
 
     pipe.Add(SquidDisplay)
