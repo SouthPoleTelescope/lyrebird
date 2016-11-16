@@ -8,7 +8,7 @@
 #include <G3Pipeline.h>
 #include <G3Module.h>
 
-#include <networkstreamer/networkreceiver.h>
+#include <core/G3NetworkReceiver.h>
 #include <dfmux/DfMuxBuilder.h>
 #include <dfmux/HardwareMap.h>
 #include <dfmux/Housekeeping.h>
