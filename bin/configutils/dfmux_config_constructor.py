@@ -60,9 +60,9 @@ def get_channel_vals():
 
 
 def addDfmuxStreamer(config_dic, tag, boards_list, 
-                     sender_hostname = 'laphroaig.berkeley.edu',
+                     sender_hostname = '',
                      sender_port = 8675,
-                     hk_hostname = 'laphroaig.berkeley.edu',
+                     hk_hostname = '',
                      hk_port = 8676):
     hk_desc = {'board_list':boards_list,
                'network_streamer_hostname': hk_hostname, 
@@ -239,7 +239,10 @@ def generate_dfmux_lyrebird_config(fn,
                                    hostname = '127.0.0.1',
                                    hk_hostname = '127.0.0.1',
                                    port = 8675, 
-                                   hk_port = 8676):
+                                   hk_port = 8676,  
+                                   control_host = None,
+                                   gcp_get_hk_port = None
+):
     import os
     creepy_path = os.path.dirname(os.path.realpath(__file__))
     svg_folder = os.path.abspath(creepy_path+'/../../svgs/') + '/'
@@ -297,8 +300,9 @@ def generate_dfmux_lyrebird_config(fn,
                      scale_fac, svg_folder)
 
 
-    config_dic['external_commands_id_list'] = ['Get Housekeeping']
-    config_dic['external_commands_list'] = ['nc %s 9989' % hostname]
+    if (not control_host is None) and (not gcp_get_hk_port is None):
+        config_dic['external_commands_id_list'] = ['Get Housekeeping']
+        config_dic['external_commands_list'] = ['nc -w 1 %s %d' % (control_host,gcp_get_hk_port)]
 
     CC.storeConfigFile(config_dic, fn) 
 

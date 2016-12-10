@@ -3,15 +3,10 @@
 import numpy as np
 import socket, curses, json, traceback, math, argparse, math, sys, os, stat
 from operator import itemgetter, attrgetter
-
-
 from configutils.dfmux_config_constructor import get_physical_id, sq_phys_id_to_info
 from configutils.dfmux_config_constructor import uniquifyList, generate_dfmux_lyrebird_config
-
-
-from spt3g import core, dfmux, networkstreamer
-from spt3g.core import genericutils as GU
-from spt3g import core, dfmux, networkstreamer, auxdata
+from spt3g.util import genericutils as GU
+from spt3g import core, dfmux, calibration
 
 
 import signal 
@@ -27,10 +22,10 @@ def make_square_block(n_things):
         sq = int(math.floor(sq))
         return (sq, sq+1)
 
-def write_get_hk_script(fn, hostname):
+def write_get_hk_script(fn, hostname, port):
     script = '''#!/bin/bash
-nc %s 9989
-''' % hostname
+nc -w 1 %s %d
+''' % (hostname, port)
     f = open(fn, 'w')
     f.write(script)
     f.close()
@@ -59,7 +54,7 @@ class BoloPropertiesFaker(object):
         if self.wiring_map != None and self.bolo_props == None:
 
             #faking the frame data
-            self.bolo_props = auxdata.BolometerPropertiesMap()
+            self.bolo_props = calibration.BolometerPropertiesMap()
 
             n_chans = 0
             squids = {}
@@ -106,7 +101,7 @@ class BoloPropertiesFaker(object):
                 x = sql[0] + ((wm.channel) % ch_layout[0]) * ch_x_sep
                 y = sql[1] + ((wm.channel) // ch_layout[0]) * ch_y_sep
 
-                bp = auxdata.BolometerProperties()
+                bp = calibration.BolometerProperties()
                 bp.physical_name = k
                 bp.band = 0
                 bp.pol_angle = 0
@@ -130,7 +125,7 @@ class BirdConfigGenerator(object):
                  lyrebird_output_file = '',
                  get_hk_script_name= '',
                  hostname = '', hk_hostname = '',
-                 port = 3, hk_port = 3
+                 port = 3, hk_port = 3, get_hk_port = 3
     ):
         self.l_fn = lyrebird_output_file
         self.get_hk_script_name = get_hk_script_name
@@ -141,6 +136,7 @@ class BirdConfigGenerator(object):
         self.hk_hostname = hk_hostname
         self.port = port
         self.hk_port = hk_port
+        self.get_hk_port = get_hk_port
     def __call__(self, frame):
         if frame.type == core.G3FrameType.Calibration:
             if 'BolometerProperties' in frame:
@@ -163,10 +159,12 @@ class BirdConfigGenerator(object):
             hostname = self.hostname,
             hk_hostname = self.hk_hostname,
             port = self.port,
-            hk_port = self.hk_port
+            hk_port = self.hk_port,
+            control_host = self.hostname,
+            gcp_get_hk_port = self.get_hk_port
         )
         write_get_hk_script(self.get_hk_script_name, 
-                            self.hostname)
+                            self.hostname, self.get_hk_port)
         print("Done writing config file")
 
 class IdSerialMapper(object):
@@ -281,7 +279,8 @@ def load_squid_info_from_hk( screen, y, x,
 
         def dic_range_check(dr, dv):
             for k in dv.keys():
-                assert(k in dr)
+                if (not k in dr):
+                    continue
                 rng = dr[k]
                 v = dv[k]
                 if v < rng[0] or v > rng[1]:
@@ -360,9 +359,9 @@ def load_squid_info_from_hk( screen, y, x,
                    bolo_label = full_label,
     )
 
-def GetHousekeepingMessenger(frame, hostname):
+def GetHousekeepingMessenger(frame, hostname, port):
     if frame.type == core.G3FrameType.Wiring:
-        os.system( "nc %s 9989" % hostname )
+        os.system( "nc %s %d" % (hostname, port) )
 
 class SquidDisplay(object):
     def __init__(self,  
@@ -492,6 +491,9 @@ if __name__=='__main__':
     parser.add_argument('--port',type=int, default=8675)
     parser.add_argument('--local_ts_port',type=int, default=8676)
     parser.add_argument('--local_hk_port',type=int, default=8677)
+
+    parser.add_argument('--gcp_signalled_hk_port', type=int, default=50011)
+
     parser.add_argument('--lyrebird_output_file', default = 'lyrebird_config_file.json')
     parser.add_argument('--get_hk_script', default = 'get_hk.sh')
 
@@ -505,7 +507,7 @@ if __name__=='__main__':
     get_hk_script = script_path + args.get_hk_script
 
     pipe = core.G3Pipeline()
-    pipe.Add(networkstreamer.G3NetworkReceiver, 
+    pipe.Add(core.G3NetworkReceiver, 
              hostname = args.hostname, port = args.port)
 
     pipe.Add(BoloPropertiesFaker)
@@ -515,18 +517,21 @@ if __name__=='__main__':
              get_hk_script_name = get_hk_script,
              hk_hostname = '127.0.0.1',
              port = args.local_ts_port, 
-             hk_port = args.local_hk_port)
+             hk_port = args.local_hk_port,
+             get_hk_port = args.gcp_signalled_hk_port
+    )
 
-    pipe.Add(GetHousekeepingMessenger, hostname = args.hostname)
+    pipe.Add(GetHousekeepingMessenger, hostname = args.hostname, 
+             port = args.gcp_signalled_hk_port)
 
-    pipe.Add(networkstreamer.G3NetworkSender,
+    pipe.Add(core.G3NetworkSender,
              port = args.local_hk_port,
              maxsize = 10,
              max_connections = 0,
              frame_decimation = {core.G3FrameType.Timepoint: 0}
           )
 
-    pipe.Add(networkstreamer.G3NetworkSender,
+    pipe.Add(core.G3NetworkSender,
              port = args.local_ts_port,
              maxsize = 10,
              max_connections = 0,
