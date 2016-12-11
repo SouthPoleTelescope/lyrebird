@@ -149,7 +149,7 @@ if __name__ == '__main__':
                     #addDataVal(config_dic, "test_%d"%ds_id_num, 0, True)
                     test_ds_lst.append("test_%d"%ds_id_num)
 
-                    addGlobalEquation(config_dic, getEquation('/ + 1 c test_%d 2'%ds_id_num, cmap, "dummyEqLabel_test_%d"%ds_id_num, "TestSins", 'test_%d'%ds_id_num))
+                    addGlobalEquation(config_dic, getEquation('/ + 1 c test_%d 1'%ds_id_num, cmap, "dummyEqLabel_test_%d"%ds_id_num, "TestSins", 'test_%d'%ds_id_num))
                     addGlobalEquation(config_dic, getEquation('test_%d'%ds_id_num, cmap, "dummyLinearEq_test_%d"%ds_id_num, "TestLins", 'test_%d'%ds_id_num, display_in_info_bar = False))
 
                     if f ==0:

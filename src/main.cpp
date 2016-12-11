@@ -66,6 +66,19 @@ void TW_CALL toggle_data_vals_pause(void * d){
 }
 
 
+void TW_CALL toggle_plot_scale(void * d){
+  int * ps = (int*)d;
+  if (*ps){
+    TwDefine("Main/pscaling label='Switch to Fixed Scale Plot'");
+    *ps = 0;
+  }else{
+    TwDefine("Main/pscaling label='Switch to Auto Scale Plot'");
+    *ps = 1;
+  }
+}
+
+
+
 void TW_CALL run_external_command(void * c){
 	char * command = (char *)c;
 	system(command);
@@ -427,10 +440,19 @@ int main(int argc, char * args[])
   TwAddVarRW(main_bar, "Search:", TW_TYPE_CSSTRING(sizeof(search_str)), search_str, NULL); // must pass search_str (not &search_str)
   
 
-  int is_paused = 0;
+  int is_paused = 0;  
+  int is_fixed_scaled = 0;
+
+  float min_plot_val = 0;
+  float max_plot_val = 1;
 
   TwAddSeparator(main_bar, "ds_sep", NULL);
   TwAddButton(main_bar, "Pause", toggle_data_vals_pause, &is_paused, NULL);
+  TwAddButton(main_bar, "pscaling", toggle_plot_scale, &is_fixed_scaled, "label='Switch to Fixed Scale Plot'");
+
+  TwAddVarRW(main_bar, "Min Plot Val", TW_TYPE_FLOAT, &min_plot_val, "group='Fixed Plot Bounds' step=0.01");
+  TwAddVarRW(main_bar, "Max Plot Val", TW_TYPE_FLOAT, &max_plot_val, "group='Fixed Plot Bounds' step=0.01");
+
   TwAddSeparator(main_bar, "pasue_sep", NULL);
 
   log_debug("displayed eqs");
@@ -574,6 +596,12 @@ int main(int argc, char * args[])
 	  float minp,maxp;
 	  float * plotVals = plotBundler.get_plot(i, plotColor);
 	  plotBundler.get_plot_min_max(minp, maxp);
+
+	  if (is_fixed_scaled) {
+		  minp = min_plot_val; 
+		  maxp = max_plot_val;
+	  }
+
 	  p.plot(plotVals, dv_buffer_size, minp, maxp, glm::vec4(plotColor,1), 0,
 		 1,1 );
       }
