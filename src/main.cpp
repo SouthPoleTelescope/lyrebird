@@ -544,8 +544,7 @@ int main(int argc, char * args[])
 		&(vis_info[visibility_index]), (std::string("label='Hide ") + (*it) + std::string("'")).c_str());
     visibility_index++;
   }
-
-
+  
   size_t color_update_freq = 300;
   size_t min_max_loop_index = 0;
   log_debug("starting loop");

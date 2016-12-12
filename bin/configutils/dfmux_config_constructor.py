@@ -183,6 +183,19 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                                         ))
 
         CC.addGlobalEquation(config_dic, 
+                             CC.getEquation('%s/I:dfmux_samples'%(cid), 
+                                            "white_cmap",
+                                            '%s:IScaling'%(cid)+'_eq',
+                                            "I Scaling",
+                                            '%s/I:dfmux_samples'%(cid),
+                                            display_in_info_bar = False,
+                                            color_is_dynamic = True,
+                                        ))
+
+
+
+
+        CC.addGlobalEquation(config_dic, 
                              CC.getEquation('/ * %s:carrier_frequency = %s:carrier_frequency %s:demod_frequency %f'%(cid, cid, cid, max_freq), 
                                             "rainbow_cmap",
                                             '%s:freq'%(cid)+'_eq',
@@ -196,6 +209,7 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                    '%s:phase'%(cid)+'_eq',
                    '%s:freq'%(cid)+'_eq',
                    '%s:SquidGood'%(mid)+'_eq',
+                   '%s:IScaling'%(cid)+'_eq',
                    '%s/I:dfmux_samples_eq' % cid, 
                    '%s/Q:dfmux_samples_eq' % cid,
                    '%s:Resistance_eq' % cid ]
@@ -278,7 +292,9 @@ def generate_dfmux_lyrebird_config(fn,
     global_display_names = ['Rfrac', 
                             'IQ Phase', 
                             'Freq Settings', 
-                            'SQUID Be F*cked']
+                            'SQUID Be F*cked',
+                            'I:Dynamic Color Adjusted'
+    ]
 
     #add the general settings
     config_dic = {}

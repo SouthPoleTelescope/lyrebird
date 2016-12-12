@@ -146,6 +146,24 @@ General Note
 Because of latent parnoia about the act of collecting housekeeping injecting noise in the system, housekeeping collection isn't automatic with the data_relay.py script.  There is a button in lyrebird, but if you are just running kookaburra you will need to use a script to request housekeeping data.  A script to do this is generated when you run kookaburra.  It's called get_hk.sh
 
 
+Optimizing Network Traffic
+--------------------------
+Networking is complicated.  The G3NetworkSender will send that packets that it can to the receiving computers.  If it has failed to send enough of the previous data it will skip sending some frames.  It sends the frames it can via the TCProtocol.
+
+You can adjust how many Timepoint frames are sent with the setup of the G3NetworkSender.  
+The frame_decimation argument specifies this.  In the following command 1 out of every 40
+timepoint frames is sent.
+
+.. code:: python
+ pipe.Add(core.G3NetworkSender,
+          port = 8675,
+          maxsize = 10,
+          frame_decimation = {core.G3FrameType.Timepoint: 40},
+          max_connections = 0 )
+
+If you are dropping frames you will want to increase the frame_decimation number.  Weirdly enough, if the data is sporadically being transmitted, but you are not dropping frames, you may want to lower the frame_decimation number.  Depending on TCP implementation it will bundle the data before sending.  If the data rate is low, that might take a while. 
+
+   
 
 FAQ
 ---
