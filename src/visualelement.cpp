@@ -68,7 +68,7 @@ VisElem::VisElem(SimpleRen * simple_ren, EquationMap * eqs,
   eq_ind_ = 0;
 
   set_drawn();
-  update_color();
+  update_color(0);
   is_highlighted_ = false;
 }
 
@@ -141,9 +141,9 @@ Equation & VisElem::get_current_equation(){
   return equation_map_->get_eq(equation_inds_[eq_ind_]);
 }
 
-void VisElem::update_color(){
+void VisElem::update_color(size_t index){
   l3_assert(has_eq_);
-  glm::vec4 col = get_current_equation().get_color();
+  glm::vec4 col = get_current_equation().get_color(index);
   s_ren->set_color(simple_ren_index_, col );
 }
 

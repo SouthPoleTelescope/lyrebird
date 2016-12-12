@@ -60,7 +60,7 @@ class VisElem{
   void set_highlighted(glm::vec3 col);
   void set_not_highlighted();
   
-  void update_color();  
+  void update_color(size_t index);  
   void update_all_equations();
 
   glm::mat4 get_ms_transform();//ms = model space

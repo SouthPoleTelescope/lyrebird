@@ -241,7 +241,9 @@ def generate_dfmux_lyrebird_config(fn,
                                    port = 8675, 
                                    hk_port = 8676,  
                                    control_host = None,
-                                   gcp_get_hk_port = None
+                                   gcp_get_hk_port = None,
+                                   dv_buffer_size = 512
+                                   
 ):
     import os
     creepy_path = os.path.dirname(os.path.realpath(__file__))
@@ -287,7 +289,7 @@ def generate_dfmux_lyrebird_config(fn,
                           max_framerate= max_framerate,
                           max_num_plotted = max_num_plotted,
                           eq_names = global_display_names,
-                          dv_buffer_size = 128
+                          dv_buffer_size = dv_buffer_size
                    )
     
     addDfmuxStreamer(config_dic, "dfmux_streamer", board_ids, 

@@ -120,7 +120,7 @@ kookaburra.py does 3 things.
 
 - Displays the state of the SQUIDs
 - Generates the lyrebird config file
-- Relays the housekeeping frames to lyrebird
+- Relays the housekeeping/timepoint frames to lyrebird
 
 To run kookaburra.py in the lyrebird/bin directory:
 

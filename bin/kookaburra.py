@@ -125,7 +125,8 @@ class BirdConfigGenerator(object):
                  lyrebird_output_file = '',
                  get_hk_script_name= '',
                  hostname = '', hk_hostname = '',
-                 port = 3, hk_port = 3, get_hk_port = 3
+                 port = 3, hk_port = 3, get_hk_port = 3,
+                 dv_buffer_size = 0
     ):
         self.l_fn = lyrebird_output_file
         self.get_hk_script_name = get_hk_script_name
@@ -137,6 +138,7 @@ class BirdConfigGenerator(object):
         self.port = port
         self.hk_port = hk_port
         self.get_hk_port = get_hk_port
+        self.dv_buffer_size = dv_buffer_size
     def __call__(self, frame):
         if frame.type == core.G3FrameType.Calibration:
             if 'BolometerProperties' in frame:
@@ -161,7 +163,8 @@ class BirdConfigGenerator(object):
             port = self.port,
             hk_port = self.hk_port,
             control_host = self.hostname,
-            gcp_get_hk_port = self.get_hk_port
+            gcp_get_hk_port = self.get_hk_port,
+            dv_buffer_size = self.dv_buffer_size
         )
         write_get_hk_script(self.get_hk_script_name, 
                             self.hostname, self.get_hk_port)
@@ -491,9 +494,8 @@ if __name__=='__main__':
     parser.add_argument('--port',type=int, default=8675)
     parser.add_argument('--local_ts_port',type=int, default=8676)
     parser.add_argument('--local_hk_port',type=int, default=8677)
-
     parser.add_argument('--gcp_signalled_hk_port', type=int, default=50011)
-
+    parser.add_argument('--timestream_buffer_size',type=int, default=1024)
     parser.add_argument('--lyrebird_output_file', default = 'lyrebird_config_file.json')
     parser.add_argument('--get_hk_script', default = 'get_hk.sh')
 
@@ -518,7 +520,8 @@ if __name__=='__main__':
              hk_hostname = '127.0.0.1',
              port = args.local_ts_port, 
              hk_port = args.local_hk_port,
-             get_hk_port = args.gcp_signalled_hk_port
+             get_hk_port = args.gcp_signalled_hk_port,
+             dv_buffer_size = args.timestream_buffer_size
     )
 
     pipe.Add(GetHousekeepingMessenger, hostname = args.hostname, 
@@ -537,7 +540,6 @@ if __name__=='__main__':
              max_connections = 0,
              frame_decimation = {core.G3FrameType.Housekeeping: 0}
           )
-
     pipe.Add(SquidDisplay)
     try:
         pipe.Run()

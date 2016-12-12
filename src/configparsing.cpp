@@ -21,6 +21,7 @@ equation_desc parse_equation_desc(Json::Value & eqjson){
 	desc.display_label = eqjson["display_label"].asString();
 	desc.sample_rate_id = eqjson["sample_rate_id"].asString();
 	desc.display_in_info_bar = eqjson["display_in_info_bar"].asBool();
+	desc.color_is_dynamic = eqjson["color_is_dynamic"].asBool();
 	return desc;
 }
 

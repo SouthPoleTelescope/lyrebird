@@ -21,7 +21,8 @@ def convert_svg_path_to_id(p):
     return test_id
 
 def addGeneralSettings(config_dic, win_x_size, win_y_size, sub_sampling, 
-                       max_framerate, max_num_plotted, eq_names = [], dv_buffer_size = 128):
+                       max_framerate, max_num_plotted, eq_names = [], 
+                       dv_buffer_size = 128):
     assert(win_x_size > 0)
     assert(win_y_size > 0)
     assert(sub_sampling%2==0)
@@ -51,10 +52,11 @@ def addDataSource(config_dic, tag, ds_type, desc, update_time=1):
                                         'update_time':update_time,
                                         'desc':desc})
 
-def getEquation(eq_func, eq_color_map, eq_label, display_label, sample_rate_val, display_in_info_bar = True):
+def getEquation(eq_func, eq_color_map, eq_label, display_label, sample_rate_val, display_in_info_bar = True, color_is_dynamic = False):
     return {"function":eq_func,"cmap": eq_color_map, "label": eq_label, 
             "display_label":display_label, "sample_rate_id":sample_rate_val,
-            "display_in_info_bar":display_in_info_bar
+            "display_in_info_bar":display_in_info_bar,
+            "color_is_dynamic":color_is_dynamic
     }
 
 def addGlobalEquation(config_dic, equation):
@@ -116,7 +118,10 @@ def storeConfigFile(config_dic, fn):
 
 if __name__ == '__main__':
     config_dic = {}
-    addGeneralSettings(config_dic, win_x_size=800, win_y_size=600, sub_sampling=4, max_framerate=-1, max_num_plotted=10)
+    addGeneralSettings(config_dic, win_x_size=800, win_y_size=600, 
+                       sub_sampling=4, max_framerate=-1, max_num_plotted=10,
+                       dv_buffer_size = 1024
+    )
 
     scale_factor = 0.008
 

@@ -34,6 +34,7 @@ struct equation_desc{
 	std::string display_label;
 	std::string sample_rate_id;
 	bool display_in_info_bar;
+	bool color_is_dynamic;
 };
 typedef struct equation_desc equation_desc;
 
@@ -47,7 +48,7 @@ public:
 	void set_equation(DataVals * dvs, equation_desc desc);
 	float get_value();
 	void get_bulk_value(float * v);
-	glm::vec4 get_color();
+	glm::vec4 get_color(size_t index);
 	std::string get_label();
 	std::string get_display_label();
 	float * get_value_address();
@@ -76,4 +77,8 @@ private:
 	int sample_rate_index;
 	
 	bool display_in_info_bar_;
+	
+	bool color_is_dynamic_;
+	float dynamic_min_val_;
+	float dynamic_max_val_;
 };

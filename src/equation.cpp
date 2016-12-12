@@ -580,6 +580,7 @@ void Equation::set_equation(DataVals * dvs,
   display_label_ = desc.display_label;
   sample_rate_index = data_vals->get_ind(desc.sample_rate_id);
   display_in_info_bar_ = desc.display_in_info_bar;
+  color_is_dynamic_ = desc.color_is_dynamic;
 }
 
 
@@ -600,12 +601,30 @@ void Equation::get_bulk_value(float * v){
   }
 }
 
-glm::vec4 Equation::get_color(){
-  float value = get_value();
-  //cout<<"returning value"<<endl;
-  glm::vec4 col = cmap(value);
-  //cout<<"returning value"<<endl;
-  return col;
+glm::vec4 Equation::get_color(size_t index){
+	float value;
+	if (color_is_dynamic_){
+		if (index == 0) {
+			int buff_size = data_vals->get_buffer_size();
+			float * v = new float[buff_size];
+			get_bulk_value(v);
+			dynamic_min_val_ = v[0];
+			dynamic_max_val_ = v[1];
+			for (int i=1; i < buff_size; i++) {
+				if (v[i] < dynamic_min_val_){
+					dynamic_min_val_ = v[i];
+				} 
+				if (v[i] > dynamic_max_val_){
+					dynamic_max_val_ = v[i];
+				} 
+			}
+		}
+		value = (get_value() - dynamic_min_val_)/ (dynamic_max_val_ - dynamic_min_val_);
+	} else {
+		value = get_value();
+	}
+	glm::vec4 col = cmap(value);
+	return col;
 }
 
 string Equation::get_label(){

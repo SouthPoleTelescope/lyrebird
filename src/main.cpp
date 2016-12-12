@@ -545,171 +545,180 @@ int main(int argc, char * args[])
     visibility_index++;
   }
 
+
+  size_t min_max_loop_index = 0;
   log_debug("starting loop");
   //actual loop//
   while (!glfwWindowShouldClose(window)) {
-    glClear(GL_COLOR_BUFFER_BIT);
-    glClear(GL_DEPTH_BUFFER_BIT);
+	  min_max_loop_index++;
+	  min_max_loop_index = min_max_loop_index % 100;
 
-    usleep(10);
-
-    //update the equations if possible
-    if (prev_eq_val != displayed_eq) {
-	    prev_eq_val = displayed_eq;
-	    for (size_t i=0; i < visual_elements.size(); i++){
-		    visual_elements[i]->set_eq_ind( prev_eq_val );
-	    }
-	    strncpy(displayed_name, 
-		    displayed_eq_labels[prev_eq_val].c_str(), 
-		    display_buffer_size); 
-    }
-
-    //other things
-    
-    highlight.check_socket();
-    for (int i = 0; i<num_data_sources; i++){
-      if ( ds_index_variables[i] != ds_index_variables_prev_state[i]){
-	data_streamers[i]->request_values(ds_index_variables[i]);
-      }
-    }
-    
-    for (int i = 0; i<num_data_sources; i++){
-      ds_index_variables_prev_state[i] = ds_index_variables[i];
-    }
-    
-    for (size_t i=0; i < visual_elements.size(); i++) visual_elements[i]->update_color();
-    sren.draw_ren_states(camera.get_view_mat());
-    
-    //handles the plotting
-
-    list<int> plot_inds = highlight.get_plot_inds();
-    list<glm::vec3> color_inds = highlight.get_plot_colors();
-
-    if (plot_inds.size() > 0){
-      plotBundler.update_plots(plot_inds, color_inds);
-      int num_plots = plotBundler.get_num_plots();
-      
-      p.prepare_plotting(glm::vec2(.7, -.7), glm::vec2(.3,.3));
-      p.plotBG(glm::vec4(0.0,0.0,0.0,0.9));
-      for (int i=num_plots-1; i >= 0; i--){
-	  glm::vec3 plotColor;
-	  float minp,maxp;
-	  float * plotVals = plotBundler.get_plot(i, plotColor);
-	  plotBundler.get_plot_min_max(minp, maxp);
-
-	  if (is_fixed_scaled) {
-		  minp = min_plot_val; 
-		  maxp = max_plot_val;
+	  glClear(GL_COLOR_BUFFER_BIT);
+	  glClear(GL_DEPTH_BUFFER_BIT);
+	  
+	  usleep(10);
+	  
+	  //update the equations if possible
+	  if (prev_eq_val != displayed_eq) {
+		  prev_eq_val = displayed_eq;
+		  for (size_t i=0; i < visual_elements.size(); i++){
+			  visual_elements[i]->set_eq_ind( prev_eq_val );
+		  }
+		  strncpy(displayed_name, 
+			  displayed_eq_labels[prev_eq_val].c_str(), 
+			  display_buffer_size); 
+	  }
+	  
+	  //other things
+	  
+	  highlight.check_socket();
+	  for (int i = 0; i<num_data_sources; i++){
+		  if ( ds_index_variables[i] != ds_index_variables_prev_state[i]){
+			  data_streamers[i]->request_values(ds_index_variables[i]);
+		  }
+	  }
+	  
+	  for (int i = 0; i<num_data_sources; i++){
+		  ds_index_variables_prev_state[i] = ds_index_variables[i];
 	  }
 
-	  p.plot(plotVals, dv_buffer_size, minp, maxp, glm::vec4(plotColor,1), 0,
-		 1,1 );
-      }
-      p.plotFG(glm::vec4(1.0,1.0,1.0,1.0)); 
-      
-      p.prepare_plotting(glm::vec2(.7, -.1), glm::vec2(.3,.3));
-      p.plotBG(glm::vec4(0.0,0.0,0.0,0.9));
-      
-      float psd_0point;
-      float psd_sep;
-      plotBundler.get_psd_start_and_sep(psd_0point, psd_sep);
-      for (int i=num_plots-1; i >= 0; i--){
-	glm::vec3 plotColor;
-	float minp,maxp;
-	float * plotVals = plotBundler.get_psd(i, plotColor);
-	plotBundler.get_psd_min_max(minp, maxp);
-	p.plot(plotVals, dv_buffer_size/2+1, minp, maxp, glm::vec4(plotColor,1), 1,
-	       psd_sep, psd_sep);
-      }
-      //p.plotFG(glm::vec4(1.0,1.0,1.0,1.0)); 
-      p.cleanup_plotting();
-    }
-
-    //updates the info bar
-    highlight.update_info_bar();
-    
-    //updates the main_bar
-    for (size_t i=0; i < displayed_global_equations.size(); i++) {
-	    equation_map.get_eq(equation_map.get_eq_index( displayed_global_equations[i])).get_value();
-    }
-
-    
-    
-    TwRefreshBar(main_bar);
-    TwDraw();
-
-    glfwSwapBuffers(window);
-    glfwPollEvents();
-    
-    current_time = glfwGetTime();
-    double delta_time = current_time-last_time;
-
-
-    // code for doing frame limitting
-    if (delta_time < frame_time)
-      usleep( (frame_time - delta_time) * 1e6);
-    current_time = glfwGetTime();
-    delta_time = current_time-last_time;
-
-    last_time = current_time;
-    
-    if (!global_mouse_is_handled){
-      if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ||
-	  glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS 
-	  ){
-	camera.move_up(delta_time*2);
-      }
-      if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS ||
-	  glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS
-	  ){
-	camera.move_down(delta_time*2);
-      }
-      if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS ||
-	  glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS	    
-	  ){
-	camera.move_left(delta_time*2);
-      }
-      if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ||
-	  glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS 
-	  ){
-	camera.move_right(delta_time*2);
-      }
-      if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS){
-	camera.zoom(-1*delta_time);
-      }
-      if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS){
-	camera.zoom(1*delta_time);
-      }
-      if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){ //scroll forward in history if we have that type of data streamer
-	for (int i=0; i < num_data_sources; i++){ 
-	  if (data_streamers[i]->get_request_type() == DSRT_REQUEST_HISTORY){
-	    ds_index_variables[i] += 1;
-	    if (ds_index_variables[i]  > data_streamers[i]->get_num_elements()) ds_index_variables[i] = data_streamers[i]->get_num_elements();
+	  for (size_t i=0; i < visual_elements.size(); i++) {
+		  size_t not_updated = !(min_max_loop_index==((i * 100)/visual_elements.size()));
+		  visual_elements[i]->update_color(not_updated);
 	  }
-	}
-      }
-      if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS){//scroll back in history if we have that type of data streamer
-	for (int i=0; i < num_data_sources; i++){
-	  if (data_streamers[i]->get_request_type() == DSRT_REQUEST_HISTORY){
-	    ds_index_variables[i] -= 1;
-	    if (ds_index_variables[i]  < 0) ds_index_variables[i] = 0;
+	  
+	  sren.draw_ren_states(camera.get_view_mat());
+	  
+	  //handles the plotting
+	  
+	  list<int> plot_inds = highlight.get_plot_inds();
+	  list<glm::vec3> color_inds = highlight.get_plot_colors();
+	  
+	  if (plot_inds.size() > 0){
+		  plotBundler.update_plots(plot_inds, color_inds);
+		  int num_plots = plotBundler.get_num_plots();
+		  
+		  p.prepare_plotting(glm::vec2(.7, -.7), glm::vec2(.3,.3));
+		  p.plotBG(glm::vec4(0.0,0.0,0.0,0.9));
+		  for (int i=num_plots-1; i >= 0; i--){
+			  glm::vec3 plotColor;
+			  float minp,maxp;
+			  float * plotVals = plotBundler.get_plot(i, plotColor);
+			  plotBundler.get_plot_min_max(minp, maxp);
+			  
+			  if (is_fixed_scaled) {
+				  minp = min_plot_val; 
+				  maxp = max_plot_val;
+			  }
+			  
+			  p.plot(plotVals, dv_buffer_size, minp, maxp, glm::vec4(plotColor,1), 0,
+				 1,1 );
+		  }
+		  p.plotFG(glm::vec4(1.0,1.0,1.0,1.0)); 
+		  
+		  p.prepare_plotting(glm::vec2(.7, -.1), glm::vec2(.3,.3));
+		  p.plotBG(glm::vec4(0.0,0.0,0.0,0.9));
+		  
+		  float psd_0point;
+		  float psd_sep;
+		  plotBundler.get_psd_start_and_sep(psd_0point, psd_sep);
+		  for (int i=num_plots-1; i >= 0; i--){
+			  glm::vec3 plotColor;
+			  float minp,maxp;
+			  float * plotVals = plotBundler.get_psd(i, plotColor);
+			  plotBundler.get_psd_min_max(minp, maxp);
+			  p.plot(plotVals, dv_buffer_size/2+1, minp, maxp, glm::vec4(plotColor,1), 1,
+				 psd_sep, psd_sep);
+		  }
+		  //p.plotFG(glm::vec4(1.0,1.0,1.0,1.0)); 
+		  p.cleanup_plotting();
 	  }
-	}
-      }
-    }
-
-    //animates the highlighting
-    for (size_t i=0; i < visual_elements.size(); i++)
-	    visual_elements[i]->animate_highlight(delta_time);
-    
-
-
-    //handle searching
-    if (strcmp( search_str, prev_search_str)){
-      highlight.run_search(search_str);
-    } 
-
-    strncpy ( prev_search_str, search_str, SEARCH_STR_LEN );      
+	  
+	  //updates the info bar
+	  highlight.update_info_bar();
+	  
+	  //updates the main_bar
+	  for (size_t i=0; i < displayed_global_equations.size(); i++) {
+		  equation_map.get_eq(equation_map.get_eq_index( displayed_global_equations[i])).get_value();
+	  }
+	  
+	  
+	  
+	  TwRefreshBar(main_bar);
+	  TwDraw();
+	  
+	  glfwSwapBuffers(window);
+	  glfwPollEvents();
+	  
+	  current_time = glfwGetTime();
+	  double delta_time = current_time-last_time;
+	  
+	  
+	  // code for doing frame limitting
+	  if (delta_time < frame_time)
+		  usleep( (frame_time - delta_time) * 1e6);
+	  current_time = glfwGetTime();
+	  delta_time = current_time-last_time;
+	  
+	  last_time = current_time;
+	  
+	  if (!global_mouse_is_handled){
+		  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS ||
+		      glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS 
+			  ){
+			  camera.move_up(delta_time*2);
+		  }
+		  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS ||
+		      glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS
+			  ){
+			  camera.move_down(delta_time*2);
+		  }
+		  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS ||
+		      glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS	    
+			  ){
+			  camera.move_left(delta_time*2);
+		  }
+		  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS ||
+		      glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS 
+			  ){
+			  camera.move_right(delta_time*2);
+		  }
+		  if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS){
+			  camera.zoom(-1*delta_time);
+		  }
+		  if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS){
+			  camera.zoom(1*delta_time);
+		  }
+		  if (glfwGetKey(window, GLFW_KEY_F) == GLFW_PRESS){ //scroll forward in history if we have that type of data streamer
+			  for (int i=0; i < num_data_sources; i++){ 
+				  if (data_streamers[i]->get_request_type() == DSRT_REQUEST_HISTORY){
+					  ds_index_variables[i] += 1;
+					  if (ds_index_variables[i]  > data_streamers[i]->get_num_elements()) ds_index_variables[i] = data_streamers[i]->get_num_elements();
+				  }
+			  }
+		  }
+		  if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS){//scroll back in history if we have that type of data streamer
+			  for (int i=0; i < num_data_sources; i++){
+				  if (data_streamers[i]->get_request_type() == DSRT_REQUEST_HISTORY){
+					  ds_index_variables[i] -= 1;
+					  if (ds_index_variables[i]  < 0) ds_index_variables[i] = 0;
+				  }
+			  }
+		  }
+	  }
+	  
+	  //animates the highlighting
+	  for (size_t i=0; i < visual_elements.size(); i++)
+		  visual_elements[i]->animate_highlight(delta_time);
+	  
+	  
+	  
+	  //handle searching
+	  if (strcmp( search_str, prev_search_str)){
+		  highlight.run_search(search_str);
+	  } 
+	  
+	  strncpy ( prev_search_str, search_str, SEARCH_STR_LEN );      
   }
   
   
