@@ -31,8 +31,9 @@ void parse_config_file(std::string in_file,
 		       int & max_framerate,
 		       int & max_num_plotted,
 		       int & dv_buffer_size,
-
-
+		       
+		       size_t & min_max_update_interval,
+		       
 		       std::vector<std::string> & displayed_eq_labels
 		        
 		       );

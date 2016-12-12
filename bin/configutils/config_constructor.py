@@ -22,12 +22,13 @@ def convert_svg_path_to_id(p):
 
 def addGeneralSettings(config_dic, win_x_size, win_y_size, sub_sampling, 
                        max_framerate, max_num_plotted, eq_names = [], 
-                       dv_buffer_size = 128):
+                       dv_buffer_size = 128, min_max_update_interval = 300):
     assert(win_x_size > 0)
     assert(win_y_size > 0)
     assert(sub_sampling%2==0)
     assert(sub_sampling < 18)
     assert(max_num_plotted > 0)
+    assert(min_max_update_interval > 0)
 
     
     config_dic['general_settings'] =  {'win_x_size': win_x_size,
@@ -36,7 +37,8 @@ def addGeneralSettings(config_dic, win_x_size, win_y_size, sub_sampling,
                                        'max_framerate': max_framerate,
                                        'max_num_plotted': max_num_plotted,
                                        'eq_names': eq_names,
-                                       'dv_buffer_size': dv_buffer_size
+                                       'dv_buffer_size': dv_buffer_size,
+                                       'min_max_update_interval':min_max_update_interval
                               }    
 def addDataVal(config_dic, dv_id, init_val, is_buffered):
     if not 'data_vals' in config_dic:

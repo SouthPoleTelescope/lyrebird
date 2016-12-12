@@ -66,6 +66,8 @@ void parse_config_file(string in_file,
 		       int & max_num_plotted,
 		       int & dv_buffer_size,
 
+		       size_t & min_max_update_interval,
+
 		       std::vector<std::string> & displayed_eq_labels
 
 		       ){
@@ -89,7 +91,9 @@ void parse_config_file(string in_file,
 
   dv_buffer_size = 128;
 
-  num_layers = 1;
+  num_layers = 10;
+  max_num_plotted = 24;
+  min_max_update_interval = 300;
 
   if (root.isMember("general_settings")){
 	  log_trace("Parsing general settings");
@@ -143,6 +147,16 @@ void parse_config_file(string in_file,
 	log_fatal("general_settings/max_num_plotted supplied but is not integer");
       }
     }      
+
+
+    if (v.isMember("min_max_update_interval")){
+      if (v["min_max_update_interval"].isInt()){
+	min_max_update_interval = v["min_max_update_interval"].asInt();
+      }else {
+	log_fatal("general_settings/dv_buffer_size supplied but is not integer");
+      }
+    }      
+
 
     
     if (v.isMember("eq_names") ){

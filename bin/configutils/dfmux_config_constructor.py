@@ -256,9 +256,8 @@ def generate_dfmux_lyrebird_config(fn,
                                    hk_port = 8676,  
                                    control_host = None,
                                    gcp_get_hk_port = None,
-                                   dv_buffer_size = 512
-                                   
-):
+                                   dv_buffer_size = 512,
+                                   min_max_update_interval = 300):
     import os
     creepy_path = os.path.dirname(os.path.realpath(__file__))
     svg_folder = os.path.abspath(creepy_path+'/../../svgs/') + '/'
@@ -305,7 +304,8 @@ def generate_dfmux_lyrebird_config(fn,
                           max_framerate= max_framerate,
                           max_num_plotted = max_num_plotted,
                           eq_names = global_display_names,
-                          dv_buffer_size = dv_buffer_size
+                          dv_buffer_size = dv_buffer_size,
+                          min_max_update_interval = min_max_update_interval
                    )
     
     addDfmuxStreamer(config_dic, "dfmux_streamer", board_ids, 

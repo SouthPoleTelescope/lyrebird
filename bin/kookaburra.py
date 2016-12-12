@@ -126,7 +126,8 @@ class BirdConfigGenerator(object):
                  get_hk_script_name= '',
                  hostname = '', hk_hostname = '',
                  port = 3, hk_port = 3, get_hk_port = 3,
-                 dv_buffer_size = 0
+                 dv_buffer_size = 0, min_max_update_interval = 0,
+                 rendering_sub_sampling = 1, max_framerate = 0
     ):
         self.l_fn = lyrebird_output_file
         self.get_hk_script_name = get_hk_script_name
@@ -139,6 +140,9 @@ class BirdConfigGenerator(object):
         self.hk_port = hk_port
         self.get_hk_port = get_hk_port
         self.dv_buffer_size = dv_buffer_size
+        self.min_max_update_interval = min_max_update_interval
+        self.rendering_sub_sampling = rendering_sub_sampling
+        self.max_framerate = max_framerate
     def __call__(self, frame):
         if frame.type == core.G3FrameType.Calibration:
             if 'BolometerProperties' in frame:
@@ -164,7 +168,10 @@ class BirdConfigGenerator(object):
             hk_port = self.hk_port,
             control_host = self.hostname,
             gcp_get_hk_port = self.get_hk_port,
-            dv_buffer_size = self.dv_buffer_size
+            dv_buffer_size = self.dv_buffer_size,
+            min_max_update_interval = self.min_max_update_interval,
+            sub_sampling = self.rendering_sub_sampling,
+            max_framerate = self.max_framerate
         )
         write_get_hk_script(self.get_hk_script_name, 
                             self.hostname, self.get_hk_port)
@@ -495,9 +502,14 @@ if __name__=='__main__':
     parser.add_argument('--local_ts_port',type=int, default=8676)
     parser.add_argument('--local_hk_port',type=int, default=8677)
     parser.add_argument('--gcp_signalled_hk_port', type=int, default=50011)
-    parser.add_argument('--timestream_buffer_size',type=int, default=1024)
     parser.add_argument('--lyrebird_output_file', default = 'lyrebird_config_file.json')
     parser.add_argument('--get_hk_script', default = 'get_hk.sh')
+
+    parser.add_argument('--timestream_buffer_size',type=int, default=1024)
+    parser.add_argument('--min_max_update_interval', type=int, default = 300)
+
+    parser.add_argument('--rendering_sub_sampling', type=int, default = 2)
+    parser.add_argument('--max_framerate', type=int, default = 60)
 
     args = parser.parse_args()
     #core.set_log_level(core.G3LogLevel.LOG_DEBUG)
@@ -521,7 +533,10 @@ if __name__=='__main__':
              port = args.local_ts_port, 
              hk_port = args.local_hk_port,
              get_hk_port = args.gcp_signalled_hk_port,
-             dv_buffer_size = args.timestream_buffer_size
+             dv_buffer_size = args.timestream_buffer_size,
+             min_max_update_interval = args.min_max_update_interval,
+             rendering_sub_sampling = args.rendering_sub_sampling,
+             max_framerate = args.max_framerate
     )
 
     pipe.Add(GetHousekeepingMessenger, hostname = args.hostname, 

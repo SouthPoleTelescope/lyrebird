@@ -55,12 +55,18 @@ bool inside_triangle(float Ax, float Ay,
   float ax, ay, bx, by, cx, cy, apx, apy, bpx, bpy, cpx, cpy;
   float cCROSSap, bCROSScp, aCROSSbp;
 
-  ax = Cx - Bx;  ay = Cy - By;
-  bx = Ax - Cx;  by = Ay - Cy;
-  cx = Bx - Ax;  cy = By - Ay;
-  apx= Px - Ax;  apy= Py - Ay;
-  bpx= Px - Bx;  bpy= Py - By;
-  cpx= Px - Cx;  cpy= Py - Cy;
+  ax = Cx - Bx;  
+  ay = Cy - By;
+  bx = Ax - Cx;  
+  by = Ay - Cy;
+  cx = Bx - Ax;  
+  cy = By - Ay;
+  apx= Px - Ax;  
+  apy= Py - Ay;
+  bpx= Px - Bx;  
+  bpy= Py - By;
+  cpx= Px - Cx;  
+  cpy= Py - Cy;
 
   aCROSSbp = ax*bpy - ay*bpx;
   cCROSSap = cx*apy - cy*apx;
@@ -144,7 +150,9 @@ bool triangulate_polygon(const std::vector < glm::vec2 > &contour,std::vector < 
       m++;
 
       /* remove v from remaining polygon */
-      for(s=v,t=v+1;t<nv;s++,t++) V[s] = V[t]; nv--;
+      for(s=v,t=v+1;t<nv;s++,t++) 
+	      V[s] = V[t]; 
+      nv--;
 
       /* resest error detection counter */
       count = 2*nv;

@@ -230,6 +230,9 @@ int main(int argc, char * args[])
   int max_framerate;
   double frame_time;
   int max_num_plotted;
+
+  size_t min_max_update_interval;
+
   vector<vis_elem_repr> vis_elems;
   vector<string> svg_paths;
   vector<string> svg_ids;
@@ -255,6 +258,7 @@ int main(int argc, char * args[])
 		    win_x_size, win_y_size, sub_sampling, 
 		    num_layers, max_framerate, max_num_plotted,
 		    dv_buffer_size,
+		    min_max_update_interval,
 		    displayed_eq_labels
 		    );
   log_debug("done parse_config_file");
@@ -544,9 +548,8 @@ int main(int argc, char * args[])
 		&(vis_info[visibility_index]), (std::string("label='Hide ") + (*it) + std::string("'")).c_str());
     visibility_index++;
   }
-  
+  size_t min_max_loop_index;
   size_t color_update_freq = 300;
-  size_t min_max_loop_index = 0;
   log_debug("starting loop");
   //actual loop//
   while (!glfwWindowShouldClose(window)) {
