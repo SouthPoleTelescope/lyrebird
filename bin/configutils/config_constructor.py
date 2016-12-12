@@ -120,6 +120,7 @@ if __name__ == '__main__':
     config_dic = {}
     addGeneralSettings(config_dic, win_x_size=800, win_y_size=600, 
                        sub_sampling=4, max_framerate=-1, max_num_plotted=10,
+                       eq_names = ["osc", "lin"],
                        dv_buffer_size = 1024
     )
 
@@ -154,8 +155,9 @@ if __name__ == '__main__':
                     #addDataVal(config_dic, "test_%d"%ds_id_num, 0, True)
                     test_ds_lst.append("test_%d"%ds_id_num)
 
-                    addGlobalEquation(config_dic, getEquation('/ + 1 c test_%d 1'%ds_id_num, cmap, "dummyEqLabel_test_%d"%ds_id_num, "TestSins", 'test_%d'%ds_id_num))
-                    addGlobalEquation(config_dic, getEquation('test_%d'%ds_id_num, cmap, "dummyLinearEq_test_%d"%ds_id_num, "TestLins", 'test_%d'%ds_id_num, display_in_info_bar = False))
+                    addGlobalEquation(config_dic, getEquation('/ + 1 c test_%d 1'%ds_id_num, cmap, "dummyEqLabel_test_%d"%ds_id_num, "TestSins", 'test_%d'%ds_id_num, color_is_dynamic = True))
+                    addGlobalEquation(config_dic, getEquation('test_%d'%ds_id_num, cmap, "dummyLinearEq_test_%d"%ds_id_num, "TestLins", 'test_%d'%ds_id_num, 
+                                                              display_in_info_bar = True, color_is_dynamic = False))
 
                     if f ==0:
                         svg_name = svg_folder + 'smallpol.svg'

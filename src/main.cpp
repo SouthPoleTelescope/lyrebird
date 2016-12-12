@@ -546,12 +546,13 @@ int main(int argc, char * args[])
   }
 
 
+  size_t color_update_freq = 300;
   size_t min_max_loop_index = 0;
   log_debug("starting loop");
   //actual loop//
   while (!glfwWindowShouldClose(window)) {
 	  min_max_loop_index++;
-	  min_max_loop_index = min_max_loop_index % 100;
+	  min_max_loop_index = min_max_loop_index % color_update_freq;
 
 	  glClear(GL_COLOR_BUFFER_BIT);
 	  glClear(GL_DEPTH_BUFFER_BIT);
@@ -583,7 +584,8 @@ int main(int argc, char * args[])
 	  }
 
 	  for (size_t i=0; i < visual_elements.size(); i++) {
-		  size_t not_updated = !(min_max_loop_index==((i * 100)/visual_elements.size()));
+		  size_t not_updated = !(min_max_loop_index == 
+					 ((i*color_update_freq)/visual_elements.size()));
 		  visual_elements[i]->update_color(not_updated);
 	  }
 	  
