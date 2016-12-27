@@ -511,6 +511,8 @@ if __name__=='__main__':
     parser.add_argument('--rendering_sub_sampling', type=int, default = 2)
     parser.add_argument('--max_framerate', type=int, default = 60)
 
+    parser.add_argument('--debug_mode', type=int, default = 0)
+
     args = parser.parse_args()
     #core.set_log_level(core.G3LogLevel.LOG_DEBUG)
 
@@ -555,7 +557,13 @@ if __name__=='__main__':
              max_connections = 0,
              frame_decimation = {core.G3FrameType.Housekeeping: 0}
           )
-    pipe.Add(SquidDisplay)
+
+
+    if args.debug_mode:
+        pipe.Add(core.Dump)
+    else:
+        pipe.Add(SquidDisplay)
+
     try:
         pipe.Run()
     finally:
