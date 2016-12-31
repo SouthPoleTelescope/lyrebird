@@ -32,7 +32,7 @@ std::string get_physical_id(int board_serial, int crate_serial, int board_slot,
 }
 
 
-G3FramePtr get_frame(G3NetworkReceiver & fun){
+G3FramePtr get_frame(G3Reader & fun){
 	std::deque<G3FramePtr> out;
 	fun.Process(G3FramePtr(NULL), out);
 	return out.front();
@@ -43,8 +43,9 @@ G3FramePtr get_frame(G3NetworkReceiver & fun){
 G3DataStreamer::G3DataStreamer(Json::Value desc,
 			       std::string tag, DataVals * dv, int us_update_time )
 	: DataStreamer(tag, dv, us_update_time, DSRT_STREAMING),
-	  frame_grabbing_function_( desc["network_streamer_hostname"].asString(),
-				    desc["network_streamer_port"].asInt())
+	  frame_grabbing_function_( std::string("tcp://") +
+	                            desc["network_streamer_hostname"].asString() +
+				    ":" + desc["network_streamer_port"].asString())
 {
 	has_id_map_ = false;
 	n_boards_ = desc["board_list"].size();

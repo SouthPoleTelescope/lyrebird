@@ -8,7 +8,7 @@
 #include <G3Pipeline.h>
 #include <G3Module.h>
 
-#include <core/G3NetworkReceiver.h>
+#include <core/G3Reader.h>
 #include <dfmux/DfMuxBuilder.h>
 #include <dfmux/HardwareMap.h>
 #include <dfmux/Housekeeping.h>
@@ -82,7 +82,7 @@ private:
 	int port_;
 	bool keep_getting_data_;
 	
-        G3NetworkReceiver frame_grabbing_function_;
+        G3Reader frame_grabbing_function_;
 	DataVals * dvs_;
 	
 	std::vector<int> hk_path_inds_;
