@@ -544,20 +544,17 @@ if __name__=='__main__':
     pipe.Add(GetHousekeepingMessenger, hostname = args.hostname, 
              port = args.gcp_signalled_hk_port)
 
-    pipe.Add(core.G3NetworkSender,
+    pipe.Add(core.G3ThrottledNetworkSender,
+             hostname = '*',
              port = args.local_hk_port,
-             maxsize = 10,
-             max_connections = 0,
              frame_decimation = {core.G3FrameType.Timepoint: 0}
           )
 
-    pipe.Add(core.G3NetworkSender,
+    pipe.Add(core.G3ThrottledNetworkSender,
+             hostname = '*',
              port = args.local_ts_port,
-             maxsize = 10,
-             max_connections = 0,
              frame_decimation = {core.G3FrameType.Housekeeping: 0}
           )
-
 
     if args.debug_mode:
         pipe.Add(core.Dump)
