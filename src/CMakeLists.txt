@@ -16,7 +16,7 @@ find_package(Boost COMPONENTS python serialization iostreams filesystem REQUIRED
 
 add_subdirectory(AntTweakBar)
 
-include_directories("./AntTweakBar/include/" ${GLFW_INCLUDE_PATH} ${FFTW_INCLUDE_DIRS} 
+include_directories("./AntTweakBar/include/" ${GLFW_INCLUDE_DIR} ${FFTW_INCLUDE_DIRS} 
   ${OPENGL_INCLUDE_DIR} ${GLEW_INCLUDE_DIRS} ${X11_INCLUDE_DIRS} ${SPT3G_INCLUDES})
 
 include_directories(${Boost_INCLUDE_DIR} ${PYTHON_INCLUDE_DIRS} ${PYTHON_INCLUDE_PATH})
@@ -30,8 +30,12 @@ add_library(lyrebirdvis STATIC
 
 add_executable(lyrebird main.cpp)
 
+find_library(rt_LIBRARY rt)
+
 target_link_libraries(lyrebird lyrebirdvis AntTweakBar
-  ${GLFW_LIBRARY} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${GLEW_LIBRARY} ${X11_LIBRARIES}
-  ${FFTW_LIBRARIES} ${SPT3G_LIBRARIES} )
+  ${GLFW_LIBRARIES} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${GLEW_LIBRARY} ${X11_LIBRARIES}
+  ${X11_Xxf86vm_LIB} ${FFTW_LIBRARIES} ${SPT3G_LIBRARIES} ${CMAKE_DL_LIBS} ${rt_LIBRARY}
+  ${X11_Xrandr_LIB} ${X11_Xinerama_LIB} ${X11_Xi_LIB} ${X11_Xcursor_LIB} pthread)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
+
