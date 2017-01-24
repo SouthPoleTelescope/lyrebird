@@ -2,6 +2,7 @@ import argparse, json, os
 import config_constructor as CC
 import numpy as np
 from operator import itemgetter, attrgetter
+from spt3g import core
 
 N_MODULES=8
 N_CHANNELS=64
@@ -123,18 +124,18 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                               wm.module + 1, wm.channel + 1 )
         
 
-        if bp.band == 150:
+        if bp.band == 150*core.G3Units.GHz:
             svg = svg_folder + 'medpol.svg'
             h_svg = svg_folder + 'medhighlight.svg'
             group = '150s'
             eq_cmap = 'bolo_cyan_cmap'
-        elif bp.band == 90:
+        elif bp.band == 90*core.G3Units.GHz:
             svg = svg_folder + 'largepol.svg'
             h_svg = svg_folder + 'largehighlight.svg'
             group = '90s'
             eq_cmap = 'bolo_green_cmap'
 
-        elif bp.band == 220:
+        elif bp.band == 220*core.G3Units.GHz:
             svg = svg_folder + 'smallpol.svg'
             h_svg = svg_folder + 'smallhighlight.svg'
             group = '220s'
@@ -225,12 +226,11 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
             eqs_lst.append('%s:%s_eq' % (bid, bvs))
 
 
-
         CC.addVisElem(config_dic, 
-                      x_cen=bp.x_offset,   y_cen=bp.y_offset,
-                      x_scale = scale_fac, y_scale=scale_fac, 
-                      rotation= bp.pol_angle,
-                      svg_path= svg,
+                      x_cen=bp.x_offset*3e1,   y_cen=bp.y_offset*3e1,
+                      x_scale=scale_fac, y_scale=scale_fac, 
+                      rotation=bp.pol_angle,
+                      svg_path=svg,
                       highlight_path = h_svg,
                       layer = 1, labels = [k, cid, bp.physical_name],
                       equations = eqs_lst, 
