@@ -27,7 +27,11 @@ void DataVals::initialize(){
 	ring_buffers_ = std::vector< std::vector<float> >( array_size_, std::vector<float> (1, 0));;//new float[array_size_ * (buffer_size_full_)];
 	
 	is_buffered_ = new int[array_size_];
-	
+
+	is_mean_filtered_ = new int[array_size_];
+	mean_val_ = new float[array_size_];
+	mean_decay_ = new float[array_size_];
+
 	n_vals_ = new int[array_size_];
 	start_times_ = new float[array_size_];
 	
@@ -37,6 +41,11 @@ void DataVals::initialize(){
 		ring_buffers_[ i ][0] = 0;
 		ring_indices_[i] = -1;
 		is_buffered_[i] = 0;
+		is_mean_filtered_[i] = 0;
+
+		mean_val_[i] = 0;
+		mean_decay_[i] = 0;
+		
 		n_vals_[i] = 0;
 		start_times_[i] = 0;
 		
@@ -57,6 +66,12 @@ DataVals::~DataVals(){
   //delete [] vals;
   delete [] ring_indices_;
   delete [] is_buffered_;
+  delete [] is_mean_filtered_;
+ 
+  delete [] mean_val_;
+  
+  delete [] mean_decay_;
+
   delete [] n_vals_;
   delete [] start_times_;
 
@@ -76,7 +91,7 @@ bool DataVals::has_id(std::string id){
 }
 
 
-int DataVals::add_data_val(std::string id, float val, int is_buffered){
+int DataVals::add_data_val(std::string id, float val, int is_buffered, float mean_decay){
 	if (n_current_ >= array_size_) 
 		log_fatal("Adding too many datavals.");
 
@@ -91,36 +106,46 @@ int DataVals::add_data_val(std::string id, float val, int is_buffered){
 	n_current_++;
 	id_mapping_[id] = index;
 	is_buffered_[index] = is_buffered;
+	is_mean_filtered_[index] = mean_decay != 0;
+	mean_decay_[index] = mean_decay;
+
 	return index;
 }
 
 
 void DataVals::update_val(int index, float val){
-  if (is_paused_) return;
-  if (index >= array_size_) log_fatal("Attempting to access index out of range");
-  if (index < 0) return;
-
-  //grab read lock
-  //vals[index] = val;
-  ring_buffers_[index][0] = val;
-
-  n_vals_[index] += 1;
-  if (start_times_[index] == 0) 
-	  start_times_[index] = glfwGetTime();
-
-  if (is_buffered_[index]){
-	  pthread_rwlock_rdlock (&rwlock_);
-	  if (ring_indices_[index] < 0) {
-		  ring_indices_[index] = 0;
-		  for (int i=0; i < buffer_size_full_; i++){
-			  ring_buffers_[index][i] = val;
-		  }
-	  }
-	  ring_buffers_[index][ ring_indices_[index] + 1] = val;
-	  ring_indices_[index]++;
-	  ring_indices_[index] = ring_indices_[index] % buffer_size_;
-	  pthread_rwlock_unlock (&rwlock_);
-  } 
+	if (is_paused_) return;
+	if (index >= array_size_) log_fatal("Attempting to access index out of range");
+	if (index < 0) return;
+	
+	
+	if (is_mean_filtered_[index]) {
+		float cached_mean_val = mean_val_[index];
+		mean_val_[index] = mean_val_[index] * (1.0 - mean_decay_[index]) + val * mean_decay_[index];
+		val -= cached_mean_val;
+	}
+	
+	//grab read lock
+	//vals[index] = val;
+	ring_buffers_[index][0] = val;
+	
+	n_vals_[index] += 1;
+	if (start_times_[index] == 0) 
+		start_times_[index] = glfwGetTime();
+	
+	if (is_buffered_[index]){
+		pthread_rwlock_rdlock (&rwlock_);
+		if (ring_indices_[index] < 0) {
+			ring_indices_[index] = 0;
+			for (int i=0; i < buffer_size_full_; i++){
+				ring_buffers_[index][i] = val;
+			}
+		}
+		ring_buffers_[index][ ring_indices_[index] + 1] = val;
+		ring_indices_[index]++;
+		ring_indices_[index] = ring_indices_[index] % buffer_size_;
+		pthread_rwlock_unlock (&rwlock_);
+	} 
 }
 
 

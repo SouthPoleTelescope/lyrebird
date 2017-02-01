@@ -122,64 +122,63 @@ void G3DataStreamer::initialize_hk_values(){
 	char name_buffer[128];
 	for (auto b  = board_list_.begin(); b!=board_list_.end(); b++){
 		snprintf(name_buffer, 127, "%s:fir_stage",(*b).c_str());
-		hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+		hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 
 		for (int m=1; m < NUM_MODULES+1; m++){
 			snprintf(name_buffer, 127, "%s/%d:carrier_gain",(*b).c_str(),m);
-			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 			snprintf(name_buffer, 127, "%s/%d:nuller_gain",(*b).c_str(),m);
-			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 
 			snprintf(name_buffer, 127, "%s/%d:carrier_railed",(*b).c_str(),m);
-			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 			snprintf(name_buffer, 127, "%s/%d:nuller_railed",(*b).c_str(),m);
-			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 			snprintf(name_buffer, 127, "%s/%d:demod_railed",(*b).c_str(),m);
-			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 
 
 			snprintf(name_buffer, 127, "%s/%d:squid_flux_bias",(*b).c_str(),m);
-			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 			snprintf(name_buffer, 127, "%s/%d:squid_current_bias",(*b).c_str(),m);
-			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 			snprintf(name_buffer, 127, "%s/%d:squid_stage1_offset",(*b).c_str(),m);
-			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 			snprintf(name_buffer, 127, "%s/%d:squid_feedback",(*b).c_str(),m);
-			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 			snprintf(name_buffer, 127, "%s/%d:routing_type",(*b).c_str(),m);
-			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+			hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 			
 			for (int c=1; c < NUM_CHANNELS+1; c++){
 				snprintf(name_buffer, 127, "%s/%d/%d:carrier_amplitude",(*b).c_str(),m,c);
-				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 				
 				snprintf(name_buffer, 127, "%s/%d/%d:carrier_frequency",(*b).c_str(),m,c);
-				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 				
 				snprintf(name_buffer, 127, "%s/%d/%d:demod_frequency",(*b).c_str(),m,c);
-				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 
 
 				snprintf(name_buffer, 127, "%s/%d/%d:dan_accumulator_enable",(*b).c_str(),m,c);
-				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 				snprintf(name_buffer, 127, "%s/%d/%d:dan_feedback_enable",(*b).c_str(),m,c);
-				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 				snprintf(name_buffer, 127, "%s/%d/%d:dan_streaming_enable",(*b).c_str(),m,c);
-				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 				snprintf(name_buffer, 127, "%s/%d/%d:dan_gain",(*b).c_str(),m,c);
-				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 				snprintf(name_buffer, 127, "%s/%d/%d:dan_railed",(*b).c_str(),m,c);
-				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 
 				snprintf(name_buffer, 127, "%s/%d/%d:rnormal",(*b).c_str(),m,c);
-				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 
 				snprintf(name_buffer, 127, "%s/%d/%d:rlatched",(*b).c_str(),m,c);
-				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 
 				snprintf(name_buffer, 127, "%s/%d/%d:res_conversion_factor",(*b).c_str(),m,c);
-				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false));
-
+				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 			}
 		}
 	}
@@ -191,10 +190,10 @@ void G3DataStreamer::initialize_dfmux_values(){
 		for (int m=1; m < NUM_MODULES + 1; m++){
 			for (int c=1; c < NUM_CHANNELS + 1; c++){
 				snprintf(name_buffer, 127, "%s/%d/%d/I:dfmux_samples",(*b).c_str(),m, c);
-				dfmux_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, true));
+				dfmux_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, true, 0));
 		
 				snprintf(name_buffer, 127, "%s/%d/%d/Q:dfmux_samples",(*b).c_str(),m, c);
-				dfmux_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, true));
+				dfmux_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, true, 0));
 			}
 		}
 	}	

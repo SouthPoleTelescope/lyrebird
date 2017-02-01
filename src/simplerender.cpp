@@ -205,83 +205,83 @@ void SimpleRen::set_scale(int ind, float xscale, float yscale){
 }
 
 void SimpleRen::draw_ren_states(glm::mat4 view_matrix){
-  if (!ren_precalced){
-    print_and_exit("after adding render state you need to cal precalcRen");
-  }
-  
-  glUseProgram(s_progID);
-  glUniformMatrix4fv(s_view_matID,  1, GL_FALSE, &view_matrix[0][0]);
-
-  for (size_t i = 0; i < unique_geos.size(); i++){
-    int curInd = 0;
-    int cur_geo_id = unique_geos[i];
-
-    for (size_t j = 0; j < ren_wraps.size(); j++){
-      if (!ren_wraps[j].is_drawn) continue;
-      if (ren_wraps[j].rs.geo_index == cur_geo_id){
-	colbuf[4*curInd+0] = ren_wraps[j].color.r;
-	colbuf[4*curInd+1] = ren_wraps[j].color.g;
-	colbuf[4*curInd+2] = ren_wraps[j].color.b;
-	colbuf[4*curInd+3] = ren_wraps[j].color.a;
-	for (int k =0; k<4; k++)
-	  for (int l=0; l<4; l++)
-	    transbuf[k][4*curInd + l] = ren_wraps[j].m_transmat[k][l];
-	curInd++;
-      }
-    }
-    //bind the vertices
-    int nverts = bind_buffer( cur_geo_id );
-
-    for (int taco = 0; taco<4; taco++){
-      glBindBuffer(GL_ARRAY_BUFFER, elem_trans_gpu_buffer[taco]);
-      //glBufferData(GL_ARRAY_BUFFER, n_ren_states * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW); // Buffer orphaning, a common way to improve streaming perf. 
-      glBufferSubData(GL_ARRAY_BUFFER, 0, curInd * sizeof(GLfloat) * 4, &(transbuf[taco][0]));
-    }
-
-    glBindBuffer(GL_ARRAY_BUFFER, elem_color_gpu_buffer);
-    //glBufferData(GL_ARRAY_BUFFER, n_ren_states * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW); // Buffer orphaning, a common way to improve streaming perf. 
-    glBufferSubData(GL_ARRAY_BUFFER, 0, curInd * sizeof(GLfloat) * 4, &(colbuf[0]));
-
-
-    for (int taco=0; taco<4; taco++){
-      //cout<<"enabling vert arr "<< s_mod_matID[taco]<<endl;
-      glEnableVertexAttribArray(s_mod_matID[taco]);
-      glBindBuffer(GL_ARRAY_BUFFER, elem_trans_gpu_buffer[taco]);
-      glVertexAttribPointer(
-			    s_mod_matID[taco],
-			    4,                  // size
-			    GL_FLOAT,           // type
-			    GL_FALSE,           // normalized?
-			    0,                  // stride
-			    (void*)0            // array buffer offset 
-			    );
-    }
-
-    glEnableVertexAttribArray(s_uni_colID);
-    glBindBuffer(GL_ARRAY_BUFFER, elem_color_gpu_buffer);
-    glVertexAttribPointer(
-			  s_uni_colID,
-			  4,                  // size
-			  GL_FLOAT,           // type
-			  GL_FALSE,           // normalized?
-			  0,                  // stride
-			  (void*)0            // array buffer offset 
-			  );
-
-    glVertexAttribDivisor(s_vertMID, 0); 
-    glVertexAttribDivisor(s_vertUVID, 0); 
-    glVertexAttribDivisor(s_vert_colID, 0); 
-
-    glVertexAttribDivisor(s_mod_matID[0], 1);
-    glVertexAttribDivisor(s_mod_matID[1], 1);
-    glVertexAttribDivisor(s_mod_matID[2], 1);
-    glVertexAttribDivisor(s_mod_matID[3], 1);
-
-    glVertexAttribDivisor(s_uni_colID, 1);
-    glDrawArraysInstanced(GL_TRIANGLES, 0, nverts, curInd);
-
-  }	 
-  unbind_buffer();
+	if (!ren_precalced){
+		print_and_exit("after adding render state you need to cal precalcRen");
+	}
+	
+	glUseProgram(s_progID);
+	glUniformMatrix4fv(s_view_matID,  1, GL_FALSE, &view_matrix[0][0]);
+	
+	for (size_t i = 0; i < unique_geos.size(); i++){
+		int curInd = 0;
+		int cur_geo_id = unique_geos[i];
+		
+		for (size_t j = 0; j < ren_wraps.size(); j++){
+			if (!ren_wraps[j].is_drawn) continue;
+			if (ren_wraps[j].rs.geo_index == cur_geo_id){
+				colbuf[4*curInd+0] = ren_wraps[j].color.r;
+				colbuf[4*curInd+1] = ren_wraps[j].color.g;
+				colbuf[4*curInd+2] = ren_wraps[j].color.b;
+				colbuf[4*curInd+3] = ren_wraps[j].color.a;
+				for (int k =0; k<4; k++)
+					for (int l=0; l<4; l++)
+						transbuf[k][4*curInd + l] = ren_wraps[j].m_transmat[k][l];
+				curInd++;
+			}
+		}
+		//bind the vertices
+		int nverts = bind_buffer( cur_geo_id );
+		
+		for (int taco = 0; taco<4; taco++){
+			glBindBuffer(GL_ARRAY_BUFFER, elem_trans_gpu_buffer[taco]);
+			//glBufferData(GL_ARRAY_BUFFER, n_ren_states * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW); // Buffer orphaning, a common way to improve streaming perf. 
+			glBufferSubData(GL_ARRAY_BUFFER, 0, curInd * sizeof(GLfloat) * 4, &(transbuf[taco][0]));
+		}
+		
+		glBindBuffer(GL_ARRAY_BUFFER, elem_color_gpu_buffer);
+		//glBufferData(GL_ARRAY_BUFFER, n_ren_states * 4 * sizeof(GLfloat), NULL, GL_STREAM_DRAW); // Buffer orphaning, a common way to improve streaming perf. 
+		glBufferSubData(GL_ARRAY_BUFFER, 0, curInd * sizeof(GLfloat) * 4, &(colbuf[0]));
+		
+		
+		for (int taco=0; taco<4; taco++){
+			//cout<<"enabling vert arr "<< s_mod_matID[taco]<<endl;
+			glEnableVertexAttribArray(s_mod_matID[taco]);
+			glBindBuffer(GL_ARRAY_BUFFER, elem_trans_gpu_buffer[taco]);
+			glVertexAttribPointer(
+				s_mod_matID[taco],
+				4,                  // size
+				GL_FLOAT,           // type
+				GL_FALSE,           // normalized?
+				0,                  // stride
+				(void*)0            // array buffer offset 
+				);
+		}
+		
+		glEnableVertexAttribArray(s_uni_colID);
+		glBindBuffer(GL_ARRAY_BUFFER, elem_color_gpu_buffer);
+		glVertexAttribPointer(
+			s_uni_colID,
+			4,                  // size
+			GL_FLOAT,           // type
+			GL_FALSE,           // normalized?
+			0,                  // stride
+			(void*)0            // array buffer offset 
+			);
+		
+		glVertexAttribDivisor(s_vertMID, 0); 
+		glVertexAttribDivisor(s_vertUVID, 0); 
+		glVertexAttribDivisor(s_vert_colID, 0); 
+		
+		glVertexAttribDivisor(s_mod_matID[0], 1);
+		glVertexAttribDivisor(s_mod_matID[1], 1);
+		glVertexAttribDivisor(s_mod_matID[2], 1);
+		glVertexAttribDivisor(s_mod_matID[3], 1);
+		
+		glVertexAttribDivisor(s_uni_colID, 1);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, nverts, curInd);
+		
+	}	 
+	unbind_buffer();
 }
 
 

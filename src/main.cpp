@@ -291,7 +291,8 @@ int main(int argc, char * args[])
   for (size_t i=0; i < dataval_descs.size(); i++){
 	  data_vals.add_data_val(dataval_descs[i].id,
 				 dataval_descs[i].init_val, 
-				 dataval_descs[i].is_buffered);
+				 dataval_descs[i].is_buffered,
+				 0);
   }
   global_data_vals = &data_vals;
   

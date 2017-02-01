@@ -17,7 +17,7 @@ void TestStreamer::initialize(){std::cout<<"Init test streamer"<<std::endl;
   s_path_inds = std::vector<int>(streamer_json_desc_.size());
   for (unsigned int i=0; i < streamer_json_desc_.size(); i++){
 	  //adds our datavals
-	  s_path_inds[i] = data_vals->add_data_val(streamer_json_desc_[i].asString(), 0, true);
+	  s_path_inds[i] = data_vals->add_data_val(streamer_json_desc_[i].asString(), 0, true, 0);
   }
 }
 void TestStreamer::uninitialize(){std::cout<<"Uninit test streamer"<<std::endl;}

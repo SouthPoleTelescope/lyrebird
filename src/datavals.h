@@ -30,7 +30,7 @@ public:
 	bool has_id(std::string id); 
 	
 	//adds a data val.  Exits if you have too many
-	int add_data_val(std::string id, float val, int is_buffered); 
+	int add_data_val(std::string id, float val, int is_buffered, float mean_decay); 
 	
 	//returns null if not found
 	float * get_addr(int index); 
@@ -52,28 +52,32 @@ public:
 	int get_n_vals() {return array_size_;}
   
  private:
-  DataVals(const DataVals&); //prevent copy construction      
-  DataVals& operator=(const DataVals&); //prevent assignment
-  
-  int n_current_;
-  //float * vals;
-  
-  int buffer_size_;
-  int buffer_size_full_;
-  
-  int * is_buffered_;
-  int * ring_indices_;
+	DataVals(const DataVals&); //prevent copy construction      
+	DataVals& operator=(const DataVals&); //prevent assignment
+	
+	int n_current_;
+	//float * vals;
+	
+	int buffer_size_;
+	int buffer_size_full_;
+	
+	int * is_buffered_;
+	int * ring_indices_;
 
+	int * is_mean_filtered_;
+	float * mean_val_;
+	float * mean_decay_;
+	
 	std::vector<std::vector<float> > ring_buffers_;
-
-
-  int * n_vals_;
-  float * start_times_;
-
-  pthread_rwlock_t  rwlock_;
-  bool is_paused_;
-
-  int array_size_;
-  
-  std::unordered_map<std::string, int> id_mapping_;
+	
+	
+	int * n_vals_;
+	float * start_times_;
+	
+	pthread_rwlock_t  rwlock_;
+	bool is_paused_;
+	
+	int array_size_;
+	
+	std::unordered_map<std::string, int> id_mapping_;
 };
