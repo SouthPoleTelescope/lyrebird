@@ -618,6 +618,7 @@ glm::vec4 Equation::get_color(size_t index){
 					dynamic_max_val_ = v[i];
 				} 
 			}
+			delete[] v;
 		}
 		value = (get_value() - dynamic_min_val_)/ (dynamic_max_val_ - dynamic_min_val_);
 	} else {
