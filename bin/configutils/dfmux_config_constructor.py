@@ -62,6 +62,7 @@ def get_channel_vals():
 
 def addDfmuxStreamer(config_dic, tag, boards_list, 
                      bolo_list,
+                     mean_decay_factor = 0.05,
                      sender_hostname = '',
                      sender_port = 8675,
                      hk_hostname = '',
@@ -77,7 +78,7 @@ def addDfmuxStreamer(config_dic, tag, boards_list,
                'network_streamer_hostname': sender_hostname, 
                'network_streamer_port': sender_port,
                'streamer_type': 2,
-               'mean_decay_factor': 0.001
+               'mean_decay_factor': mean_decay_factor
               }
 
     glob_eqs = []
@@ -126,7 +127,6 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
         cid = get_physical_id(wm.board_serial, wm.crate_serial, wm.board_slot,
                               wm.module + 1, wm.channel + 1 )
         
-
         if bp.band == 150*core.G3Units.GHz:
             svg = svg_folder + 'medpol.svg'
             h_svg = svg_folder + 'medhighlight.svg'
@@ -149,8 +149,6 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
             h_svg = svg_folder + 'boxhighlight.svg'
             group = 'Misfit Toys'
             eq_cmap = 'bolo_cyan_cmap'
-
-
         '''
         CC.addGlobalEquation(config_dic, 
                              CC.getEquation('/ %s:res_conversion_factor * %s/I:dfmux_samples %s:rnormal'%(cid, cid, cid), 
@@ -178,7 +176,7 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                                             "Res",
                                             '%s/I:dfmux_samples'%(cid)))
         CC.addGlobalEquation(config_dic, 
-                             CC.getEquation('T %s/Q:dfmux_samples %s/I:dfmux_samples'%(cid, cid), 
+                             CC.getEquation('* ! = %s:carrier_amplitude 0 T %s/Q:dfmux_samples %s/I:dfmux_samples'%(cid, cid, cid), 
                                             "phase_cmap",
                                             '%s:phase'%(cid)+'_eq',
                                             "Channel Phase",
@@ -193,38 +191,33 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
         # '%s:voltage_bias' k
         # '%s:current_conv' k
 
-
         CC.addGlobalEquation(config_dic, 
                              CC.getEquation(
-                                 '* ! = %s:carrier_amplitude 0 ' +
-                                 '/ * %s:voltage_bias * %s:current_conv * %s/I:dfmux_samples MaxPowerScaling(fW)'%(cid, k, k, cid), 
+                                 '* ! = %s:carrier_amplitude 0 / * * * %s:voltage_bias %s:current_conv %s/I:dfmux_samples_mean_filtered 1e15 PowScaling(fW)'%(cid, k, k, cid), 
                                  "white_cmap",
                                  '%s:IPower'%(cid)+'_eq',
-                                 "I Power",
+                                 "I Power Scaled",
                                  '%s/I:dfmux_samples'%(cid),
-                                 display_in_info_bar = False
+                                 display_in_info_bar = True
                              ))
 
 
         CC.addGlobalEquation(config_dic, 
                              CC.getEquation(
-                                 '* ! = %s:carrier_amplitude 0 ' +
-                                 '/ * %s:voltage_bias * %s:current_conv * %s/Q:dfmux_samples MaxPowerScaling(fW)' % (cid, k, k, cid), 
+                                 '* ! = %s:carrier_amplitude 0 / * * * %s:voltage_bias %s:current_conv %s/Q:dfmux_samples_mean_filtered 1e15 PowScaling(fW)'%(cid, k, k, cid), 
                                  "white_cmap",
                                  '%s:QPower'%(cid)+'_eq',
-                                 "Q Power",
+                                 "Q Power Scaled",
                                  '%s/Q:dfmux_samples'%(cid),
-                                 display_in_info_bar = False
+                                 display_in_info_bar = True
                              ))
-
-
 
 
 
         CC.addGlobalEquation(config_dic, 
                              CC.getEquation(
-                                 '* ! = %s:carrier_amplitude 0 ' +
-                                 '%s/I:dfmux_samples'%(cid,cid), 
+                                 ('* ! = %s:carrier_amplitude 0 ' +
+                                 '%s/I:dfmux_samples')%(cid,cid), 
                                  "white_cmap",
                                  '%s:IScaling'%(cid)+'_eq',
                                  "I Scaling",
@@ -235,8 +228,8 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
 
         CC.addGlobalEquation(config_dic, 
                              CC.getEquation(
-                                 '* ! = %s:carrier_amplitude 0 ' +
-                                 '%s/Q:dfmux_samples'%(cid,cid), 
+                                 ('* ! = %s:carrier_amplitude 0 ' +
+                                 '%s/Q:dfmux_samples')%(cid,cid), 
                                  "white_cmap",
                                  '%s:QScaling'%(cid)+'_eq',
                                  "Q Scaling",
@@ -284,8 +277,8 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
 
 
         CC.addVisElem(config_dic, 
-                      x_cen=bp.x_offset*3e1,   y_cen=bp.y_offset*3e1,
-                      x_scale=scale_fac, y_scale=scale_fac, 
+                      x_cen = bp.x_offset*3e1,   y_cen = bp.y_offset*3e1,
+                      x_scale = scale_fac, y_scale = scale_fac, 
                       rotation=bp.pol_angle,
                       svg_path=svg,
                       highlight_path = h_svg,
@@ -314,7 +307,9 @@ def generate_dfmux_lyrebird_config(fn,
                                    control_host = None,
                                    gcp_get_hk_port = None,
                                    dv_buffer_size = 512,
-                                   min_max_update_interval = 300):
+                                   min_max_update_interval = 300,
+                                   mean_decay_factor = 0.01
+):
     import os
     creepy_path = os.path.dirname(os.path.realpath(__file__))
     svg_folder = os.path.abspath(creepy_path+'/../../svgs/') + '/'
@@ -344,16 +339,14 @@ def generate_dfmux_lyrebird_config(fn,
     special_separation = max_delt**0.5
     scale_fac =  special_separation / ( safety_factor * float(cell_size))
 
-
     global_display_names = ['Rfrac', 
                             'IQ Phase', 
                             'Freq Settings', 
                             'SQUID Be F*cked',
-                            'I:HPF Power Units'
-                            'Q:HPF Power Units'
-                            'I:Dynamic Color Adjusted'
-                            'Q:Dynamic Color Adjusted'
-    ]
+                            'I:HPF Power Units',
+                            'Q:HPF Power Units',
+                            'I:Dynamic Color Adjusted',
+                            'Q:Dynamic Color Adjusted']
 
     #add the general settings
     config_dic = {}
@@ -367,18 +360,21 @@ def generate_dfmux_lyrebird_config(fn,
                           dv_buffer_size = dv_buffer_size,
                           min_max_update_interval = min_max_update_interval
                    )
-    
+    #import pdb; pdb.set_trace()
     addDfmuxStreamer(config_dic, "dfmux_streamer", board_ids, 
-                     bolo_list = wiring_map.keys(),
+                     bolo_list = filter(lambda x: x, wiring_map.keys()),
                      sender_hostname = hk_hostname,
                      sender_port = port,
                      hk_hostname = hk_hostname,
-                     hk_port = hk_port  )
+                     hk_port = hk_port,
+                     mean_decay_factor = mean_decay_factor
+    )
 
     addDfmuxVisElems(config_dic, wiring_map, bolo_props_map, 
                      scale_fac, svg_folder)
 
-    config_dic["modifiable_data_vals"] = ["MaxPowerScaling(fW)"]
+    CC.addDataVal(config_dic, "PowScaling(fW)", 10, False)
+    config_dic["modifiable_data_vals"] = ["PowScaling(fW)"]
 
     if (not control_host is None) and (not gcp_get_hk_port is None):
         config_dic['external_commands_id_list'] = ['Get Housekeeping']

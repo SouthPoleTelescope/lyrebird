@@ -102,7 +102,11 @@ int DataVals::add_data_val(std::string id, float val, int is_buffered, float mea
 	
 	if (is_buffered) {
 		ring_buffers_[index] = std::vector<float>(buffer_size_full_, val);
+	} else {
+		ring_buffers_[index][0] = val;
 	}
+	l3_assert(mean_decay >= 0 && mean_decay < 1);
+
 	n_current_++;
 	id_mapping_[id] = index;
 	is_buffered_[index] = is_buffered;
@@ -120,6 +124,9 @@ void DataVals::update_val(int index, float val){
 	
 	
 	if (is_mean_filtered_[index]) {
+		if (mean_val_[index] == 0){
+			mean_val_[index] = val;
+		}
 		float cached_mean_val = mean_val_[index];
 		mean_val_[index] = mean_val_[index] * (1.0 - mean_decay_[index]) + val * mean_decay_[index];
 		val -= cached_mean_val;

@@ -56,8 +56,8 @@ G3DataStreamer::G3DataStreamer(Json::Value desc,
 
 	if (desc.isMember("bolo_list")) {
 		bolo_list_ = std::vector<std::string>( desc["bolo_list"].size() );
-		for (int i=0; i < n_boards_; i++){
-			bolo_list_[i] = desc["bolo_list"][i].asString();
+		for (size_t i=0; i < bolo_list_.size(); i++){
+			bolo_list_[i] = desc["bolo_list"][(int)i].asString();
 		}
 	}
 

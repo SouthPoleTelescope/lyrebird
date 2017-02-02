@@ -289,6 +289,7 @@ int main(int argc, char * args[])
   data_vals.initialize();
 
   for (size_t i=0; i < dataval_descs.size(); i++){
+	  printf("adding dataval_descs[i].init_val %f\n", dataval_descs[i].init_val);
 	  data_vals.add_data_val(dataval_descs[i].id,
 				 dataval_descs[i].init_val, 
 				 dataval_descs[i].is_buffered,
@@ -522,8 +523,11 @@ int main(int argc, char * args[])
 
   TwAddSeparator(main_bar, "modifiable", NULL);
   for (size_t i=0; i < modifiable_data_vals.size(); i++){
-	  float * dv_addr = data_vals.get_addr(data_vals.get_ind( modifiable_data_vals[i] ));
+	  int dv_ind = data_vals.get_ind( modifiable_data_vals[i] );
+	  float * dv_addr = data_vals.get_addr(dv_ind);
+	  float cached_value = *dv_addr;
 	  TwAddVarRW(main_bar, modifiable_data_vals[i].c_str(), TW_TYPE_FLOAT, dv_addr, "step=0.01");
+	  *dv_addr = cached_value;
   }
 
 

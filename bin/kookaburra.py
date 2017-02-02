@@ -14,15 +14,15 @@ import warnings
 warnings.filterwarnings("ignore")
 
 @core.cache_frame_data(type = core.G3FrameType.Housekeeping, wiring_map = 'WiringMap')
-def AddVbiasAndCurrentConv(frame):
+def AddVbiasAndCurrentConv(frame, wiring_map):
     hk_map = frame['DfMuxHousekeeping']
     v_bias = core.G3MapDouble()
     i_conv = core.G3MapDouble()
     for k in wiring_map.keys():
         vb = dfmux.unittransforms.bolo_bias_voltage(wiring_map, hk_map, 
-                                                    bolo = k, system = 'ICE')
+                                                    bolo = k, system = 'ICE') / core.G3Units.V
         ic = dfmux.unittransforms.counts_to_amps(wiring_map, hk_map, 
-                                                 bolo = k, system = 'ICE')
+                                                 bolo = k, system = 'ICE') / core.G3Units.amp
         v_bias[k] = vb
         i_conv[k] = ic
     frame['VoltageBias'] = v_bias
@@ -123,8 +123,8 @@ class BoloPropertiesFaker(object):
                 bp.pol_efficiency = 0
                 bp.wafer_id = w_id
                 bp.squid_id = sq_id
-                bp.x_offset = x
-                bp.y_offset = y
+                bp.x_offset = float(x) 
+                bp.y_offset = float(y) 
                 self.bolo_props[k] = bp
 
             out_frame = core.G3Frame(core.G3FrameType.Calibration)
@@ -142,7 +142,8 @@ class BirdConfigGenerator(object):
                  hostname = '', hk_hostname = '',
                  port = 3, hk_port = 3, get_hk_port = 3,
                  dv_buffer_size = 0, min_max_update_interval = 0,
-                 rendering_sub_sampling = 1, max_framerate = 0
+                 rendering_sub_sampling = 1, max_framerate = 0,
+                 mean_decay_factor = 0.01
     ):
         self.l_fn = lyrebird_output_file
         self.get_hk_script_name = get_hk_script_name
@@ -158,6 +159,7 @@ class BirdConfigGenerator(object):
         self.min_max_update_interval = min_max_update_interval
         self.rendering_sub_sampling = rendering_sub_sampling
         self.max_framerate = max_framerate
+        self.mean_decay_factor = mean_decay_factor
     def __call__(self, frame):
         if frame.type == core.G3FrameType.Calibration:
             if 'BolometerProperties' in frame:
@@ -186,7 +188,8 @@ class BirdConfigGenerator(object):
             dv_buffer_size = self.dv_buffer_size,
             min_max_update_interval = self.min_max_update_interval,
             sub_sampling = self.rendering_sub_sampling,
-            max_framerate = self.max_framerate
+            max_framerate = self.max_framerate,
+            mean_decay_factor = self.mean_decay_factor
         )
         write_get_hk_script(self.get_hk_script_name, 
                             self.hostname, self.get_hk_port)
@@ -526,7 +529,12 @@ if __name__=='__main__':
     parser.add_argument('--rendering_sub_sampling', type=int, default = 2)
     parser.add_argument('--max_framerate', type=int, default = 60)
 
-    parser.add_argument('--debug_mode', type=int, default = 0)
+    parser.add_argument("--mean_decay_factor", type = float, default = 0.01, 
+                        help = "The mean filtered power has an exponential convolution form to the filter.  It has a value in (0,1) exclusive.  Increasing the value decreases the size of the exponential to it pushes the frequency of the HPF lower.  Numbers close to one filter things very rapidly, close to 0 very slowly.")
+    parser.add_argument('--debug_mode', action='store_true', help = "prevents the spawning on the curses display")
+    parser.add_argument('--ignore_nominal_bias_props', action='store_true', help = "will align the bolometers into a grid")
+    
+
 
     args = parser.parse_args()
     #core.set_log_level(core.G3LogLevel.LOG_DEBUG)
@@ -540,6 +548,9 @@ if __name__=='__main__':
     pipe = core.G3Pipeline()
     pipe.Add(core.G3NetworkReceiver, 
              hostname = args.hostname, port = args.port)
+
+    if args.ignore_nominal_bias_props:
+        pipe.Add(lambda fr: fr.type != core.G3FrameType.Calibration)
 
     pipe.Add(AddVbiasAndCurrentConv)
     
@@ -555,7 +566,8 @@ if __name__=='__main__':
              dv_buffer_size = args.timestream_buffer_size,
              min_max_update_interval = args.min_max_update_interval,
              rendering_sub_sampling = args.rendering_sub_sampling,
-             max_framerate = args.max_framerate
+             max_framerate = args.max_framerate,
+             mean_decay_factor = args.mean_decay_factor
     )
 
     pipe.Add(GetHousekeepingMessenger, hostname = args.hostname, 
