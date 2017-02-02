@@ -66,7 +66,8 @@ public:
 	void initialize_hk_values();
 	void initialize_dfmux_values();
 
-	void update_hk_values(const DfMuxHousekeepingMap & board_info);
+	void update_hk_values(const DfMuxHousekeepingMap & board_info,
+			      G3MapDoubleConstPtr vbias, G3MapDoubleConstPtr iconv);
 	void update_dfmux_values(const DfMuxMetaSample & ms);
 
 	int get_num_hk_values();
@@ -77,6 +78,9 @@ private:
 	bool has_id_map_;
 
 	std::vector<std::string>  board_list_;
+
+	std::vector<std::string>  bolo_list_;
+
 	int n_boards_;
 	std::string hostname_;
 	int port_;
@@ -91,6 +95,9 @@ private:
 	int streamer_type_;
 	bool do_hk_;
 	bool do_tp_;
+
+	float mean_decay_factor_;
+
 };
 
 

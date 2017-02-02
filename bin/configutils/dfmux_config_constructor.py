@@ -61,6 +61,7 @@ def get_channel_vals():
 
 
 def addDfmuxStreamer(config_dic, tag, boards_list, 
+                     bolo_list,
                      sender_hostname = '',
                      sender_port = 8675,
                      hk_hostname = '',
@@ -68,13 +69,15 @@ def addDfmuxStreamer(config_dic, tag, boards_list,
     hk_desc = {'board_list':boards_list,
                'network_streamer_hostname': hk_hostname, 
                'network_streamer_port': hk_port,
-               'streamer_type': 1
+               'streamer_type': 1,
+               'bolo_list': bolo_list
               }
 
     tp_desc = {'board_list':boards_list,
                'network_streamer_hostname': sender_hostname, 
                'network_streamer_port': sender_port,
-               'streamer_type': 2
+               'streamer_type': 2,
+               'mean_decay_factor': 0.001
               }
 
     glob_eqs = []
@@ -183,14 +186,63 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                                             display_in_info_bar = True,
                                         ))
 
+        #k is the bolo id for vbias and iconv
+
+        # '%s/I:dfmux_samples_mean_filtered' cid
+        # '%s/Q:dfmux_samples_mean_filtered' cid
+        # '%s:voltage_bias' k
+        # '%s:current_conv' k
+
+
         CC.addGlobalEquation(config_dic, 
-                             CC.getEquation('%s/I:dfmux_samples'%(cid), 
-                                            "white_cmap",
-                                            '%s:IScaling'%(cid)+'_eq',
-                                            "I Scaling",
-                                            '%s/I:dfmux_samples'%(cid),
-                                            display_in_info_bar = False,
-                                            color_is_dynamic = True,
+                             CC.getEquation(
+                                 '* ! = %s:carrier_amplitude 0 ' +
+                                 '/ * %s:voltage_bias * %s:current_conv * %s/I:dfmux_samples MaxPowerScaling(fW)'%(cid, k, k, cid), 
+                                 "white_cmap",
+                                 '%s:IPower'%(cid)+'_eq',
+                                 "I Power",
+                                 '%s/I:dfmux_samples'%(cid),
+                                 display_in_info_bar = False
+                             ))
+
+
+        CC.addGlobalEquation(config_dic, 
+                             CC.getEquation(
+                                 '* ! = %s:carrier_amplitude 0 ' +
+                                 '/ * %s:voltage_bias * %s:current_conv * %s/Q:dfmux_samples MaxPowerScaling(fW)' % (cid, k, k, cid), 
+                                 "white_cmap",
+                                 '%s:QPower'%(cid)+'_eq',
+                                 "Q Power",
+                                 '%s/Q:dfmux_samples'%(cid),
+                                 display_in_info_bar = False
+                             ))
+
+
+
+
+
+        CC.addGlobalEquation(config_dic, 
+                             CC.getEquation(
+                                 '* ! = %s:carrier_amplitude 0 ' +
+                                 '%s/I:dfmux_samples'%(cid,cid), 
+                                 "white_cmap",
+                                 '%s:IScaling'%(cid)+'_eq',
+                                 "I Scaling",
+                                 '%s/I:dfmux_samples'%(cid),
+                                 display_in_info_bar = False,
+                                 color_is_dynamic = True,
+                                        ))
+
+        CC.addGlobalEquation(config_dic, 
+                             CC.getEquation(
+                                 '* ! = %s:carrier_amplitude 0 ' +
+                                 '%s/Q:dfmux_samples'%(cid,cid), 
+                                 "white_cmap",
+                                 '%s:QScaling'%(cid)+'_eq',
+                                 "Q Scaling",
+                                 '%s/Q:dfmux_samples'%(cid),
+                                 display_in_info_bar = False,
+                                 color_is_dynamic = True,
                                         ))
 
 
@@ -210,7 +262,12 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                    '%s:phase'%(cid)+'_eq',
                    '%s:freq'%(cid)+'_eq',
                    '%s:SquidGood'%(mid)+'_eq',
+                   
+                   '%s:IPower'%(cid)+'_eq',
+                   '%s:QPower'%(cid)+'_eq',
+
                    '%s:IScaling'%(cid)+'_eq',
+                   '%s:QScaling'%(cid)+'_eq',
                    '%s/I:dfmux_samples_eq' % cid, 
                    '%s/Q:dfmux_samples_eq' % cid,
                    '%s:Resistance_eq' % cid ]
@@ -292,7 +349,10 @@ def generate_dfmux_lyrebird_config(fn,
                             'IQ Phase', 
                             'Freq Settings', 
                             'SQUID Be F*cked',
+                            'I:HPF Power Units'
+                            'Q:HPF Power Units'
                             'I:Dynamic Color Adjusted'
+                            'Q:Dynamic Color Adjusted'
     ]
 
     #add the general settings
@@ -309,6 +369,7 @@ def generate_dfmux_lyrebird_config(fn,
                    )
     
     addDfmuxStreamer(config_dic, "dfmux_streamer", board_ids, 
+                     bolo_list = wiring_map.keys(),
                      sender_hostname = hk_hostname,
                      sender_port = port,
                      hk_hostname = hk_hostname,
@@ -317,6 +378,7 @@ def generate_dfmux_lyrebird_config(fn,
     addDfmuxVisElems(config_dic, wiring_map, bolo_props_map, 
                      scale_fac, svg_folder)
 
+    config_dic["modifiable_data_vals"] = ["MaxPowerScaling(fW)"]
 
     if (not control_host is None) and (not gcp_get_hk_port is None):
         config_dic['external_commands_id_list'] = ['Get Housekeeping']

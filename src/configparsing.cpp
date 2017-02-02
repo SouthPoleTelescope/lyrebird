@@ -215,8 +215,8 @@ void parse_config_file(string in_file,
 
   if (root.isMember("modifiable_data_vals")){
 	  log_trace("mod dvs");
-    for (unsigned int i=0; i < root["modifiable_data_vals"].size(); i++)
-      modifiable_data_vals.push_back(root["modifiable_data_vals"][i].asString());
+	  for (unsigned int i=0; i < root["modifiable_data_vals"].size(); i++)
+		  modifiable_data_vals.push_back(root["modifiable_data_vals"][i].asString());
   }
 
   if (root.isMember("external_commands_list")  && root.isMember("external_commands_id_list") ){

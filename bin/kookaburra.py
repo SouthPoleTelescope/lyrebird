@@ -13,6 +13,21 @@ import signal
 import warnings
 warnings.filterwarnings("ignore")
 
+@core.cache_frame_data(type = core.G3FrameType.Housekeeping, wiring_map = 'WiringMap')
+def AddVbiasAndCurrentConv(frame):
+    hk_map = frame['DfMuxHousekeeping']
+    v_bias = core.G3MapDouble()
+    i_conv = core.G3MapDouble()
+    for k in wiring_map.keys():
+        vb = dfmux.unittransforms.bolo_bias_voltage(wiring_map, hk_map, 
+                                                    bolo = k, system = 'ICE')
+        ic = dfmux.unittransforms.counts_to_amps(wiring_map, hk_map, 
+                                                 bolo = k, system = 'ICE')
+        v_bias[k] = vb
+        i_conv[k] = ic
+    frame['VoltageBias'] = v_bias
+    frame['CurrentConv'] = i_conv
+
 
 def make_square_block(n_things):
     sq = n_things**0.5
@@ -526,6 +541,8 @@ if __name__=='__main__':
     pipe.Add(core.G3NetworkReceiver, 
              hostname = args.hostname, port = args.port)
 
+    pipe.Add(AddVbiasAndCurrentConv)
+    
     pipe.Add(BoloPropertiesFaker)
     pipe.Add(BirdConfigGenerator, 
              lyrebird_output_file = lyrebird_output_file, 

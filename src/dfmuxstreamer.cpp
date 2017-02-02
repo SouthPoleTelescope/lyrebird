@@ -53,9 +53,25 @@ G3DataStreamer::G3DataStreamer(Json::Value desc,
 	for (int i=0; i < n_boards_; i++){
 		board_list_[i] = desc["board_list"][i].asString();
 	}
+
+	if (desc.isMember("bolo_list")) {
+		bolo_list_ = std::vector<std::string>( desc["bolo_list"].size() );
+		for (int i=0; i < n_boards_; i++){
+			bolo_list_[i] = desc["bolo_list"][i].asString();
+		}
+	}
+
 	hostname_ = desc["network_streamer_hostname"].asString();
 	port_ = desc["network_streamer_port"].asInt();
 	streamer_type_ = desc["streamer_type"].asInt();
+
+	if (desc.isMember("mean_decay_factor")) {
+		mean_decay_factor_ = desc["mean_decay_factor"].asFloat();
+	} else {
+		mean_decay_factor_ = 0.01;
+	}
+
+
 
 	log_debug("streamer type %d", streamer_type_);
 
@@ -96,7 +112,9 @@ void G3DataStreamer::update_values(int n){
 		if (! do_hk_) return;
 		log_debug("updating hk");
 		DfMuxHousekeepingMapConstPtr bi = frame->Get<DfMuxHousekeepingMap>("DfMuxHousekeeping");
-		if (has_id_map_) update_hk_values(*bi);
+		G3MapDoubleConstPtr vbias = frame->Get<G3MapDouble>("VoltageBias");
+		G3MapDoubleConstPtr iconv = frame->Get<G3MapDouble>("CurrentConv");
+		if (has_id_map_) update_hk_values(*bi, vbias, iconv);
 	}
 }
 
@@ -110,11 +128,14 @@ void G3DataStreamer::uninitialize(){
 }
 
 int G3DataStreamer::get_num_hk_values(){
-	return n_boards_ * 1 + n_boards_ * NUM_MODULES * 10 + n_boards_ * NUM_MODULES * NUM_CHANNELS * 11;
+	return (n_boards_ * 1 
+		+ n_boards_ * NUM_MODULES * 10 
+		+ n_boards_ * NUM_MODULES * NUM_CHANNELS * 11
+		+ bolo_list_.size() * 2);
 }
 
 int G3DataStreamer::get_num_dfmux_values(){
-	return n_boards_ * NUM_MODULES * NUM_CHANNELS * 2;
+	return n_boards_ * NUM_MODULES * NUM_CHANNELS * 4;
 }
 
 //  int add_data_val(std::string id, float val, int is_buffered); 
@@ -182,6 +203,12 @@ void G3DataStreamer::initialize_hk_values(){
 			}
 		}
 	}
+	for (auto b  = bolo_list_.begin(); b != bolo_list_.end(); b++){
+		snprintf(name_buffer, 127, "%s:voltage_bias",(*b).c_str());
+		hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));		
+		snprintf(name_buffer, 127, "%s:current_conv",(*b).c_str());
+		hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));		
+	}
 }
 
 void G3DataStreamer::initialize_dfmux_values(){
@@ -194,13 +221,23 @@ void G3DataStreamer::initialize_dfmux_values(){
 		
 				snprintf(name_buffer, 127, "%s/%d/%d/Q:dfmux_samples",(*b).c_str(),m, c);
 				dfmux_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, true, 0));
+
+
+				snprintf(name_buffer, 127, "%s/%d/%d/I:dfmux_samples_mean_filtered",(*b).c_str(),m, c);
+				dfmux_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, true, mean_decay_factor_));
+		
+				snprintf(name_buffer, 127, "%s/%d/%d/Q:dfmux_samples_mean_filtered",(*b).c_str(),m, c);
+				dfmux_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, true, mean_decay_factor_));
+
 			}
 		}
 	}	
 }
 
 
-void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
+void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map, 
+				      G3MapDoubleConstPtr vbias, 
+				      G3MapDoubleConstPtr iconv){
 	//log_debug("update hk");
 
 	size_t i=0; 
@@ -262,6 +299,11 @@ void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map){
 			}
 		}
 	}
+	for (auto b  = bolo_list_.begin(); b != bolo_list_.end(); b++){
+		dvs_->update_val(hk_path_inds_[i], vbias->at(*b));i++;
+		dvs_->update_val(hk_path_inds_[i], iconv->at(*b));i++;
+	}
+	
 }
 
 void G3DataStreamer::update_dfmux_values(const DfMuxMetaSample & samp){
@@ -276,17 +318,20 @@ void G3DataStreamer::update_dfmux_values(const DfMuxMetaSample & samp){
 			//for (auto it = samp.begin(); it != samp.end(); it++)log_debug("SERIALs in dfm %d", it->first);
 			
 			//log_debug("samp for board %s missing", board->c_str());
-			dv_ind += NUM_MODULES * NUM_CHANNELS * 2;
+			dv_ind += NUM_MODULES * NUM_CHANNELS * 4;
 			continue;
 		}
 		const DfMuxBoardSamples & board_sample = samp.at(serial);
 		for (int m = 0; m < NUM_MODULES; m++){
 			if (board_sample.find(m) == board_sample.end()){ 
-				dv_ind += NUM_CHANNELS * 2;
+				dv_ind += NUM_CHANNELS * 4;
 				continue;
 			}
 			DfMuxSampleConstPtr mod_ptr = board_sample.at(m);
 			for (int c = 0; c < NUM_CHANNELS; c++){
+				dvs_->update_val(dfmux_path_inds_[dv_ind], (float) mod_ptr->at(c*2)); dv_ind++;
+				dvs_->update_val(dfmux_path_inds_[dv_ind], (float) mod_ptr->at(c*2+1)); dv_ind++;
+
 				dvs_->update_val(dfmux_path_inds_[dv_ind], (float) mod_ptr->at(c*2)); dv_ind++;
 				dvs_->update_val(dfmux_path_inds_[dv_ind], (float) mod_ptr->at(c*2+1)); dv_ind++;
 			}

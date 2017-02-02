@@ -26,6 +26,15 @@ glm::vec4 white_cmap(float val){
   return glm::vec4(val,val,val,1.0);
 }
 
+
+
+glm::vec4 white_cmap_fs(float val){
+  val = val > 1.0 ? 1.0 : val;
+  val = val < -1.0 ? -1.0 : val;
+  return white_cmap( (val + 1) / 2 );
+}
+
+
 glm::vec4 red_cmap(float val){
   val = val > 1.0 ? 1.0 : val;
   val = val < 0.0 ? 0.0 : val;
@@ -109,36 +118,38 @@ glm::vec4 bolo_green_cmap(float val){
 
 
 color_map_t get_color_map(std::string n){
-  if (n=="red_cmap"){
-    return red_cmap;
+	if (n=="red_cmap"){
+	  return red_cmap;
   }else if (n=="green_cmap"){
-    return green_cmap;
+	  return green_cmap;
   }else if (n=="bolo_green_cmap"){
-    return bolo_green_cmap;
+	  return bolo_green_cmap;
   }else if (n=="bolo_blue_cmap"){
-    return bolo_blue_cmap;
+	  return bolo_blue_cmap;
   }else if (n=="bolo_purple_cmap"){
-    return bolo_purple_cmap;
+	  return bolo_purple_cmap;
   }
   else if (n=="blue_cmap"){
-    return blue_cmap;
+	  return blue_cmap;
   }
-
+  
   else if (n=="phase_cmap"){
-    return phase_cmap;
+	  return phase_cmap;
   }
 
   else if (n=="bolo_cyan_cmap"){
-    return bolo_cyan_cmap;
+	  return bolo_cyan_cmap;
   }
   else if (n=="white_cmap"){
-    return white_cmap;
+	  return white_cmap;
+  } else if (n=="white_cmap_fs"){
+	  return white_cmap_fs;
   }else if (n=="rainbow_cmap"){
-    return rainbow_cmap;
+	  return rainbow_cmap;
   } else {
-   cout<<"Color map: "<< n <<" not recognized, giving you a white one"<<endl;
-   return white_cmap;
- }
+	  cout<<"Color map: "<< n <<" not recognized, giving you a white one"<<endl;
+	  return white_cmap;
+  }
 }
 
 
