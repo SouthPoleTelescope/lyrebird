@@ -416,7 +416,7 @@ int main(int argc, char * args[])
   
   log_debug("setting up plotter");  
   Plotter p = Plotter(dv_buffer_size);
-  PlotBundler plotBundler( max_num_plotted, dv_buffer_size, &visual_elements);
+  PlotBundler plot_bundler( max_num_plotted, dv_buffer_size, &visual_elements);
 
   //adds the search bar
 
@@ -604,16 +604,16 @@ int main(int argc, char * args[])
 	  list<glm::vec3> color_inds = highlight.get_plot_colors();
 	  
 	  if (plot_inds.size() > 0){
-		  plotBundler.update_plots(plot_inds, color_inds);
-		  int num_plots = plotBundler.get_num_plots();
+		  plot_bundler.update_plots(plot_inds, color_inds);
+		  int num_plots = plot_bundler.get_num_plots();
 		  
 		  p.prepare_plotting(glm::vec2(.7, -.7), glm::vec2(.3,.3));
 		  p.plotBG(glm::vec4(0.0,0.0,0.0,0.9));
 		  for (int i=num_plots-1; i >= 0; i--){
 			  glm::vec3 plotColor;
 			  float minp,maxp;
-			  float * plotVals = plotBundler.get_plot(i, plotColor);
-			  plotBundler.get_plot_min_max(minp, maxp);
+			  float * plotVals = plot_bundler.get_plot(i, plotColor);
+			  plot_bundler.get_plot_min_max(minp, maxp);
 			  
 			  if (is_fixed_scaled) {
 				  minp = min_plot_val; 
@@ -630,12 +630,12 @@ int main(int argc, char * args[])
 		  
 		  float psd_0point;
 		  float psd_sep;
-		  plotBundler.get_psd_start_and_sep(psd_0point, psd_sep);
+		  plot_bundler.get_psd_start_and_sep(psd_0point, psd_sep);
 		  for (int i=num_plots-1; i >= 0; i--){
 			  glm::vec3 plotColor;
 			  float minp,maxp;
-			  float * plotVals = plotBundler.get_psd(i, plotColor);
-			  plotBundler.get_psd_min_max(minp, maxp);
+			  float * plotVals = plot_bundler.get_psd(i, plotColor);
+			  plot_bundler.get_psd_min_max(minp, maxp);
 			  p.plot(plotVals, dv_buffer_size/2+1, minp, maxp, glm::vec4(plotColor,1), 1,
 				 psd_sep, psd_sep);
 		  }

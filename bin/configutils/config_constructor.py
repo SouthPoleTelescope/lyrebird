@@ -121,7 +121,7 @@ def storeConfigFile(config_dic, fn):
 if __name__ == '__main__':
     config_dic = {}
     addGeneralSettings(config_dic, win_x_size=800, win_y_size=600, 
-                       sub_sampling=4, max_framerate=-1, max_num_plotted=10,
+                       sub_sampling=4, max_framerate=-1, max_num_plotted=10000,
                        eq_names = ["osc", "lin"],
                        dv_buffer_size = 1024
     )

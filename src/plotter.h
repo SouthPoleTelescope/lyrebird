@@ -6,17 +6,18 @@
 #include <vector>
 
 class Plotter{
- public:
-  Plotter(int max_num_points);
-  void prepare_plotting(glm::vec2 center, glm::vec2 size);
-  void plotBG(glm::vec4 color);
-  void plotFG(glm::vec4 color);
-
-  void plot(float * vals, int n_elems, float min, float max, 
-	    glm::vec4 color, int is_log_scale, 
-	    float x_start, float x_sep
+public:
+	Plotter(int max_num_points);
+	~Plotter();
+	void prepare_plotting(glm::vec2 center, glm::vec2 size);
+	void plotBG(glm::vec4 color);
+	void plotFG(glm::vec4 color);
+	
+	void plot(float * vals, int n_elems, float min, float max, 
+		  glm::vec4 color, int is_log_scale, 
+		  float x_start, float x_sep
 	  );
-  void cleanup_plotting();
+	void cleanup_plotting();
 
  private:
 	GLuint programID;

@@ -101,34 +101,42 @@ void main(){
 }
 
 
-void Plotter::prepare_plotting(glm::vec2 center, glm::vec2 size){
-  view_transform_ = glm::mat4(1);
-  view_transform_[0][0] = size.x;
-  view_transform_[1][1] = size.y;
-  view_transform_[3][0] = center.x;
-  view_transform_[3][1] = center.y;
+Plotter::~Plotter() {
+	glDeleteBuffers(1, &square_vert_buffer_);
+	glDeleteBuffers(1, &simple_line_buffer_);
+	glDeleteBuffers(1, &line_vert_buffer_);
+	glDeleteBuffers(1, &fg_vert_buffer_);
+}
 
-  glUseProgram(programID);
+
+void Plotter::prepare_plotting(glm::vec2 center, glm::vec2 size){
+	view_transform_ = glm::mat4(1);
+	view_transform_[0][0] = size.x;
+	view_transform_[1][1] = size.y;
+	view_transform_[3][0] = center.x;
+	view_transform_[3][1] = center.y;
+	
+	glUseProgram(programID);
   
 }
 
 void Plotter::plotBG(glm::vec4 color){
 
-  glUniformMatrix4fv(view_matrix_uniform_,  1, GL_FALSE, &view_transform_[0][0]);
-  glEnableVertexAttribArray(vertex_pos_shader_attrib_);
-  glBindBuffer(GL_ARRAY_BUFFER, square_vert_buffer_);
-  glVertexAttribPointer(vertex_pos_shader_attrib_,
-			3,                  // size
-			GL_FLOAT,           // type
-			GL_FALSE,           // normalized?
-			0,                  // stride
-			(void*)0            // array buffer offset      
-			);
-  
-  glUniform4fv(vertex_color_shader_uniform_, 1, &( color[0]  ));
-  glDrawArrays(GL_TRIANGLES, 0, 6);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
-  glDisableVertexAttribArray(vertex_pos_shader_attrib_);
+	glUniformMatrix4fv(view_matrix_uniform_,  1, GL_FALSE, &view_transform_[0][0]);
+	glEnableVertexAttribArray(vertex_pos_shader_attrib_);
+	glBindBuffer(GL_ARRAY_BUFFER, square_vert_buffer_);
+	glVertexAttribPointer(vertex_pos_shader_attrib_,
+			      3,                  // size
+			      GL_FLOAT,           // type
+			      GL_FALSE,           // normalized?
+			      0,                  // stride
+			      (void*)0            // array buffer offset      
+		);
+	
+	glUniform4fv(vertex_color_shader_uniform_, 1, &( color[0]  ));
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glDisableVertexAttribArray(vertex_pos_shader_attrib_);
 }
 
 
@@ -292,11 +300,9 @@ void Plotter::plot(float * vals, int n_elems,
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glDisableVertexAttribArray(vertex_pos_shader_attrib_);
 	
-	
-  
 	glLineWidth(1);
 }
 
 void Plotter::cleanup_plotting(){
-  glUseProgram(0);
+	glUseProgram(0);
 }
