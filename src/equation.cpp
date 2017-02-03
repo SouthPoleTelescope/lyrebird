@@ -64,6 +64,13 @@ glm::vec4 rainbow_cmap(float val){
 return glm::vec4(glm::rgbColor(hsv_col),1.0);
 }
 
+glm::vec4 rainbow_cmap_fs(float val){
+	val = val > 1.0 ? 1.0 : val;
+	val = val < -1.0 ? -1.0 : val;
+	return rainbow_cmap( (val + 1) / 2 );
+}
+
+
 
 
 glm::vec4 phase_cmap(float val){
@@ -146,6 +153,8 @@ color_map_t get_color_map(std::string n){
 	  return white_cmap_fs;
   }else if (n=="rainbow_cmap"){
 	  return rainbow_cmap;
+  }else if (n=="rainbow_cmap_fs"){
+	  return rainbow_cmap_fs;
   } else {
 	  cout<<"Color map: "<< n <<" not recognized, giving you a white one"<<endl;
 	  return white_cmap;
