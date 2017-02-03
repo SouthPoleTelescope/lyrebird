@@ -31,7 +31,12 @@ glm::vec4 white_cmap(float val){
 glm::vec4 white_cmap_fs(float val){
   val = val > 1.0 ? 1.0 : val;
   val = val < -1.0 ? -1.0 : val;
-  return white_cmap( (val + 1) / 2 );
+
+  if (val == 0){
+	  return glm::vec4(0,0,0,1);
+  } else {
+	  return white_cmap( (val + 1) / 2 );
+  }
 }
 
 
@@ -67,7 +72,12 @@ return glm::vec4(glm::rgbColor(hsv_col),1.0);
 glm::vec4 rainbow_cmap_fs(float val){
 	val = val > 1.0 ? 1.0 : val;
 	val = val < -1.0 ? -1.0 : val;
-	return rainbow_cmap( (val + 1) / 2 );
+	if (val == 0){
+		return glm::vec4(0,0,0,1);
+	}
+	else {
+		return rainbow_cmap( (val + 1) / 2 );
+	}
 }
 
 
