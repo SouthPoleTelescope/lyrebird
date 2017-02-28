@@ -409,12 +409,6 @@ class SquidDisplay(object):
         ]
         self.highlight_index = [7 for s in self.str_id_lst]
 
-    def get_resize_handler(self):
-        def rh(signum, frame):
-            print("in resize")
-            return
-        return rh
-
     def init_squids(self, squids_list) :
         self.n_squids = len(squids_list) + len(self.str_id_lst) + 1
         self.squids_list = squids_list
@@ -592,22 +586,13 @@ if __name__=='__main__':
 
     if args.debug_mode:
         pipe.Add(core.Dump)
+        import sys
+        sys.stderr = open('kookaburra_stderr.txt', 'w')
+        sys.stdout = open('kookaburra_stdout.txt', 'w')
+
     else:
         pipe.Add(SquidDisplay)
 
-
-    import sys
-    sys.stderr = open('kookaburra_stderr.txt', 'w')
-    sys.stdout = open('kookaburra_stdout.txt', 'w')
-
-    pipe.Run()
-
-    traceback.print_exc()  # Print the exception
-    curses.curs_set(1)
-    curses.echo()
-    curses.nocbreak()
-    curses.endwin()
-    '''
     try:
         pipe.Run()
     finally:
@@ -616,4 +601,4 @@ if __name__=='__main__':
         curses.echo()
         curses.nocbreak()
         curses.endwin()
-    '''
+
