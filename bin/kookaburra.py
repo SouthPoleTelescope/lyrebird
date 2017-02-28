@@ -531,6 +531,7 @@ if __name__=='__main__':
     parser.add_argument("--mean_decay_factor", type = float, default = 0.01, 
                         help = "The mean filtered power has an exponential convolution form to the filter.  It has a value in (0,1) exclusive.  Increasing the value decreases the size of the exponential to it pushes the frequency of the HPF lower.  Numbers close to one filter things very rapidly, close to 0 very slowly.")
     parser.add_argument('--debug_mode', action='store_true', help = "prevents the spawning on the curses display")
+    parser.add_argument('--debug_logs', action='store_true', help = "store logs of stderr/out")
     parser.add_argument('--ignore_nominal_bias_props', action='store_true', help = "will align the bolometers into a grid")
     
 
@@ -586,6 +587,8 @@ if __name__=='__main__':
 
     if args.debug_mode:
         pipe.Add(core.Dump)
+
+    if args.debug_logs:
         import sys
         sys.stderr = open('kookaburra_stderr.txt', 'w')
         sys.stdout = open('kookaburra_stdout.txt', 'w')
