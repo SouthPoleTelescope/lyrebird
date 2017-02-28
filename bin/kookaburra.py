@@ -409,7 +409,11 @@ class SquidDisplay(object):
         ]
         self.highlight_index = [7 for s in self.str_id_lst]
 
-
+    def get_resize_handler(self):
+        def rh(signum, frame):
+            print("in resize")
+            return
+        return rh
 
     def init_squids(self, squids_list) :
         self.n_squids = len(squids_list) + len(self.str_id_lst) + 1
@@ -447,6 +451,7 @@ class SquidDisplay(object):
         curses.init_pair(5, curses.COLOR_BLUE,    curses.COLOR_WHITE)
         
         self.stdscr.clear()
+        signal.signal(signal.SIGWINCH, signal.SIG_IGN)
 
     def __call__(self, frame):
         if frame.type == core.G3FrameType.Wiring:
@@ -590,6 +595,19 @@ if __name__=='__main__':
     else:
         pipe.Add(SquidDisplay)
 
+
+    import sys
+    sys.stderr = open('kookaburra_stderr.txt', 'w')
+    sys.stdout = open('kookaburra_stdout.txt', 'w')
+
+    pipe.Run()
+
+    traceback.print_exc()  # Print the exception
+    curses.curs_set(1)
+    curses.echo()
+    curses.nocbreak()
+    curses.endwin()
+    '''
     try:
         pipe.Run()
     finally:
@@ -598,3 +616,4 @@ if __name__=='__main__':
         curses.echo()
         curses.nocbreak()
         curses.endwin()
+    '''
