@@ -73,6 +73,7 @@ public:
 	int get_num_hk_values();
 	int get_num_dfmux_values();
 private:
+	std::string reader_str;
 
 	std::map<std::string, int> id_to_serial_map_;
 	bool has_id_map_;
@@ -86,7 +87,7 @@ private:
 	int port_;
 	bool keep_getting_data_;
 	
-        G3Reader frame_grabbing_function_;
+        G3ReaderPtr frame_grabbing_function_;
 	DataVals * dvs_;
 	
 	std::vector<int> hk_path_inds_;

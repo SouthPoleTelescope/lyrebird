@@ -32,9 +32,19 @@ std::string get_physical_id(int board_serial, int crate_serial, int board_slot,
 }
 
 
-G3FramePtr get_frame(G3Reader & fun){
+G3FramePtr get_frame(G3ReaderPtr & fun, std::string reader_str){
+
 	std::deque<G3FramePtr> out;
-	fun.Process(G3FramePtr(NULL), out);
+	fun->Process(G3FramePtr(NULL), out);
+	
+	if (out.size() == 0){
+		log_error("Lyrebird lost connection");
+		sleep(1);
+		try {
+			fun = G3ReaderPtr(new G3Reader(reader_str));
+		} catch (const std::exception&) {}
+	}
+	
 	return out.front();
 }
 
@@ -43,9 +53,11 @@ G3FramePtr get_frame(G3Reader & fun){
 G3DataStreamer::G3DataStreamer(Json::Value desc,
 			       std::string tag, DataVals * dv, int us_update_time )
 	: DataStreamer(tag, dv, us_update_time, DSRT_STREAMING),
-	  frame_grabbing_function_( std::string("tcp://") +
-	                            desc["network_streamer_hostname"].asString() +
-				    ":" + desc["network_streamer_port"].asString())
+
+	  reader_str(std::string("tcp://") +
+		     desc["network_streamer_hostname"].asString() +
+		     ":" + desc["network_streamer_port"].asString()),
+	  frame_grabbing_function_(new G3Reader(reader_str))
 {
 	has_id_map_ = false;
 	n_boards_ = desc["board_list"].size();
@@ -93,7 +105,7 @@ G3DataStreamer::G3DataStreamer(Json::Value desc,
 }
 
 void G3DataStreamer::update_values(int n){
-	G3FramePtr frame = get_frame(frame_grabbing_function_);
+	G3FramePtr frame = get_frame(frame_grabbing_function_, reader_str);
 	if (frame->type == G3Frame::Wiring){
 		DfMuxWiringMapConstPtr wm = frame->Get<DfMuxWiringMap>("WiringMap");
 		for (auto b = wm->begin(); b != wm->end(); b++){
@@ -115,6 +127,8 @@ void G3DataStreamer::update_values(int n){
 		G3MapDoubleConstPtr vbias = frame->Get<G3MapDouble>("VoltageBias");
 		G3MapDoubleConstPtr iconv = frame->Get<G3MapDouble>("CurrentConv");
 		if (has_id_map_) update_hk_values(*bi, vbias, iconv);
+	} else if (frame->type == G3Frame::EndProcessing) {
+		log_error("Lost connection to server ep");
 	}
 }
 
