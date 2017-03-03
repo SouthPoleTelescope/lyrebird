@@ -576,7 +576,7 @@ if __name__=='__main__':
     pipe.Add(core.G3ThrottledNetworkSender,
              hostname = '*',
              port = args.local_hk_port,
-             frame_decimation = {core.G3FrameType.Timepoint: 0}
+             frame_decimation = {core.G3FrameType.Timepoint: 10}
           )
 
     pipe.Add(core.G3ThrottledNetworkSender,
