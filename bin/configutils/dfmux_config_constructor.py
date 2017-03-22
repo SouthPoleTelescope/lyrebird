@@ -277,8 +277,8 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
 
 
         CC.addVisElem(config_dic, 
-                      x_cen = bp.x_offset*3e1,   y_cen = bp.y_offset*3e1,
-                      x_scale = scale_fac, y_scale = scale_fac, 
+                      x_cen=bp.x_offset*10,   y_cen=bp.y_offset*10,
+                      x_scale=scale_fac, y_scale=scale_fac, 
                       rotation=bp.pol_angle,
                       svg_path=svg,
                       highlight_path = h_svg,
