@@ -167,7 +167,7 @@ class BirdConfigGenerator(object):
             elif 'NominalBolometerProperties' in frame:
                 bp_id = 'NominalBolometerProperties'
             else:
-                raise RuntimeError("bp fucked")
+                raise RuntimeError("BolometerProperties fucked")
             self.bolo_props = frame[bp_id]
             self.write_config()
         elif frame.type == core.G3FrameType.Wiring:
