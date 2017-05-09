@@ -160,6 +160,7 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
         CC.addGlobalEquation(config_dic, 
                              CC.getEquation((
                                  '* ! = %s:carrier_amplitude 0 ' +
+                                 '* ! = %s:carrier_frequency 0 ' +
                                  '/ %s:res_conversion_factor * %s:rnormal q + * %s/I:dfmux_samples %s/I:dfmux_samples * %s/Q:dfmux_samples %s/Q:dfmux_samples') % 
                                              ((cid, )*7),
                                             eq_cmap,
