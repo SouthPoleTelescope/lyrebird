@@ -585,23 +585,24 @@ if __name__=='__main__':
              frame_decimation = {core.G3FrameType.Housekeeping: 0}
           )
 
-    if args.debug_mode:
-        pipe.Add(core.Dump)
-
     if args.debug_logs:
         import sys
         sys.stderr = open('kookaburra_stderr.txt', 'w')
         sys.stdout = open('kookaburra_stdout.txt', 'w')
 
+    if args.debug_mode:
+        pipe.Add(core.Dump)
+
+        pipe.Run()
     else:
         pipe.Add(SquidDisplay)
 
-    try:
-        pipe.Run()
-    finally:
-        traceback.print_exc()  # Print the exception
-        curses.curs_set(1)
-        curses.echo()
-        curses.nocbreak()
-        curses.endwin()
+        try:
+            pipe.Run()
+        finally:
+            traceback.print_exc()  # Print the exception
+            curses.curs_set(1)
+            curses.echo()
+            curses.nocbreak()
+            curses.endwin()
 
