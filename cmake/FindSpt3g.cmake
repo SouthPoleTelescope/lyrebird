@@ -10,6 +10,15 @@ find_path(SPT3G_CEREAL_INCLUDE cereal/cereal.hpp PATHS $ENV{SPT3G_SOFTWARE_PATH}
 find_library(SPT3G_CORE_LIBRARY core.so PATHS $ENV{SPT3G_SOFTWARE_BUILD_PATH}/spt3g/)
 find_library(SPT3G_DFMUX_LIBRARY dfmux.so $ENV{SPT3G_SOFTWARE_BUILD_PATH}/spt3g/)
 
+if(NOT SPT3G_CORE_LIBRARY)
+find_library(SPT3G_CORE_LIBRARY core.dylib PATHS $ENV{SPT3G_SOFTWARE_BUILD_PATH}/spt3g/)
+endif(NOT SPT3G_CORE_LIBRARY)
+
+if(NOT SPT3G_DFMUX_LIBRARY)
+find_library(SPT3G_DFMUX_LIBRARY dfmux.dylib $ENV{SPT3G_SOFTWARE_BUILD_PATH}/spt3g/)
+endif(NOT SPT3G_DFMUX_LIBRARY)
+
+
 include (FindPackageHandleStandardArgs)
 
 find_package_handle_standard_args (SPT3G DEFAULT_MSG 
