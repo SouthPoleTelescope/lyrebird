@@ -30,11 +30,9 @@ add_library(lyrebirdvis STATIC
 
 add_executable(lyrebird main.cpp)
 
-find_library(rt_LIBRARY rt)
-
 target_link_libraries(lyrebird lyrebirdvis AntTweakBar
   ${GLFW_LIBRARIES} ${OPENGL_gl_LIBRARY} ${OPENGL_glu_LIBRARY} ${GLEW_LIBRARY} ${X11_LIBRARIES}
-  ${X11_Xxf86vm_LIB} ${FFTW_LIBRARIES} ${SPT3G_LIBRARIES} ${CMAKE_DL_LIBS} ${rt_LIBRARY}
+  ${X11_Xxf86vm_LIB} ${FFTW_LIBRARIES} ${SPT3G_LIBRARIES} ${CMAKE_DL_LIBS} 
   ${X11_Xrandr_LIB} ${X11_Xinerama_LIB} ${X11_Xi_LIB} ${X11_Xcursor_LIB} pthread)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
