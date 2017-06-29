@@ -7,6 +7,8 @@ from spt3g import core
 N_MODULES=8
 N_CHANNELS=64
 
+fl = lambda x: float(np.nan_to_num(x))
+
 def get_physical_id(board_serial, crate_serial, board_slot,
                     module = None, channel = None):
     if board_slot <= 0:
@@ -278,9 +280,9 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
 
 
         CC.addVisElem(config_dic, 
-                      x_cen=bp.x_offset*10,   y_cen=bp.y_offset*10,
+                      x_cen=fl(bp.x_offset * 10),   y_cen=fl(bp.y_offset * 10),
                       x_scale=scale_fac, y_scale=scale_fac, 
-                      rotation=bp.pol_angle,
+                      rotation=fl(bp.pol_angle),
                       svg_path=svg,
                       highlight_path = h_svg,
                       layer = 1, labels = [k, cid, bp.physical_name],
@@ -334,7 +336,7 @@ def generate_dfmux_lyrebird_config(fn,
     max_delt = 1e12
     for k in bolo_props_map.keys():
         bp =  bolo_props_map[k]
-        delt = (bp_0.x_offset- bp.x_offset)**2.0 + (bp_0.y_offset- bp.y_offset)**2.0 
+        delt = (fl(bp_0.x_offset) - fl(bp.x_offset))**2.0 + (fl(bp_0.y_offset)- fl(bp.y_offset))**2.0 
         if delt < max_delt and delt > min_delt:
             max_delt = delt
     special_separation = max_delt**0.5
