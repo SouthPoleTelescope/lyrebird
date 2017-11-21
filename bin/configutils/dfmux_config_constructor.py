@@ -253,10 +253,22 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                                             display_in_info_bar = False,
                                         ))
 
+        CC.addGlobalEquation(config_dic, 
+                             CC.getEquation('* %s:carrier_amplitude 1'%(cid), 
+                                            "rainbow_cmap",
+                                            '%s:camp'%(cid)+'_eq',
+                                            "Carrier Amplitude",
+                                            '%s:carrier_amplitude'%(cid),
+                                            display_in_info_bar = False,
+                                        ))
+
+
 
         eqs_lst = ['%s:Rfractional'%(cid)+'_eq',
                    '%s:phase'%(cid)+'_eq',
                    '%s:freq'%(cid)+'_eq',
+                   '%s:camp'%(cid)+'_eq',
+
                    '%s:SquidGood'%(mid)+'_eq',
                    
                    '%s:IPower'%(cid)+'_eq',
@@ -345,6 +357,7 @@ def generate_dfmux_lyrebird_config(fn,
     global_display_names = ['Rfrac', 
                             'IQ Phase', 
                             'Freq Settings', 
+                            'Carrier Amp',
                             'SQUID Be F*cked',
                             'I:HPF Power Units',
                             'Q:HPF Power Units',
