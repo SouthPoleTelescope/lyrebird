@@ -5,7 +5,7 @@ import socket, curses, json, traceback, math, argparse, math, sys, os, stat
 from operator import itemgetter, attrgetter
 from configutils.dfmux_config_constructor import get_physical_id, sq_phys_id_to_info
 from configutils.dfmux_config_constructor import uniquifyList, generate_dfmux_lyrebird_config
-from spt3g.util import genericutils as GU
+#from spt3g.util import genericutils as GU # not in the public S4 repo
 from spt3g import core, dfmux, calibration
 
 
@@ -13,15 +13,42 @@ import signal
 import warnings
 warnings.filterwarnings("ignore")
 
+def str_cmp_with_numbers_sorted(str1, str2):
+    '''
+    Compares two strings where numbers are sorted according to value, so Sq12 ends up after Sq8,  use in sorted function
+    Copied from spt3g_software to fix dependencies (sorry)
+    '''
+
+    if str1==str2:
+        return 0
+    split1 = split_on_numbers(str1)
+    split2 = split_on_numbers(str2)
+
+    largestStr = 0
+    for l in [split1, split2]:
+        for s in l:
+            if s[0].isdigit():
+                largestStr = len(s) if len(s) > largestStr else largestStr
+
+    for l in [split1, split2]:
+        for i in range(len(l)):
+            if l[i][0].isdigit():
+                l[i] =  '0'*(largestStr-len(l[i])) +l[i]
+
+    p1 = reduce(lambda x,y: x+y, split1)
+    p2 = reduce(lambda x,y: x+y, split2)
+    return -1 if p1<p2 else 1
+
+
 @core.cache_frame_data(type = core.G3FrameType.Housekeeping, wiring_map = 'WiringMap')
 def AddVbiasAndCurrentConv(frame, wiring_map):
     hk_map = frame['DfMuxHousekeeping']
     v_bias = core.G3MapDouble()
     i_conv = core.G3MapDouble()
     for k in wiring_map.keys():
-        vb = dfmux.unittransforms.bolo_bias_voltage(wiring_map, hk_map, 
+        vb = dfmux.unittransforms.bolo_bias_voltage_rms(wiring_map, hk_map, 
                                                     bolo = k, system = 'ICE') / core.G3Units.V
-        ic = dfmux.unittransforms.counts_to_amps(wiring_map, hk_map, 
+        ic = dfmux.unittransforms.counts_to_rms_amps(wiring_map, hk_map, 
                                                  bolo = k, system = 'ICE') / core.G3Units.amp
         v_bias[k] = vb
         i_conv[k] = ic
@@ -66,7 +93,7 @@ class BoloPropertiesFaker(object):
                 self.bolo_props = frame['NominalBolometerProperties']
 
     def send_off(self, frame):
-        if self.wiring_map != None and self.bolo_props == None:
+        if not self.wiring_map is None and self.bolo_props is None:
 
             #faking the frame data
             self.bolo_props = calibration.BolometerPropertiesMap()
@@ -174,7 +201,7 @@ class BirdConfigGenerator(object):
             self.wiring_map = frame['WiringMap']
             self.write_config()
     def write_config(self):
-        if self.wiring_map == None or self.bolo_props == None:
+        if self.wiring_map is None or self.bolo_props is None:
             return
         config_dic = generate_dfmux_lyrebird_config(
             self.l_fn,
@@ -288,7 +315,7 @@ def load_squid_info_from_hk( screen, y, x,
     board_serial = serial_mapper.get_serial(board_id)
 
     #code for loading hk info for display
-    if hk_map != None and board_serial in hk_map:
+    if (not hk_map is None) and board_serial in hk_map:
         board_info = hk_map[board_serial]
         mezz_info = hk_map[board_serial].mezz[mezz_num]
         module_info = hk_map[board_serial].mezz[mezz_num].modules[module_num]
@@ -422,7 +449,7 @@ class SquidDisplay(object):
         self.pos_map = {}
         #assign an x, y location to each squid
 
-        for j, sq in enumerate(sorted(squids_list, cmp = GU.str_cmp_with_numbers_sorted)):
+        for j, sq in enumerate(sorted(squids_list, cmp = str_cmp_with_numbers_sorted)):
             i = j + len(self.str_id_lst) + 1
             y =  i % self.squids_per_col + 1
             x = 1 + self.squid_col_width * ( i // self.squids_per_col)
@@ -462,10 +489,10 @@ class SquidDisplay(object):
             self.serial_mapper = IdSerialMapper(frame['WiringMap'])
 
         elif frame.type == core.G3FrameType.Housekeeping:
-            if self.squids_list == None:
+            if self.squids_list is None:
                 return
             #do update
-            if frame != None:
+            if not frame is None:
                 hk_data = frame['DfMuxHousekeeping']
             else:
                 hk_data = None
@@ -484,7 +511,7 @@ class SquidDisplay(object):
 
             #screen.box()
             #CNDTV6F
-            if hk_data != None:
+            if not hk_data is None:
                 add_timestamp_info(screen, 0,2, hk_data[hk_data.keys()[0]].timestamp, 5)
                 for i, s in enumerate(self.str_id_lst):
                     offset = 4
@@ -505,7 +532,7 @@ class SquidDisplay(object):
                                          self.squid_col_width, self.serial_mapper)
             screen.refresh()
         elif frame.type == core.G3FrameType.EndProcessing:
-            if self.squids_list != None:
+            if not self.squids_list is None:
                 self.stdscr.keypad(0)
                 curses.echo()
                 curses.nocbreak()
