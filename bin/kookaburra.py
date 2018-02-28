@@ -7,12 +7,35 @@ from configutils.dfmux_config_constructor import get_physical_id, sq_phys_id_to_
 from configutils.dfmux_config_constructor import uniquifyList, generate_dfmux_lyrebird_config
 #from spt3g.util import genericutils as GU # not in the public S4 repo
 from spt3g import core, dfmux, calibration
+from functools import cmp_to_key
 
 
 import signal 
 import warnings
 warnings.filterwarnings("ignore")
-
+def split_on_numbers(s):
+    '''
+    Splits the string into a list where the numbers and the characters between numbers are each element
+    Copied from spt3g_software to fix dependencies (sorry)
+    '''
+    prevDig = False
+    outList = []
+    for char in s:
+        if char.isdigit():
+            if prevDig:
+                outList[-1] += char
+            else:
+                prevDig = True
+                outList.append(char)
+        else:
+            if not prevDig and len(outList)>0:
+                outList[-1] += char
+            else:
+                prevDig = False
+                outList.append(char)
+            
+    return outList
+        
 def str_cmp_with_numbers_sorted(str1, str2):
     '''
     Compares two strings where numbers are sorted according to value, so Sq12 ends up after Sq8,  use in sorted function
@@ -448,8 +471,8 @@ class SquidDisplay(object):
 
         self.pos_map = {}
         #assign an x, y location to each squid
-
-        for j, sq in enumerate(sorted(squids_list, cmp = str_cmp_with_numbers_sorted)):
+    
+        for j, sq in enumerate(sorted(squids_list, key=cmp_to_key(str_cmp_with_numbers_sorted))):
             i = j + len(self.str_id_lst) + 1
             y =  i % self.squids_per_col + 1
             x = 1 + self.squid_col_width * ( i // self.squids_per_col)
