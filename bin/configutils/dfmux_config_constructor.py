@@ -254,7 +254,7 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                                         ))
 
         CC.addGlobalEquation(config_dic, 
-                             CC.getEquation('* %s:carrier_amplitude 1'%(cid), 
+                             CC.getEquation('/ %s:carrier_amplitude CarrierAmpMax'%(cid), 
                                             "rainbow_cmap",
                                             '%s:camp'%(cid)+'_eq',
                                             "Carrier Amplitude",
@@ -390,7 +390,8 @@ def generate_dfmux_lyrebird_config(fn,
                      scale_fac, svg_folder)
 
     CC.addDataVal(config_dic, "PowScaling(fW)", 10, False)
-    config_dic["modifiable_data_vals"] = ["PowScaling(fW)"]
+    CC.addDataVal(config_dic, "CarrierAmpMax", 0.1, False)
+    config_dic["modifiable_data_vals"] = ["PowScaling(fW)", 'CarrierAmpMax']
 
     if (not control_host is None) and (not gcp_get_hk_port is None):
         config_dic['external_commands_id_list'] = ['Get Housekeeping']
