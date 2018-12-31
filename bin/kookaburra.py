@@ -63,16 +63,17 @@ def str_cmp_with_numbers_sorted(str1, str2):
     return -1 if p1<p2 else 1
 
 
-@core.cache_frame_data(type = core.G3FrameType.Housekeeping, wiring_map = 'WiringMap')
+@core.cache_frame_data(type = core.G3FrameType.Housekeeping, wiring_map = 'WiringMap',
+                       tf = 'DfMuxTransferFunction', system = 'ReadoutSystem')
 def AddVbiasAndCurrentConv(frame, wiring_map):
     hk_map = frame['DfMuxHousekeeping']
     v_bias = core.G3MapDouble()
     i_conv = core.G3MapDouble()
     for k in wiring_map.keys():
         vb = dfmux.unittransforms.bolo_bias_voltage_rms(wiring_map, hk_map, 
-                                                    bolo = k, system = 'ICE') / core.G3Units.V
+                                                        bolo = k, tf = tf, system = system) / core.G3Units.V
         ic = dfmux.unittransforms.counts_to_rms_amps(wiring_map, hk_map, 
-                                                 bolo = k, system = 'ICE') / core.G3Units.amp
+                                                     bolo = k, tf = tf, system = system) / core.G3Units.amp
         v_bias[k] = vb
         i_conv[k] = ic
     frame['VoltageBias'] = v_bias
@@ -103,9 +104,12 @@ class BoloPropertiesFaker(object):
         self.wiring_map = None
         self.bolo_props = None
         self.sent_off = False
+        self.default_tf = 'spt3g_filtering_2017_full'
         return
 
     def __call__(self, frame):
+        if 'DfMuxTransferFunction' in frame:
+            self.default_tf = frame['DfMuxTransferFunction']
         if frame.type == core.G3FrameType.Wiring:
             self.wiring_map = frame['WiringMap']
             return self.send_off(frame)
@@ -179,6 +183,7 @@ class BoloPropertiesFaker(object):
 
             out_frame = core.G3Frame(core.G3FrameType.Calibration)
             out_frame['BolometerProperties'] = self.bolo_props
+            out_frame['DfMuxTransferFunction'] = self.default_tf
             return [out_frame, frame]
         else:
             return frame
@@ -602,9 +607,10 @@ if __name__=='__main__':
     if args.ignore_nominal_bias_props:
         pipe.Add(lambda fr: fr.type != core.G3FrameType.Calibration)
 
-    pipe.Add(AddVbiasAndCurrentConv)
-    
     pipe.Add(BoloPropertiesFaker)
+
+    pipe.Add(AddVbiasAndCurrentConv)
+
     pipe.Add(BirdConfigGenerator, 
              lyrebird_output_file = lyrebird_output_file, 
              hostname = args.hostname, 

@@ -211,9 +211,6 @@ void G3DataStreamer::initialize_hk_values(){
 
 				snprintf(name_buffer, 127, "%s/%d/%d:rlatched",(*b).c_str(),m,c);
 				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
-
-				snprintf(name_buffer, 127, "%s/%d/%d:res_conversion_factor",(*b).c_str(),m,c);
-				hk_path_inds_.push_back(dvs_->add_data_val(std::string(name_buffer), 0, false, 0));
 			}
 		}
 	}
@@ -308,8 +305,6 @@ void G3DataStreamer::update_hk_values(const DfMuxHousekeepingMap & b_map,
 
 				dvs_->update_val(hk_path_inds_[i], chan_info.rnormal);i++;
 				dvs_->update_val(hk_path_inds_[i], chan_info.rlatched);i++;
-
-				dvs_->update_val(hk_path_inds_[i], chan_info.res_conversion_factor);i++;
 			}
 		}
 	}

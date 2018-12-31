@@ -59,7 +59,7 @@ def get_module_vals():
 def get_channel_vals():
     return ['carrier_amplitude', 'carrier_frequency', 'demod_frequency',
             'dan_accumulator_enable', 'dan_feedback_enable', 'dan_streaming_enable', 
-            'dan_gain', 'dan_railed', 'rnormal', 'rlatched', 'res_conversion_factor']
+            'dan_gain', 'dan_railed', 'rnormal', 'rlatched']
 
 
 def addDfmuxStreamer(config_dic, tag, boards_list, 
@@ -153,7 +153,7 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
             eq_cmap = 'bolo_cyan_cmap'
         '''
         CC.addGlobalEquation(config_dic, 
-                             CC.getEquation('/ %s:res_conversion_factor * %s/I:dfmux_samples %s:rnormal'%(cid, cid, cid), 
+                             CC.getEquation('/ / %s:voltage_bias %s:current_conv * %s/I:dfmux_samples %s:rnormal'%(k, k, cid, cid),
                                             eq_cmap,
                                             '%s:Rfractional'%(cid)+'_eq',
                                             "Rfrac",
@@ -163,17 +163,17 @@ def addDfmuxVisElems(config_dic, wiring_map, bolo_props_map,
                              CC.getEquation((
                                  '* ! = %s:carrier_amplitude 0 ' +
                                  '* ! = %s:carrier_frequency 0 ' +
-                                 '/ %s:res_conversion_factor * %s:rnormal q + * %s/I:dfmux_samples %s/I:dfmux_samples * %s/Q:dfmux_samples %s/Q:dfmux_samples') % 
-                                             ((cid, )*8),
+                                 '/ / %s:voltage_bias %s:current_conv * %s:rnormal q + * %s/I:dfmux_samples %s/I:dfmux_samples * %s/Q:dfmux_samples %s/Q:dfmux_samples') %
+                                             (cid, cid, k, k, cid, cid, cid, cid, cid)),
                                             eq_cmap,
                                             '%s:Rfractional'%(cid)+'_eq',
                                             "Rfrac",
-                                            '%s/I:dfmux_samples'%(cid)))
+                                            '%s/I:dfmux_samples'%(cid))
 
 
         CC.addGlobalEquation(config_dic, 
-                             CC.getEquation(('/ %s:res_conversion_factor q + * %s/I:dfmux_samples %s/I:dfmux_samples * %s/Q:dfmux_samples %s/Q:dfmux_samples' % 
-                                             (cid, cid, cid, cid, cid)), 
+                             CC.getEquation(('/ / %s:voltage_bias %s:current_conv q + * %s/I:dfmux_samples %s/I:dfmux_samples * %s/Q:dfmux_samples %s/Q:dfmux_samples' %
+                                             (k, k, cid, cid, cid, cid)),
                                             eq_cmap,
                                             '%s:Resistance'%(cid)+'_eq',
                                             "Res",
