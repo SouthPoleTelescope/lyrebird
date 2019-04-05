@@ -162,16 +162,15 @@ timepoint frames is sent.
           max_connections = 0 )
 
 If you are dropping frames you will want to increase the frame_decimation number.  Weirdly enough, if the data is sporadically being transmitted, but you are not dropping frames, you may want to lower the frame_decimation number.  Depending on TCP implementation it will bundle the data before sending.  If the data rate is low, that might take a while. 
-
    
 
-FAQ
----
-- Can you add X feature?
-  
-  - Probably not.  Adding things requires a lot of work.
+Authors
+-------
 
-- Can you write another tool for displaying X/Y/Z information?
- 
-  - No.
+Lyrebird was developed at UC Berkeley for use with the South Pole
+Telescope.  The original author of Lyrebird is Nick Harrington, but he
+is no longer involved with development.
+
+Please send questions or comments about Lyrebird to the maintainers of
+the repository where you obtained it.
 
